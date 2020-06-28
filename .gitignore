@@ -1,0 +1,14 @@
+/**/.idea
+/**/.env
+!/**/.env.example
+/**/vendor
+/**/node_modules
+/**/.DS_Store
+/**/.php_cs.cache
+
+
+/**/storage/cache/container/*
+!/**/storage/cache/container/.gitkeep
+
+/**/storage/logs/php/*
+!/**/storage/logs/php/.gitkeep

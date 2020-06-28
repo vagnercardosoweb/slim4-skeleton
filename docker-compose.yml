@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  php-fpm:
+    build: .
+    container_name: slim4-skeleton
+    working_dir: /var/www
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/var/www
