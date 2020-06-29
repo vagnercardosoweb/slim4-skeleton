@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/06/2020 Vagner Cardoso
+ * @copyright 29/06/2020 Vagner Cardoso
  */
 
 $basePath = realpath(dirname(__DIR__));
@@ -36,4 +36,4 @@ define('BASE_URL', "{$schema}://{$host}");
 
 $bootstrapPath = sprintf('%s/app/bootstrap.php', APP_PATH);
 
-(require_once "{$bootstrapPath}")->run();
+require_once "{$bootstrapPath}";

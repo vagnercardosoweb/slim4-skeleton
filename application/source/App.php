@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/06/2020 Vagner Cardoso
+ * @copyright 29/06/2020 Vagner Cardoso
  */
 
 namespace Core;
@@ -16,6 +16,7 @@ use Core\Helpers\Path;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\App as SlimApp;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteParserInterface;
@@ -23,6 +24,8 @@ use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
 
 /**
  * Class Bootstrap.
+ *
+ * @method void run(?ServerRequestInterface $request = null)
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
