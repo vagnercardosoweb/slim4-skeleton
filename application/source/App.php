@@ -6,26 +6,29 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 29/06/2020 Vagner Cardoso
+ * @copyright 30/06/2020 Vagner Cardoso
  */
 
 namespace Core;
 
+use Core\Facades\Facade;
+use Core\Facades\Request;
 use Core\Helpers\Env;
 use Core\Helpers\Path;
 use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\App as SlimApp;
+use Slim\App as Application;
 use Slim\Factory\AppFactory;
+use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Interfaces\RouteParserInterface;
+use Slim\ResponseEmitter;
 use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
 
 /**
  * Class Bootstrap.
- *
- * @method void run(?ServerRequestInterface $request = null)
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
@@ -33,7 +36,7 @@ class App
 {
     public const VERSION = '1.0.0';
 
-    protected SlimApp $app;
+    protected Application $app;
 
     public function __construct()
     {
@@ -41,17 +44,6 @@ class App
 
         $this->configurePhpSettings();
         $this->configureApplication();
-    }
-
-    /**
-     * @param string $name
-     * @param array  $arguments
-     *
-     * @return mixed
-     */
-    public function __call(string $name, array $arguments)
-    {
-        return $this->app->{$name}(...$arguments);
     }
 
     public static function isCli(): bool
@@ -95,6 +87,17 @@ class App
         return $this;
     }
 
+    public function run(?ServerRequestInterface $request = null)
+    {
+        if (!$request) {
+            $request = Request::getFacadeRoot();
+        }
+
+        $response = $this->app->handle($request);
+        $responseEmitter = new ResponseEmitter();
+        $responseEmitter->emit($response);
+    }
+
     protected function configurePhpSettings(): void
     {
         $locale = Env::get('APP_LOCALE', 'pt_BR');
@@ -135,24 +138,37 @@ class App
         }
 
         $containerBuilder->addDefinitions([
-            App::class => function (ContainerInterface $container) {
+            Application::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
 
                 return AppFactory::create();
             },
 
+            ServerRequestInterface::class => function () {
+                $serverRequestCreator = ServerRequestCreatorFactory::create();
+
+                return $serverRequestCreator->createServerRequestFromGlobals();
+            },
+
             ResponseFactoryInterface::class => function (ContainerInterface $container) {
-                return $container->get(App::class)->getResponseFactory();
+                return $container->get(Application::class)->getResponseFactory();
             },
 
             RouteParserInterface::class => function (ContainerInterface $container) {
-                return $container->get(App::class)->getRouteCollector()->getRouteParser();
+                return $container->get(Application::class)->getRouteCollector()->getRouteParser();
+            },
+
+            ResponseInterface::class => function (ContainerInterface $container) {
+                return $container->get(ResponseFactoryInterface::class)->createResponse();
             },
         ]);
 
         $container = $containerBuilder->build();
 
-        $this->app = $container->get(App::class);
+        $this->app = $container->get(Application::class);
+
+        Facade::setFacadeApplication($this->app);
+        Facade::registerAliases();
 
         $this->app->addBodyParsingMiddleware();
         $this->app->addRoutingMiddleware();

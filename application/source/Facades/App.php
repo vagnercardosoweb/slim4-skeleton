@@ -9,6 +9,17 @@
  * @copyright 30/06/2020 Vagner Cardoso
  */
 
-use App\Controllers\IndexController;
+namespace Core\Facades;
 
-Route::get('/', IndexController::class);
+/**
+ * Class App.
+ *
+ * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
+ */
+class App extends Facade
+{
+    protected static function getFacadeAccessor(): string
+    {
+        return \Slim\App::class;
+    }
+}

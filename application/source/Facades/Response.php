@@ -9,23 +9,22 @@
  * @copyright 30/06/2020 Vagner Cardoso
  */
 
-namespace App\Controllers;
+namespace Core\Facades;
 
-use Core\App;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Class IndexController.
+ * Class Response.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class IndexController extends BaseController
+class Response extends Facade
 {
-    public function __invoke($request, ResponseInterface $response): ResponseInterface
+    /**
+     * @return string
+     */
+    protected static function getFacadeAccessor(): string
     {
-        return $this->withJson($response, [
-            'version' => App::VERSION,
-            'datetime' => new \DateTimeImmutable(),
-        ]);
+        return ResponseInterface::class;
     }
 }

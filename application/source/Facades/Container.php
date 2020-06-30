@@ -9,6 +9,20 @@
  * @copyright 30/06/2020 Vagner Cardoso
  */
 
-use App\Controllers\IndexController;
+namespace Core\Facades;
 
-Route::get('/', IndexController::class);
+/**
+ * Class Container.
+ *
+ * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
+ */
+class Container extends Facade
+{
+    /**
+     * @return string
+     */
+    protected static function getFacadeAccessor(): string
+    {
+        return \DI\Container::class;
+    }
+}
