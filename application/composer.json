@@ -30,5 +30,9 @@
       "App\\": "app/",
       "Core\\": "source/"
     }
+  },
+  "scripts": {
+    "cs:fix": "php-cs-fixer fix ../ --config=.php_cs",
+    "cs:check": "php-cs-fixer fix ../ --dry-run --format=txt --verbose --diff --diff-format=udiff --config=.php_cs"
   }
 }

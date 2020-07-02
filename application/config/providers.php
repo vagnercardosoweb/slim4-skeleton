@@ -9,13 +9,6 @@
  * @copyright 02/07/2020 Vagner Cardoso
  */
 
-namespace Core\Facades;
-
-/**
- * Class Route.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
-class Route extends App
-{
-}
+return [
+    // TODO
+];

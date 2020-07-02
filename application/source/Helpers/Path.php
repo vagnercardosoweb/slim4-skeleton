@@ -1,12 +1,12 @@
 <?php
 
 /*
- * VCWeb Networks <https://www.vcwebnetworks.com.br/>
+ * Vagner Cardoso <https://github.com/vagnercardosoweb>
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 20/05/2020 Vagner Cardoso
+ * @copyright 02/07/2020 Vagner Cardoso
  */
 
 namespace Core\Helpers;
@@ -41,9 +41,19 @@ class Path
         return self::normalizePath(constant('BASE_PATH'), $path);
     }
 
-    public static function resource(?string $path = null): string
+    public static function resources(?string $path = null): string
     {
         return self::make('RESOURCE_PATH', 'resources', self::app(), $path);
+    }
+
+    public static function config(?string $path = null): string
+    {
+        return self::make('CONFIG_PATH', 'config', self::app(), $path);
+    }
+
+    public static function routes(?string $path = null): string
+    {
+        return self::make('ROUTE_PATH', 'routes', self::app(), $path);
     }
 
     public static function storage(?string $path = null): string
@@ -61,8 +71,7 @@ class Path
         string $folder,
         string $root,
         ?string $path = null
-    ): string
-    {
+    ): string {
         if (!defined($name)) {
             define($name, self::normalizePath($root, $folder));
         }

@@ -6,13 +6,17 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 30/06/2020 Vagner Cardoso
+ * @copyright 02/07/2020 Vagner Cardoso
  */
+
+declare(strict_types = 1);
 
 namespace Core;
 
 use Core\Facades\Facade;
 use Core\Facades\Request;
+use Core\Handlers\HttpErrorHandler;
+use Core\Handlers\ShutdownHandler;
 use Core\Helpers\Env;
 use Core\Helpers\Path;
 use DI\ContainerBuilder;
@@ -20,12 +24,13 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\App as Application;
+use Slim\App as SlimApplication;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
+use Slim\Handlers\Strategies\RequestResponseArgs;
 use Slim\Interfaces\RouteParserInterface;
+use Slim\Middleware\MethodOverrideMiddleware;
 use Slim\ResponseEmitter;
-use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator;
 
 /**
  * Class Bootstrap.
@@ -36,14 +41,14 @@ class App
 {
     public const VERSION = '1.0.0';
 
-    protected Application $app;
+    protected SlimApplication $app;
 
     public function __construct()
     {
         Env::initialize();
 
         $this->configurePhpSettings();
-        $this->configureApplication();
+        $this->configureSlimApplication();
     }
 
     public static function isCli(): bool
@@ -61,13 +66,22 @@ class App
         return 'testing' === Env::get('APP_ENV', 'testing');
     }
 
-    public function registerRoutes(): App
+    public function registerPathRoute(string $path): App
     {
-        $path = Path::app('/routes');
+        extract(['app' => $this->app]);
+
+        require_once "{$path}";
+
+        return $this;
+    }
+
+    public function registerFolderRoutes(?string $path = null): App
+    {
+        $path = $path ?? Path::app('/routes');
 
         /** @var \DirectoryIterator $iterator */
         $iterator = new \RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator(
+            new \RecursiveDirectoryIterator(
                 $path, \FilesystemIterator::SKIP_DOTS
             )
         );
@@ -76,9 +90,7 @@ class App
 
         while ($iterator->valid()) {
             if ('php' === $iterator->getExtension()) {
-                extract(['app' => $this->app]);
-
-                require_once "{$iterator->getRealPath()}";
+                $this->registerPathRoute($iterator->getRealPath());
             }
 
             $iterator->next();
@@ -111,9 +123,42 @@ class App
         ini_set('display_errors', Env::get('PHP_DISPLAY_ERRORS', ini_get('display_errors')));
         ini_set('display_startup_errors', Env::get('PHP_DISPLAY_STARTUP_ERRORS', ini_get('display_startup_errors')));
 
-        ini_set('log_errors', Env::get('PHP_LOG_ERRORS', true));
+        ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
         ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('dmY')));
+    }
 
+    protected function configureSlimApplication(): App
+    {
+        $containerBuilder = new ContainerBuilder();
+
+        if (Env::get('APP_CONTAINER_COMPILE', false)) {
+            $containerBuilder->enableCompilation(
+                Path::storage('/cache/container')
+            );
+        }
+
+        $this->configureDefaultContainerBuilder($containerBuilder);
+        $container = $containerBuilder->build();
+
+        $this->app = $container->get(SlimApplication::class);
+
+        Facade::setFacadeApplication($this->app);
+        Facade::registerAliases();
+
+        $routeCollector = $this->app->getRouteCollector();
+        $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
+
+        $this->app->addBodyParsingMiddleware();
+        $this->app->addRoutingMiddleware();
+        $this->app->add(new MethodOverrideMiddleware());
+
+        $this->configureErrorHandler($container);
+
+        return $this;
+    }
+
+    protected function configureErrorHandler(ContainerInterface $container): void
+    {
         if ('development' === Env::get('APP_ENV', 'development')) {
             error_reporting(E_ALL);
         } else {
@@ -125,20 +170,30 @@ class App
                 throw new \ErrorException($message, 0, $level, $file, $line);
             }
         });
+
+        $request = $container->get(ServerRequestInterface::class);
+        $logErrors = true;
+        $logErrorDetails = true;
+        $displayErrorDetails = true;
+
+        $errorHandler = new HttpErrorHandler($this->app->getCallableResolver(), $this->app->getResponseFactory());
+        $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
+        register_shutdown_function($shutdownHandler);
+
+        $errorMiddleware = $this->app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
+        $errorMiddleware->setDefaultErrorHandler($errorHandler);
     }
 
-    protected function configureApplication(): App
+    protected function configureDefaultContainerBuilder(ContainerBuilder $containerBuilder): void
     {
-        $containerBuilder = new ContainerBuilder();
+        $providers = [];
 
-        if (Env::get('APP_CONTAINER_COMPILE', false)) {
-            $containerBuilder->enableCompilation(
-                Path::storage('/cache/container')
-            );
+        if (file_exists($pathProviders = Path::config('/providers.php'))) {
+            $providers = require_once "{$pathProviders}";
         }
 
-        $containerBuilder->addDefinitions([
-            Application::class => function (ContainerInterface $container) {
+        $containerBuilder->addDefinitions($providers + [
+            SlimApplication::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
 
                 return AppFactory::create();
@@ -151,38 +206,16 @@ class App
             },
 
             ResponseFactoryInterface::class => function (ContainerInterface $container) {
-                return $container->get(Application::class)->getResponseFactory();
+                return $container->get(SlimApplication::class)->getResponseFactory();
             },
 
             RouteParserInterface::class => function (ContainerInterface $container) {
-                return $container->get(Application::class)->getRouteCollector()->getRouteParser();
+                return $container->get(SlimApplication::class)->getRouteCollector()->getRouteParser();
             },
 
             ResponseInterface::class => function (ContainerInterface $container) {
                 return $container->get(ResponseFactoryInterface::class)->createResponse();
             },
         ]);
-
-        $container = $containerBuilder->build();
-
-        $this->app = $container->get(Application::class);
-
-        Facade::setFacadeApplication($this->app);
-        Facade::registerAliases();
-
-        $this->app->addBodyParsingMiddleware();
-        $this->app->addRoutingMiddleware();
-
-        $displayErrorDetails = true;
-        $logErrors = true;
-        $logErrorDetails = true;
-
-        $this->app->addErrorMiddleware(
-            $displayErrorDetails,
-            $logErrors,
-            $logErrorDetails
-        );
-
-        return $this;
     }
 }
