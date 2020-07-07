@@ -1,14 +1,38 @@
 /**/.idea
 /**/.env
-!/**/.env.example
 /**/vendor
 /**/node_modules
 /**/.DS_Store
 /**/.php_cs.cache
+!/**/.env.example
 
+# Docker
+/**/.docker/mysql/*
+/**/.docker/postgres/*
+/**/.docker/apache/logs/*
+!/**/.docker/mysql/config
+!/**/.docker/mysql/database/.gitkeep
+!/**/.docker/postgres/.gitkeep
+!/**/.docker/apache/logs/.gitkeep
 
+# Cache
+/**/storage/cache/app/*
+/**/storage/cache/twig/*
 /**/storage/cache/container/*
+!/**/storage/cache/app/.gitkeep
+!/**/storage/cache/twig/.gitkeep
 !/**/storage/cache/container/.gitkeep
 
+# Logs
 /**/storage/logs/php/*
+/**/storage/logs/errors/*
 !/**/storage/logs/php/.gitkeep
+!/**/storage/logs/errors/.gitkeep
+
+# Session
+/**/storage/sessions/*
+!/**/storage/sessions/.gitkeep
+
+# Public folder
+/**/public_html/uploads/*
+!/**/public_html/uploads/.gitkeep

@@ -1,11 +1,91 @@
 version: '3.7'
 
+networks:
+  mysql:
+  # postgres:
+  # redis:
+
 services:
-  php-fpm:
-    build: .
-    container_name: slim4-skeleton
+  web:
+    build: ./.docker
+    restart: always
     working_dir: /var/www
+    container_name: slim4-skeleton-api
+    networks:
+      - mysql
+      # - redis
+      # - postgres
+    depends_on:
+      - mysql
+      # - postgres
+      # - redis
     ports:
-      - 8080:8080
+      - '80:80'
+      - '443:443'
     volumes:
       - .:/var/www
+      - ./.docker/php/php.ini:/usr/local/etc/php/conf.d/99-php.ini
+      - ./.docker/apache/vhosts/localhost.conf:/etc/apache2/sites-available/000-default.conf
+      - ./.docker/apache/vhosts/localhost-ssl.conf:/etc/apache2/sites-available/default-ssl.conf
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
+      - DOCUMENT_ROOT=/var/www/public_html
+      - APACHE_LOG_DIR=/var/www/.docker/apache/logs
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    container_name: slim4-skeleton-mysql
+    networks:
+      - mysql
+    ports:
+      - '3306:3306'
+    volumes:
+      - './.docker/mysql/config:/etc/mysql/conf.d'
+      - './.docker/mysql/database:/var/lib/mysql'
+    environment:
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=development
+
+  #  phpmyadmin:
+  #    image: phpmyadmin/phpmyadmin
+  #    container_name: slim4-skeleton-phpmyadmin
+  #    networks:
+  #      - mysql
+  #    depends_on:
+  #      - mysql
+  #    environment:
+  #      PMA_HOST: mysql
+  #      PMA_PORT: 3306
+  #    ports:
+  #      - '8080:80'
+
+  #  postgres:
+  #    image: postgres:alpine
+  #    restart: always
+  #    container_name: slim4-skeleton-postgres
+  #    networks:
+  #      - postgres
+  #    ports:
+  #      - '5432:5432'
+  #    volumes:
+  #      - './.docker/postgres:/var/lib/postgresql/data'
+  #    environment:
+  #      - POSTGRES_USER=root
+  #      - POSTGRES_PASSWORD=root
+  #      - POSTGRES_DB=development
+
+  #  redis:
+  #    image: bitnami/redis:latest
+  #    restart: always
+  #    container_name: slim4-skeleton-redis
+  #    volumes:
+  #      - ./.docker/redis:/bitnami/redis/data
+  #    networks:
+  #      - redis
+  #    environment:
+  #      - ALLOW_EMPTY_PASSWORD=no
+  #      - REDIS_PASSWORD=root
+  #    ports:
+  #      - '6379:6379'
