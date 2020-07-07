@@ -11,10 +11,18 @@
 
 use Core\App;
 
-require_once __DIR__.'/../vendor/autoload.php';
+// Autoload.
+$autoload = APP_PATH.'/vendor/autoload.php';
+
+if (!file_exists($autoload)) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => true, 'message' => 'Run composer install']);
+    die;
+}
+
+require_once "{$autoload}";
 
 $app = new App();
-
 $app->registerFolderRoutes();
-
 $app->run();
