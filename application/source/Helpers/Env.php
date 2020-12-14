@@ -89,7 +89,6 @@ class Env
 
             foreach (static::adapters() as $adapter) {
                 $repository = $repository->addWriter($adapter);
-                $repository = $repository->addWriter($adapter);
                 $repository = $repository->addAdapter($adapter);
             }
 
