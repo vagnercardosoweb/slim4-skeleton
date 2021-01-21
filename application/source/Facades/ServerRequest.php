@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 07/07/2020 Vagner Cardoso
+ * @copyright 21/01/2021 Vagner Cardoso
  */
 
 namespace Core\Facades;
@@ -14,11 +14,11 @@ namespace Core\Facades;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Class Request.
+ * Class ServerRequest.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class Request extends Facade
+class ServerRequest extends Facade
 {
     /**
      * @return string

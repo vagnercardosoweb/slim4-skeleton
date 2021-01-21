@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 07/07/2020 Vagner Cardoso
+ * @copyright 21/01/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -14,23 +14,30 @@ declare(strict_types = 1);
 namespace Core;
 
 use Core\Facades\Facade;
-use Core\Facades\Request;
+use Core\Facades\ServerRequest;
 use Core\Handlers\HttpErrorHandler;
 use Core\Handlers\ShutdownHandler;
 use Core\Helpers\Env;
 use Core\Helpers\Path;
+use DI\Container;
 use DI\ContainerBuilder;
+use ErrorException;
+use FilesystemIterator;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Slim\App as SlimApplication;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Handlers\Strategies\RequestResponseArgs;
 use Slim\Interfaces\RouteParserInterface;
-use Slim\Middleware\MethodOverrideMiddleware;
+use Slim\Psr7\Factory\StreamFactory;
 use Slim\ResponseEmitter;
+use function DI\factory;
 
 /**
  * Class Bootstrap.
@@ -41,8 +48,16 @@ class App
 {
     public const VERSION = '1.0.0';
 
+    /**
+     * @var \Slim\App
+     */
     protected SlimApplication $app;
 
+    /**
+     * App constructor.
+     *
+     * @throws \Exception
+     */
     public function __construct()
     {
         Env::initialize();
@@ -51,21 +66,35 @@ class App
         $this->configureSlimApplication();
     }
 
+    /**
+     * @return bool
+     */
     public static function isCli(): bool
     {
         return in_array(PHP_SAPI, ['cli', 'phpdbg']);
     }
 
+    /**
+     * @return bool
+     */
     public static function isApi(): bool
     {
         return true === Env::get('APP_ONLY_API', false);
     }
 
+    /**
+     * @return bool
+     */
     public static function isTesting(): bool
     {
         return 'testing' === Env::get('APP_ENV', 'testing');
     }
 
+    /**
+     * @param string $path
+     *
+     * @return $this
+     */
     public function registerPathRoute(string $path): App
     {
         extract(['app' => $this->app]);
@@ -75,14 +104,19 @@ class App
         return $this;
     }
 
+    /**
+     * @param string|null $path
+     *
+     * @return $this
+     */
     public function registerFolderRoutes(?string $path = null): App
     {
         $path = $path ?? Path::app('/routes');
 
         /** @var \DirectoryIterator $iterator */
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
-                $path, \FilesystemIterator::SKIP_DOTS
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(
+                $path, FilesystemIterator::SKIP_DOTS
             )
         );
 
@@ -99,17 +133,41 @@ class App
         return $this;
     }
 
+    /**
+     * @param \Psr\Http\Message\ServerRequestInterface|null $request
+     */
     public function run(?ServerRequestInterface $request = null)
     {
-        if (!$request) {
-            $request = Request::getFacadeRoot();
-        }
-
-        $response = $this->app->handle($request);
+        $response = $this->app->handle($request ?? ServerRequest::getFacadeRoot());
         $responseEmitter = new ResponseEmitter();
         $responseEmitter->emit($response);
     }
 
+    /**
+     * @param array|callable|null $middleware
+     *
+     * @return void
+     */
+    public function registerMiddleware($middleware = null): void
+    {
+        if (!$middleware && file_exists($path = Path::config('/middleware.php'))) {
+            $middleware = require_once "{$path}";
+        }
+
+        if (is_array($middleware)) {
+            foreach ($middleware as $class) {
+                $this->app->add($class);
+            }
+        }
+
+        if (is_callable($middleware)) {
+            call_user_func($middleware, $this->app);
+        }
+    }
+
+    /**
+     * @return void
+     */
     protected function configurePhpSettings(): void
     {
         $locale = Env::get('APP_LOCALE', 'pt_BR');
@@ -127,19 +185,14 @@ class App
         ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('dmY')));
     }
 
+    /**
+     * @throws \Exception
+     *
+     * @return $this
+     */
     protected function configureSlimApplication(): App
     {
-        $containerBuilder = new ContainerBuilder();
-
-        if (Env::get('APP_CONTAINER_COMPILE', false)) {
-            $containerBuilder->enableCompilation(
-                Path::storage('/cache/container')
-            );
-        }
-
-        $this->configureDefaultContainerBuilder($containerBuilder);
-        $container = $containerBuilder->build();
-
+        $container = $this->configureContainerBuilder();
         $this->app = $container->get(SlimApplication::class);
 
         Facade::setFacadeApplication($this->app);
@@ -148,16 +201,15 @@ class App
         $routeCollector = $this->app->getRouteCollector();
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
 
-        $this->app->addBodyParsingMiddleware();
-        $this->app->addRoutingMiddleware();
-        $this->app->add(new MethodOverrideMiddleware());
-
-        $this->configureErrorHandler($container);
+        $this->configureErrorHandler();
 
         return $this;
     }
 
-    protected function configureErrorHandler(ContainerInterface $container): void
+    /**
+     * @throws \ErrorException
+     */
+    protected function configureErrorHandler(): void
     {
         if ('development' === Env::get('APP_ENV', 'development')) {
             error_reporting(E_ALL);
@@ -167,32 +219,52 @@ class App
 
         set_error_handler(function ($level, $message, $file = '', $line = 0, $context = []) {
             if (error_reporting() & $level) {
-                throw new \ErrorException($message, 0, $level, $file, $line);
+                throw new ErrorException($message, 0, $level, $file, $line);
             }
         });
 
-        $request = $container->get(ServerRequestInterface::class);
-        $logErrors = true;
-        $logErrorDetails = true;
-        $displayErrorDetails = true;
+        $serverRequest = ServerRequest::getFacadeRoot();
+        $logErrors = Env::get('SLIM_LOG_ERRORS', true);
+        $logErrorDetails = Env::get('SLIM_LOG_ERROR_DETAIL', true);
+        $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
 
         $errorHandler = new HttpErrorHandler($this->app->getCallableResolver(), $this->app->getResponseFactory());
-        $shutdownHandler = new ShutdownHandler($request, $errorHandler, $displayErrorDetails);
+        $shutdownHandler = new ShutdownHandler($serverRequest, $errorHandler, $displayErrorDetails);
         register_shutdown_function($shutdownHandler);
 
         $errorMiddleware = $this->app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
         $errorMiddleware->setDefaultErrorHandler($errorHandler);
     }
 
-    protected function configureDefaultContainerBuilder(ContainerBuilder $containerBuilder): void
+    /**
+     * @throws \Exception
+     *
+     * @return \DI\Container
+     */
+    protected function configureContainerBuilder(): Container
     {
         $providers = [];
+        $containerBuilder = new ContainerBuilder();
 
-        if (file_exists($pathProviders = Path::config('/providers.php'))) {
-            $providers = require_once "{$pathProviders}";
+        if (Env::get('CONTAINER_CACHE', false)) {
+            $containerBuilder->enableCompilation(
+                Path::storage('/cache/container')
+            );
         }
 
-        $containerBuilder->addDefinitions($providers + [
+        $containerBuilder->useAutowiring(Env::get('CONTAINER_AUTO_WIRING', false));
+
+        if (file_exists($path = Path::config('/providers.php'))) {
+            $providers = require_once "{$path}";
+        }
+
+        foreach ($providers as $key => $provider) {
+            if (is_string($provider) && class_exists($provider)) {
+                $providers[$key] = factory($provider);
+            }
+        }
+
+        $containerBuilder->addDefinitions(array_merge($providers, [
             SlimApplication::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
 
@@ -216,6 +288,12 @@ class App
             ResponseInterface::class => function (ContainerInterface $container) {
                 return $container->get(ResponseFactoryInterface::class)->createResponse();
             },
-        ]);
+
+            StreamFactoryInterface::class => function () {
+                return new StreamFactory();
+            },
+        ]));
+
+        return $containerBuilder->build();
     }
 }
