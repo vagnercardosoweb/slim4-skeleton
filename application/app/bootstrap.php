@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/01/2021 Vagner Cardoso
+ * @copyright 23/01/2021 Vagner Cardoso
  */
 
 use Core\App;
@@ -18,7 +18,7 @@ if (!file_exists($autoload)) {
     http_response_code(500);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => true, 'message' => 'Run composer install']);
-    die;
+    exit;
 }
 
 require_once "{$autoload}";

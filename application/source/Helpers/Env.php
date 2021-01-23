@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/01/2021 Vagner Cardoso
+ * @copyright 23/01/2021 Vagner Cardoso
  */
 
 namespace Core\Helpers;
@@ -26,8 +26,16 @@ use Dotenv\Repository\RepositoryInterface;
  */
 class Env
 {
+    /**
+     * @var \Dotenv\Repository\RepositoryInterface|null
+     */
     protected static ?RepositoryInterface $repository = null;
 
+    /**
+     * @param string $name
+     *
+     * @return array|null
+     */
     public static function initialize(string $name = '.env'): ?array
     {
         $envPath = dirname(self::path());
@@ -60,6 +68,9 @@ class Env
         return is_string($value) ? trim($value) : $value;
     }
 
+    /**
+     * @return string
+     */
     public static function path(): string
     {
         $env = Path::app('/.env');
@@ -72,6 +83,9 @@ class Env
         return $env;
     }
 
+    /**
+     * @return string[]
+     */
     protected static function adapters(): array
     {
         return [
@@ -82,6 +96,9 @@ class Env
         ];
     }
 
+    /**
+     * @return \Dotenv\Repository\RepositoryInterface
+     */
     protected static function repository(): RepositoryInterface
     {
         if (null === static::$repository) {
