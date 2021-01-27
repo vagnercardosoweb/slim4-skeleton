@@ -13,6 +13,7 @@ declare(strict_types = 1);
 
 namespace Core\Handlers;
 
+use Core\Handlers\ErrorHandler as MyErrorHandler;
 use Core\Helpers\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -37,45 +38,6 @@ class HttpErrorHandler extends ErrorHandler
     public const SERVER_ERROR = 'SERVER_ERROR';
 
     public const UNAUTHENTICATED = 'UNAUTHENTICATED';
-
-    /**
-     * @param int|string $code
-     *
-     * @return string
-     */
-    public static function getErrorType($code): string
-    {
-        if (is_string($code) && 200 !== $code) {
-            $code = E_USER_ERROR;
-        }
-
-        switch ($code) {
-            case E_USER_NOTICE:
-            case E_NOTICE:
-                $result = 'info';
-                break;
-
-            case E_USER_WARNING:
-            case E_WARNING:
-                $result = 'warning';
-                break;
-
-            case E_USER_ERROR:
-            case E_ERROR:
-            case '0':
-                $result = 'danger';
-                break;
-
-            case 200:
-                $result = 'success';
-                break;
-
-            default:
-                $result = 'danger';
-        }
-
-        return $result;
-    }
 
     /**
      * @return \Psr\Http\Message\ResponseInterface
@@ -112,12 +74,12 @@ class HttpErrorHandler extends ErrorHandler
                 'type' => $type,
                 'name' => basename(str_replace('\\', '/', get_class($exception))),
                 'message' => $message,
-                'typeClass' => self::getErrorType($statusCode),
+                'typeClass' => MyErrorHandler::getHtmlClass($statusCode),
             ],
         ];
 
         if ($this->displayErrorDetails) {
-            $error['error'] = $error['error'] + [
+            $error['error'] += [
                 'line' => $exception->getLine(),
                 'file' => str_replace(Path::app(), '', $exception->getFile()),
                 'route' => "({$this->method}) {$this->request->getUri()->getPath()}",
@@ -129,11 +91,12 @@ class HttpErrorHandler extends ErrorHandler
             ];
         }
 
-        $payload = json_encode($error, JSON_PRETTY_PRINT);
+        $payload = json_encode($error, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         $response = $this->responseFactory->createResponse($statusCode);
+        $response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write($payload);
 
-        return $response->withHeader('Content-Type', 'application/json');
+        return $response;
     }
 }

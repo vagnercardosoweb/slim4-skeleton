@@ -25,5 +25,6 @@ require_once "{$autoload}";
 
 $app = new App();
 $app->registerMiddleware();
+$app->registerErrorHandler();
 $app->registerFolderRoutes();
 $app->run();

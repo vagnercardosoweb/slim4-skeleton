@@ -47,7 +47,7 @@ abstract class Facade
      *
      * @return mixed
      */
-    public static function __callStatic(string $method, array $arguments)
+    public static function __callStatic(string $method, array $arguments): mixed
     {
         $facadeInstance = static::getFacadeRoot();
 
@@ -62,7 +62,10 @@ abstract class Facade
         self::$aliases = array_merge(self::$aliases, $aliases);
     }
 
-    public static function registerAliases(array $aliases = [])
+    /**
+     * @param array $aliases
+     */
+    public static function registerAliases(array $aliases = []): void
     {
         self::setAliases($aliases);
 
@@ -72,9 +75,9 @@ abstract class Facade
     }
 
     /**
-     * @return mixed|null
+     * @return mixed
      */
-    public static function getFacadeRoot()
+    public static function getFacadeRoot(): mixed
     {
         return static::resolveFacadeInstance(static::getFacadeAccessor());
     }
@@ -100,7 +103,7 @@ abstract class Facade
      *
      * @return mixed
      */
-    protected static function resolveFacadeInstance(string $name)
+    protected static function resolveFacadeInstance(string $name): mixed
     {
         if (isset(static::$resolvedInstance[$name])) {
             return static::$resolvedInstance[$name];

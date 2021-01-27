@@ -18,6 +18,9 @@ namespace Core\Facades;
  */
 class App extends Facade
 {
+    /**
+     * @return string
+     */
     protected static function getFacadeAccessor(): string
     {
         return \Slim\App::class;

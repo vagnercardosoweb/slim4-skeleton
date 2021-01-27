@@ -41,9 +41,9 @@ abstract class BaseController
     /**
      * @param \Psr\Http\Message\ResponseInterface $response
      * @param array                               $data
-     * @param int|string                          $options
+     * @param int                                 $options
      *
-     * @throws \Exception
+     * @throws \JsonException
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
@@ -76,11 +76,9 @@ abstract class BaseController
             $destination = sprintf('%s?%s', $destination, http_build_query($queryParams));
         }
 
-        return $response->withStatus($permanent
-            ? StatusCodeInterface::STATUS_MOVED_PERMANENTLY : StatusCodeInterface::STATUS_FOUND
-        )
-            ->withHeader('Location', $destination)
-        ;
+        $statusCode = $permanent ? StatusCodeInterface::STATUS_MOVED_PERMANENTLY : StatusCodeInterface::STATUS_FOUND;
+
+        return $response->withStatus($statusCode)->withHeader('Location', $destination);
     }
 
     /**

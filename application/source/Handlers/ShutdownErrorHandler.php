@@ -17,25 +17,25 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Exception\HttpInternalServerErrorException;
 use Slim\ResponseEmitter;
 
-class ShutdownHandler
+class ShutdownErrorHandler
 {
     /**
      * @var Request
      */
-    private $request;
+    private Request $request;
 
     /**
      * @var HttpErrorHandler
      */
-    private $errorHandler;
+    private HttpErrorHandler $errorHandler;
 
     /**
      * @var bool
      */
-    private $displayErrorDetails;
+    private bool $displayErrorDetails;
 
     /**
-     * ShutdownHandler constructor.
+     * ShutdownErrorHandler constructor.
      *
      * @param Request          $request
      * @param HttpErrorHandler $errorHandler

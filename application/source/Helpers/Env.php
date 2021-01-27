@@ -53,7 +53,7 @@ class Env
      *
      * @return mixed
      */
-    public static function get(string $key, $default = null)
+    public static function get(string $key, $default = null): mixed
     {
         if (!$value = static::repository()->get($key)) {
             return $default;

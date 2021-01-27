@@ -10,5 +10,6 @@
  */
 
 use App\Controllers\IndexController;
+use Core\Facades\Route;
 
 Route::get('/', sprintf('%s:index', IndexController::class));

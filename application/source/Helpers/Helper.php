@@ -18,9 +18,14 @@ namespace Core\Helpers;
  */
 class Helper
 {
+    /**
+     * @param $value
+     *
+     * @return float
+     */
     public static function normalizeFloat($value): float
     {
-        if (false !== strpos($value, ',')) {
+        if (str_contains($value, ',')) {
             $value = str_replace('.', '', $value);
             $value = str_replace(',', '.', $value);
         }
@@ -28,7 +33,12 @@ class Helper
         return (float)$value;
     }
 
-    public static function normalizeValue($value)
+    /**
+     * @param $value
+     *
+     * @return float|int|bool|array|object|string|null
+     */
+    public static function normalizeValue($value): float | null | int | bool | array | object | string
     {
         if (is_array($value) || is_object($value)) {
             return $value;
@@ -42,25 +52,12 @@ class Helper
             return self::normalizeFloat($value);
         }
 
-        switch (strtolower($value)) {
-            case 'true':
-            case '(true)':
-                return true;
-                break;
-            case 'false':
-            case '(false)':
-                return false;
-                break;
-            case 'empty':
-            case '(empty)':
-                return '';
-                break;
-            case 'null':
-            case '(null)':
-                return null;
-                break;
-        }
-
-        return $value;
+        return match (strtolower($value)) {
+            'true', '(true)' => true,
+            'false', '(false)' => false,
+            'empty', '(empty)' => '',
+            'null', '(null)' => null,
+            default => $value
+        };
     }
 }
