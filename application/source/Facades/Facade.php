@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/01/2021 Vagner Cardoso
+ * @copyright 30/01/2021 Vagner Cardoso
  */
 
 namespace Core\Facades;
@@ -35,10 +35,9 @@ abstract class Facade
      */
     protected static array $aliases = [
         'App' => App::class,
-        'Route' => Route::class,
-        'ServerRequest' => ServerRequest::class,
         'Response' => Response::class,
         'Container' => Container::class,
+        'ServerRequest' => ServerRequest::class,
     ];
 
     /**

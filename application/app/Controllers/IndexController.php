@@ -6,14 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/01/2021 Vagner Cardoso
+ * @copyright 30/01/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
 use Core\App;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class IndexController.
@@ -23,18 +21,16 @@ use Psr\Http\Message\ServerRequestInterface;
 class IndexController extends BaseController
 {
     /**
-     * @param                                     $request
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
      * @throws \Exception
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return array
      */
-    public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function index(): array
     {
-        return $this->withJson($response, [
+        return [
+            'path' => $this->request->getUri()->getPath(),
             'version' => App::VERSION,
             'datetime' => new \DateTimeImmutable(),
-        ]);
+        ];
     }
 }

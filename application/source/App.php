@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/01/2021 Vagner Cardoso
+ * @copyright 30/01/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -29,10 +29,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Slim\App as SlimApplication;
+use Slim\App as Application;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
-use Slim\Handlers\Strategies\RequestResponseArgs;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Psr7\Factory\StreamFactory;
 use Slim\ResponseEmitter;
@@ -50,7 +49,7 @@ class App
     /**
      * @var \Slim\App
      */
-    protected SlimApplication $app;
+    protected Application $app;
 
     /**
      * App constructor.
@@ -78,8 +77,8 @@ class App
         mb_internal_encoding($charset);
         setlocale(LC_ALL, $locale, "{$locale}.{$charset}");
 
-        ini_set('display_errors', Env::get('PHP_DISPLAY_ERRORS', ini_get('display_errors')));
-        ini_set('display_startup_errors', Env::get('PHP_DISPLAY_STARTUP_ERRORS', ini_get('display_startup_errors')));
+        ini_set('display_errors', Env::get('PHP_DISPLAY_ERRORS', 'Off'));
+        ini_set('display_startup_errors', Env::get('PHP_DISPLAY_STARTUP_ERRORS', 'Off'));
 
         ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
         ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('dmY')));
@@ -93,13 +92,10 @@ class App
     protected function configureSlimApplication(): App
     {
         $container = $this->configureContainerBuilder();
-        $this->app = $container->get(SlimApplication::class);
+        $this->app = $container->get(Application::class);
 
         Facade::setFacadeApplication($this->app);
         Facade::registerAliases();
-
-        $routeCollector = $this->app->getRouteCollector();
-        $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
 
         return $this;
     }
@@ -133,7 +129,7 @@ class App
         }
 
         $containerBuilder->addDefinitions(array_merge($providers, [
-            SlimApplication::class => function (ContainerInterface $container) {
+            Application::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
 
                 return AppFactory::create();
@@ -146,11 +142,11 @@ class App
             },
 
             ResponseFactoryInterface::class => function (ContainerInterface $container) {
-                return $container->get(SlimApplication::class)->getResponseFactory();
+                return $container->get(Application::class)->getResponseFactory();
             },
 
             RouteParserInterface::class => function (ContainerInterface $container) {
-                return $container->get(SlimApplication::class)->getRouteCollector()->getRouteParser();
+                return $container->get(Application::class)->getRouteCollector()->getRouteParser();
             },
 
             ResponseInterface::class => function (ContainerInterface $container) {
@@ -233,11 +229,11 @@ class App
     }
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface|null $request
+     * @return void
      */
-    public function run(?ServerRequestInterface $request = null)
+    public function run(): void
     {
-        $response = $this->app->handle($request ?? ServerRequest::getFacadeRoot());
+        $response = $this->app->handle(ServerRequest::getFacadeRoot());
         $responseEmitter = new ResponseEmitter();
         $responseEmitter->emit($response);
     }
@@ -277,7 +273,7 @@ class App
 
         // set_error_handler(function ($level, $message, $file = '', $line = 0, $context = []) {
         //     if (error_reporting() & $level) {
-        //         throw new ErrorException($message, 0, $level, $file, $line);
+        //         throw new \ErrorException($message, 0, $level, $file, $line);
         //     }
         // });
 
