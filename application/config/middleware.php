@@ -10,6 +10,7 @@
  */
 
 use App\Middleware\CorsMiddleware;
+use App\Middleware\MaintenanceMiddleware;
 use Core\Helpers\Env;
 use Slim\App;
 use Slim\Middleware\ContentLengthMiddleware;
@@ -19,6 +20,7 @@ return function (App $app) {
     $app->addBodyParsingMiddleware();
     $app->add(new MethodOverrideMiddleware());
     $app->add(new ContentLengthMiddleware());
+    $app->add(new MaintenanceMiddleware());
 
     if (Env::get('ENABLE_CORS_ALL_ROUTES', false)) {
         $app->add(new CorsMiddleware());

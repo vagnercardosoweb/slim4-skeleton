@@ -49,9 +49,6 @@ class ShutdownErrorHandler
         $this->request = $request;
         $this->errorHandler = $errorHandler;
         $this->displayErrorDetails = $displayErrorDetails;
-
-        ini_set('display_errors', 'Off');
-        ini_set('display_startup_errors', 'Off');
     }
 
     /**

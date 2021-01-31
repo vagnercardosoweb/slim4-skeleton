@@ -9,7 +9,7 @@
  * @copyright 31/01/2021 Vagner Cardoso
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Core;
 
@@ -63,37 +63,20 @@ class Bootstrap
         private ?string $registerMiddlewarePath = null,
         private ?string $registerContainerPath = null,
         private ?bool $immutableEnv = false
-    ) {
+    )
+    {
         Env::load($immutableEnv);
 
-        $this->registerPhpSettings();
         $this->registerApp();
         $this->registerFacade();
-        $this->registerErrorHandler();
         $this->registerMiddleware();
 
         if ($registerRoutePath) {
             Route::registerPath($registerRoutePath);
         }
-    }
 
-    /**
-     * @return void
-     */
-    private function registerPhpSettings(): void
-    {
-        $locale = Env::get('APP_LOCALE', 'pt_BR');
-        $charset = Env::get('APP_CHARSET', 'UTF-8');
-
-        ini_set('default_charset', $charset);
-        date_default_timezone_set(Env::get('APP_TIMEZONE', 'America/Sao_Paulo'));
-        mb_internal_encoding($charset);
-        setlocale(LC_ALL, $locale, "{$locale}.{$charset}");
-
-        ini_set('display_errors', Env::get('PHP_DISPLAY_ERRORS', 'On'));
-        ini_set('display_startup_errors', Env::get('PHP_DISPLAY_STARTUP_ERRORS', 'On'));
-        ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
-        ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('dmY')));
+        $this->registerErrorHandler();
+        $this->registerPhpSettings();
     }
 
     /**
@@ -177,6 +160,30 @@ class Bootstrap
     /**
      * @return void
      */
+    private function registerMiddleware(): void
+    {
+        $path = $this->registerMiddlewarePath;
+
+        if (is_null($path)) {
+            return;
+        }
+
+        if (!file_exists($path)) {
+            throw new \DomainException("File does not exist in the path [{$path}].");
+        }
+
+        $callable = require_once "{$path}";
+
+        if (!is_callable($callable)) {
+            throw new \DomainException("The [{$path}] file must return a closure.");
+        }
+
+        call_user_func($callable, self::$app);
+    }
+
+    /**
+     * @return void
+     */
     private function registerErrorHandler(): void
     {
         error_reporting(-1);
@@ -198,30 +205,26 @@ class Bootstrap
 
         $errorMiddleware = self::$app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
         $errorMiddleware->setDefaultErrorHandler($httpErrorHandler);
+
+        ini_set('display_errors', 'Off');
+        ini_set('display_startup_errors', 'Off');
     }
 
     /**
      * @return void
      */
-    private function registerMiddleware(): void
+    private function registerPhpSettings(): void
     {
-        $path = $this->registerMiddlewarePath;
+        $locale = Env::get('APP_LOCALE', 'pt_BR');
+        $charset = Env::get('APP_CHARSET', 'UTF-8');
 
-        if (is_null($path)) {
-            return;
-        }
+        ini_set('default_charset', $charset);
+        date_default_timezone_set(Env::get('APP_TIMEZONE', 'America/Sao_Paulo'));
+        mb_internal_encoding($charset);
+        setlocale(LC_ALL, $locale, "{$locale}.{$charset}");
 
-        if (!file_exists($path)) {
-            throw new \DomainException("File does not exist in the path [{$path}].");
-        }
-
-        $callable = require_once "{$path}";
-
-        if (!is_callable($callable)) {
-            throw new \DomainException("The [{$path}] file must return a closure.");
-        }
-
-        call_user_func($callable, self::$app);
+        ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
+        ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('dmY')));
     }
 
     /**

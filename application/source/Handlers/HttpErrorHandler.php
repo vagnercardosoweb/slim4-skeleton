@@ -13,12 +13,14 @@ declare(strict_types = 1);
 
 namespace Core\Handlers;
 
+use Core\Exception\HttpUnavailableException;
 use Core\Handlers\ErrorHandler as MyErrorHandler;
 use Core\Helpers\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
+use Slim\Exception\HttpInternalServerErrorException;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
@@ -27,45 +29,37 @@ use Slim\Handlers\ErrorHandler;
 
 class HttpErrorHandler extends ErrorHandler
 {
-    public const BAD_REQUEST = 'BAD_REQUEST';
-
-    public const NOT_ALLOWED = 'NOT_ALLOWED';
-
-    public const NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
-
-    public const RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND';
-
-    public const SERVER_ERROR = 'SERVER_ERROR';
-
-    public const UNAUTHENTICATED = 'UNAUTHENTICATED';
+    /**
+     * @var string[]
+     */
+    protected array $types = [
+        HttpNotFoundException::class => MyErrorHandler::RESOURCE_NOT_FOUND,
+        HttpMethodNotAllowedException::class => MyErrorHandler::NOT_ALLOWED,
+        HttpUnauthorizedException::class => MyErrorHandler::UNAUTHENTICATED,
+        HttpForbiddenException::class => MyErrorHandler::UNAUTHENTICATED,
+        HttpBadRequestException::class => MyErrorHandler::BAD_REQUEST,
+        HttpNotImplementedException::class => MyErrorHandler::NOT_IMPLEMENTED,
+        HttpUnavailableException::class => MyErrorHandler::SERVICE_UNAVAILABLE,
+        HttpInternalServerErrorException::class => MyErrorHandler::INTERNAL_SERVER_ERROR,
+    ];
 
     /**
      * @return \Psr\Http\Message\ResponseInterface
      */
     protected function respond(): ResponseInterface
     {
-        $type = self::BAD_REQUEST;
         $exception = $this->exception;
+        $type = $this->types[$exception::class] ?? MyErrorHandler::BAD_REQUEST;
         $statusCode = $exception->getCode();
         $message = $exception->getMessage();
 
-        if (!is_integer($statusCode) || $statusCode < StatusCodeInterface::STATUS_CONTINUE || $statusCode > 599) {
-            $type = self::SERVER_ERROR;
-            $statusCode = 500;
-        }
-
-        if ($exception instanceof HttpNotFoundException) {
-            $type = self::RESOURCE_NOT_FOUND;
-        } elseif ($exception instanceof HttpMethodNotAllowedException) {
-            $type = self::NOT_ALLOWED;
-        } elseif ($exception instanceof HttpUnauthorizedException) {
-            $type = self::UNAUTHENTICATED;
-        } elseif ($exception instanceof HttpForbiddenException) {
-            $type = self::UNAUTHENTICATED;
-        } elseif ($exception instanceof HttpBadRequestException) {
-            $type = self::BAD_REQUEST;
-        } elseif ($exception instanceof HttpNotImplementedException) {
-            $type = self::NOT_IMPLEMENTED;
+        if (
+            !is_integer($statusCode)
+            || $statusCode < StatusCodeInterface::STATUS_CONTINUE
+            || $statusCode > 599
+        ) {
+            $type = MyErrorHandler::SERVER_ERROR;
+            $statusCode = StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR;
         }
 
         $error = [

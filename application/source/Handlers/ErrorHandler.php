@@ -18,6 +18,22 @@ namespace Core\Handlers;
  */
 class ErrorHandler
 {
+    public const BAD_REQUEST = 'BAD_REQUEST';
+
+    public const NOT_ALLOWED = 'NOT_ALLOWED';
+
+    public const NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
+
+    public const RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND';
+
+    public const SERVER_ERROR = 'SERVER_ERROR';
+
+    public const UNAUTHENTICATED = 'UNAUTHENTICATED';
+
+    public const SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE';
+
+    public const INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR';
+
     /**
      * @param int|string $code
      *
