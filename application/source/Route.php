@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 30/01/2021 Vagner Cardoso
+ * @copyright 31/01/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -41,6 +41,19 @@ class Route
     public static function setDefaultNamespace(string $defaultNamespace): void
     {
         self::$defaultNamespace = $defaultNamespace;
+    }
+
+    /**
+     * @param string          $pattern
+     * @param string|\Closure $callable
+     * @param string|null     $name
+     * @param array           $middlewares
+     *
+     * @return \Slim\Interfaces\RouteInterface
+     */
+    public static function get(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    {
+        return self::route('get', $pattern, $callable, $name, $middlewares);
     }
 
     /**
@@ -80,16 +93,73 @@ class Route
     }
 
     /**
-     * @param string          $pattern
-     * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
-     *
-     * @return \Slim\Interfaces\RouteInterface
+     * @param string|null $name
      */
-    public static function get(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    private static function validateRouteName(?string $name): void
     {
-        return self::route('get', $pattern, $callable, $name, $middlewares);
+        if (empty($name)) {
+            return;
+        }
+
+        $routes = AppRoute::getRouteCollector()->getRoutes();
+
+        foreach ($routes as $route) {
+            if ($route->getName() === $name) {
+                throw new \LogicException(
+                    "There are registered routes with the same name [{$name}]."
+                );
+            }
+        }
+    }
+
+    /**
+     * @param string|callable $callable
+     *
+     * @return \Closure
+     */
+    private static function handleCallableRouter(callable | string $callable): \Closure
+    {
+        $namespace = self::$defaultNamespace;
+
+        return function (ServerRequestInterface $request, ResponseInterface $response, array $params) use ($callable, $namespace) {
+            if (is_callable($callable)) {
+                $result = $callable($request, $response, ...array_values($params));
+            } else {
+                list($name, $originalMethod) = (explode('@', $callable) + [1 => null]);
+
+                $method = mb_strtolower($request->getMethod()).ucfirst($originalMethod);
+                $namespace = sprintf('%s/%s', $namespace, $name);
+                $namespace = str_ireplace('/', '\\', $namespace);
+
+                $controller = new $namespace($request, $response, $this);
+
+                if (!method_exists($controller, $method)) {
+                    $method = $originalMethod ?? 'index';
+
+                    if (!method_exists($controller, $method)) {
+                        throw new \BadMethodCallException(
+                            sprintf('Call to undefined method %s::%s()', get_class($controller), $method)
+                        );
+                    }
+                }
+
+                $result = call_user_func_array([$controller, $method], $params);
+                $response = $controller->getResponse();
+            }
+
+            if (is_array($result) || is_object($result)) {
+                $response = $response->withHeader('Content-Type', 'application/json');
+                $result = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            }
+
+            if (!$result instanceof ResponseInterface) {
+                $response->getBody()->write((string)$result);
+
+                return $response;
+            }
+
+            return $result;
+        };
     }
 
     /**
@@ -185,72 +255,39 @@ class Route
     }
 
     /**
-     * @param string|null $name
+     * @param string $folder
      */
-    private static function validateRouteName(?string $name): void
+    public static function registerFolder(string $folder): void
     {
-        if (empty($name)) {
-            return;
-        }
+        /** @var \DirectoryIterator $iterator */
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(
+                $folder, \FilesystemIterator::SKIP_DOTS
+            )
+        );
 
-        $routes = AppRoute::getRouteCollector()->getRoutes();
+        $iterator->rewind();
 
-        foreach ($routes as $route) {
-            if ($route->getName() === $name) {
-                throw new \LogicException(
-                    "There are registered routes with the same name [{$name}]."
-                );
+        while ($iterator->valid()) {
+            if ('php' === $iterator->getExtension()) {
+                self::registerPath($iterator->getRealPath());
             }
+
+            $iterator->next();
         }
     }
 
     /**
-     * @param string|callable $callable
-     *
-     * @return \Closure
+     * @param string $path
      */
-    private static function handleCallableRouter(callable | string $callable): \Closure
+    public static function registerPath(string $path): void
     {
-        $namespace = self::$defaultNamespace;
-
-        return function (ServerRequestInterface $request, ResponseInterface $response, array $params) use ($callable, $namespace) {
-            if (is_callable($callable)) {
-                $result = $callable($request, $response, ...array_values($params));
-            } else {
-                list($name, $originalMethod) = (explode('@', $callable) + [1 => null]);
-
-                $method = mb_strtolower($request->getMethod()).ucfirst($originalMethod);
-                $namespace = sprintf('%s/%s', $namespace, $name);
-                $namespace = str_ireplace('/', '\\', $namespace);
-
-                $controller = new $namespace($request, $response, $this);
-
-                if (!method_exists($controller, $method)) {
-                    $method = $originalMethod ?? 'index';
-
-                    if (!method_exists($controller, $method)) {
-                        throw new \BadMethodCallException(
-                            sprintf('Call to undefined method %s::%s()', get_class($controller), $method)
-                        );
-                    }
-                }
-
-                $result = call_user_func_array([$controller, $method], $params);
-                $response = $controller->getResponse();
-            }
-
-            if (is_array($result) || is_object($result)) {
-                $response = $response->withHeader('Content-Type', 'application/json');
-                $result = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-            }
-
-            if (!$result instanceof ResponseInterface) {
-                $response->getBody()->write((string)$result);
-
-                return $response;
-            }
-
-            return $result;
-        };
+        if (file_exists($path) && !is_dir($path)) {
+            require "{$path}";
+        } elseif (is_dir($path)) {
+            self::registerFolder($path);
+        } else {
+            throw new \DomainException("Path [{$path}] of routes not found.");
+        }
     }
 }

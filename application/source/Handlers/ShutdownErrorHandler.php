@@ -6,23 +6,23 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 30/01/2021 Vagner Cardoso
+ * @copyright 31/01/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
 
 namespace Core\Handlers;
 
-use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpInternalServerErrorException;
 use Slim\ResponseEmitter;
 
 class ShutdownErrorHandler
 {
     /**
-     * @var Request
+     * @var ServerRequestInterface
      */
-    private Request $request;
+    private ServerRequestInterface $request;
 
     /**
      * @var HttpErrorHandler
@@ -37,20 +37,26 @@ class ShutdownErrorHandler
     /**
      * ShutdownErrorHandler constructor.
      *
-     * @param Request          $request
-     * @param HttpErrorHandler $errorHandler
-     * @param bool             $displayErrorDetails
+     * @param ServerRequestInterface $request
+     * @param HttpErrorHandler       $errorHandler
+     * @param bool                   $displayErrorDetails
      */
     public function __construct(
-        Request $request,
+        ServerRequestInterface $request,
         HttpErrorHandler $errorHandler,
         bool $displayErrorDetails
     ) {
         $this->request = $request;
         $this->errorHandler = $errorHandler;
         $this->displayErrorDetails = $displayErrorDetails;
+
+        ini_set('display_errors', 'Off');
+        ini_set('display_startup_errors', 'Off');
     }
 
+    /**
+     * @return void
+     */
     public function __invoke()
     {
         $error = error_get_last();

@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 30/01/2021 Vagner Cardoso
+ * @copyright 31/01/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
-use Core\App;
+use Core\Bootstrap;
 
 /**
  * Class IndexController.
@@ -29,7 +29,7 @@ class IndexController extends BaseController
     {
         return [
             'path' => $this->request->getUri()->getPath(),
-            'version' => App::VERSION,
+            'version' => Bootstrap::VERSION,
             'datetime' => new \DateTimeImmutable(),
         ];
     }

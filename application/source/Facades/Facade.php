@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 30/01/2021 Vagner Cardoso
+ * @copyright 31/01/2021 Vagner Cardoso
  */
 
 namespace Core\Facades;
 
-use Slim\App as Application;
+use Slim\App;
 
 /**
  * Class Facade.
@@ -23,7 +23,7 @@ abstract class Facade
     /**
      * @var \Slim\App
      */
-    protected static Application $app;
+    protected static App $app;
 
     /**
      * @var array
@@ -48,9 +48,9 @@ abstract class Facade
      */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        $facadeInstance = static::getFacadeRoot();
+        $resolvedInstance = static::getResolvedInstance();
 
-        return $facadeInstance->{$method}(...$arguments);
+        return $resolvedInstance->{$method}(...$arguments);
     }
 
     /**
@@ -69,22 +69,22 @@ abstract class Facade
         self::setAliases($aliases);
 
         foreach (self::$aliases as $alias => $class) {
-            class_alias($class, $alias);
+            class_alias($class, $alias, true);
         }
     }
 
     /**
      * @return mixed
      */
-    public static function getFacadeRoot(): mixed
+    public static function getResolvedInstance(): mixed
     {
-        return static::resolveFacadeInstance(static::getFacadeAccessor());
+        return static::resolveInstance(static::getAccessor());
     }
 
     /**
      * @return \Slim\App
      */
-    public static function getFacadeApplication(): Application
+    public static function getApp(): App
     {
         return static::$app;
     }
@@ -92,7 +92,7 @@ abstract class Facade
     /**
      * @param \Slim\App $app
      */
-    public static function setFacadeApplication(Application $app): void
+    public static function setApp(App $app): void
     {
         static::$app = $app;
     }
@@ -102,7 +102,7 @@ abstract class Facade
      *
      * @return mixed
      */
-    protected static function resolveFacadeInstance(string $name): mixed
+    protected static function resolveInstance(string $name): mixed
     {
         if (isset(static::$resolvedInstance[$name])) {
             return static::$resolvedInstance[$name];
@@ -124,5 +124,5 @@ abstract class Facade
     /**
      * @return string
      */
-    abstract protected static function getFacadeAccessor(): string;
+    abstract protected static function getAccessor(): string;
 }

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 30/01/2021 Vagner Cardoso
+ * @copyright 31/01/2021 Vagner Cardoso
  */
 
 namespace Core\Helpers;
@@ -27,45 +27,93 @@ use Dotenv\Repository\RepositoryInterface;
 class Env
 {
     /**
+     * @var bool
+     */
+    protected static bool $immutable = false;
+
+    /**
      * @var \Dotenv\Repository\RepositoryInterface|null
      */
     protected static ?RepositoryInterface $repository = null;
 
     /**
-     * @param string $name
-     *
-     * @return array|null
+     * @var array
      */
-    public static function initialize(string $name = '.env'): ?array
-    {
-        $envPath = dirname(self::path());
+    protected static array $environments = [];
 
-        return Dotenv::create(
-            self::repository(),
-            $envPath,
-            $name
-        )->load();
+    /**
+     * @var string[]
+     */
+    protected static array $adapters = [
+        ApacheAdapter::class,
+        EnvConstAdapter::class,
+        ServerConstAdapter::class,
+        PutenvAdapter::class,
+    ];
+
+    /**
+     * @return array
+     */
+    public static function all(): array
+    {
+        return self::$environments;
     }
 
     /**
-     * @param string $key
-     * @param mixed  $default
-     *
-     * @return mixed
+     * @param string $name
+     * @param string $value
      */
-    public static function get(string $key, $default = null): mixed
+    public static function set(string $name, string $value): void
     {
-        if (!$value = static::repository()->get($key)) {
-            return $default;
+        if (!self::$immutable) {
+            self::$environments[$name] = $value;
         }
 
-        $value = Helper::normalizeValue($value);
+        self::repository()->set($name, $value);
+    }
 
-        if (preg_match('/\A([\'"])(.*)\1\z/', $value, $matches)) {
-            return $matches[2];
+    /**
+     * @return \Dotenv\Repository\RepositoryInterface
+     */
+    protected static function repository(): RepositoryInterface
+    {
+        if (null === self::$repository) {
+            $repository = RepositoryBuilder::createWithNoAdapters();
+
+            foreach (self::$adapters as $adapter) {
+                $repository = $repository->addWriter($adapter);
+                $repository = $repository->addAdapter($adapter);
+            }
+
+            if (self::$immutable) {
+                self::$repository = $repository->immutable()->make();
+            } else {
+                self::$repository = $repository->make();
+            }
         }
 
-        return is_string($value) ? trim($value) : $value;
+        return self::$repository;
+    }
+
+    /**
+     * @param bool $immutable
+     *
+     * @return \Dotenv\Dotenv
+     */
+    public static function load(bool $immutable = false): Dotenv
+    {
+        self::$immutable = $immutable;
+        $envPath = dirname(self::path());
+
+        if (!$immutable) {
+            $dotenv = Dotenv::create(self::repository(), $envPath);
+        } else {
+            $dotenv = Dotenv::createImmutable($envPath);
+        }
+
+        self::$environments = $dotenv->load();
+
+        return $dotenv;
     }
 
     /**
@@ -84,34 +132,23 @@ class Env
     }
 
     /**
-     * @return string[]
+     * @param string $name
+     * @param mixed  $default
+     *
+     * @return mixed
      */
-    protected static function adapters(): array
+    public static function get(string $name, $default = null): mixed
     {
-        return [
-            ApacheAdapter::class,
-            EnvConstAdapter::class,
-            ServerConstAdapter::class,
-            PutenvAdapter::class,
-        ];
-    }
-
-    /**
-     * @return \Dotenv\Repository\RepositoryInterface
-     */
-    protected static function repository(): RepositoryInterface
-    {
-        if (null === static::$repository) {
-            $repository = RepositoryBuilder::createWithNoAdapters();
-
-            foreach (static::adapters() as $adapter) {
-                $repository = $repository->addWriter($adapter);
-                $repository = $repository->addAdapter($adapter);
-            }
-
-            static::$repository = $repository->immutable()->make();
+        if (!$value = self::repository()->get($name)) {
+            return $default;
         }
 
-        return static::$repository;
+        $value = Helper::normalizeValue($value);
+
+        if (preg_match('/\A([\'"])(.*)\1\z/', $value, $matches)) {
+            return $matches[2];
+        }
+
+        return is_string($value) ? trim($value) : $value;
     }
 }
