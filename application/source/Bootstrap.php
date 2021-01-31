@@ -9,7 +9,7 @@
  * @copyright 31/01/2021 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core;
 
@@ -63,8 +63,7 @@ class Bootstrap
         private ?string $registerMiddlewarePath = null,
         private ?string $registerContainerPath = null,
         private ?bool $immutableEnv = false
-    )
-    {
+    ) {
         Env::load($immutableEnv);
 
         $this->registerApp();

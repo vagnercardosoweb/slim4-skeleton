@@ -12,12 +12,11 @@
 namespace Core\Helpers;
 
 /**
- * Class Str
+ * Class Str.
  *
- * @package Core\Helpers
- * @author  Vagner Cardoso <vagnercardosoweb@gmail.com>
+ * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class Str
+class Str extends \Illuminate\Support\Str
 {
     /**
      * @throws \Exception
@@ -58,23 +57,5 @@ class Str
         $hashed = bin2hex(random_bytes($length));
 
         return mb_substr($hashed, 0, $length);
-    }
-
-    /**
-     * @param int $length
-     *
-     * @return string
-     */
-    public static function randomBytes(int $length = 32): string
-    {
-        $value = '';
-
-        while (($valueLength = strlen($value)) < $length) {
-            $size = $length - $valueLength;
-            $bytes = random_bytes($size);
-            $value .= mb_substr(str_replace(['/', '+', '='], '', base64_encode($bytes)), 0, $size);
-        }
-
-        return $value;
     }
 }

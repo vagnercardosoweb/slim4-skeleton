@@ -27,8 +27,12 @@ class TrailingSlashMiddleware implements MiddlewareInterface
 {
     /**
      * TrailingSlashMiddleware constructor.
+     *
+     * @param \Psr\Container\ContainerInterface $container
      */
-    public function __construct(private ContainerInterface $container) { }
+    public function __construct(private ContainerInterface $container)
+    {
+    }
 
     /**
      * @param \Psr\Http\Message\ServerRequestInterface $request
@@ -53,7 +57,8 @@ class TrailingSlashMiddleware implements MiddlewareInterface
 
                 return $response
                     ->withStatus(StatusCodeInterface::STATUS_MOVED_PERMANENTLY)
-                    ->withHeader('Location', (string)$uri);
+                    ->withHeader('Location', (string)$uri)
+                ;
             }
 
             $request = $request->withUri($uri);
