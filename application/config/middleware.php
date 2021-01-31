@@ -10,6 +10,7 @@
  */
 
 use App\Middleware\CorsMiddleware;
+use App\Middleware\GenerateEnvMiddleware;
 use App\Middleware\MaintenanceMiddleware;
 use App\Middleware\TrailingSlashMiddleware;
 use Core\Helpers\Env;
@@ -28,6 +29,7 @@ return function (App $app) {
 
     $app->addRoutingMiddleware();
 
+    $app->add(GenerateEnvMiddleware::class);
     $app->add(TrailingSlashMiddleware::class);
     $app->add(MaintenanceMiddleware::class);
 };
