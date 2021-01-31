@@ -11,6 +11,7 @@
 
 use App\Middleware\CorsMiddleware;
 use App\Middleware\MaintenanceMiddleware;
+use App\Middleware\TrailingSlashMiddleware;
 use Core\Helpers\Env;
 use Slim\App;
 use Slim\Middleware\ContentLengthMiddleware;
@@ -18,13 +19,15 @@ use Slim\Middleware\MethodOverrideMiddleware;
 
 return function (App $app) {
     $app->addBodyParsingMiddleware();
-    $app->add(new MethodOverrideMiddleware());
-    $app->add(new ContentLengthMiddleware());
-    $app->add(new MaintenanceMiddleware());
+    $app->add(MethodOverrideMiddleware::class);
+    $app->add(ContentLengthMiddleware::class);
 
     if (Env::get('ENABLE_CORS_ALL_ROUTES', false)) {
-        $app->add(new CorsMiddleware());
+        $app->add(CorsMiddleware::class);
     }
 
     $app->addRoutingMiddleware();
+
+    $app->add(TrailingSlashMiddleware::class);
+    $app->add(MaintenanceMiddleware::class);
 };
