@@ -147,7 +147,7 @@ class Route
                 $response = $controller->getResponse();
             }
 
-            if (is_array($result) || is_object($result)) {
+            if ((is_array($result) || is_object($result)) && !$result instanceof ResponseInterface) {
                 $response = $response->withHeader('Content-Type', 'application/json');
                 $result = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
             }
