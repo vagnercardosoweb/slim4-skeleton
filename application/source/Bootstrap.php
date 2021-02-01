@@ -29,6 +29,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
+use Slim\Interfaces\RouteCollectorInterface;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Psr7\Factory\StreamFactory;
 use Slim\ResponseEmitter;
@@ -73,6 +74,7 @@ class Bootstrap
         $this->registerPhpSettings();
 
         if ($registerRoutePath) {
+            Route::setRouteCollectorProxy(self::$app);
             Route::registerPath($registerRoutePath);
         }
     }
@@ -132,8 +134,12 @@ class Bootstrap
                 return $container->get(App::class)->getResponseFactory();
             },
 
+            RouteCollectorInterface::class => function (ContainerInterface $container) {
+                return $container->get(App::class)->getRouteCollector();
+            },
+
             RouteParserInterface::class => function (ContainerInterface $container) {
-                return $container->get(App::class)->getRouteCollector()->getRouteParser();
+                return $container->get(RouteCollectorInterface::class)->getRouteParser();
             },
 
             ResponseInterface::class => function (ContainerInterface $container) {

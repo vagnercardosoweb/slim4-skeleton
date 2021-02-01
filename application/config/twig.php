@@ -15,11 +15,11 @@ use Core\Helpers\Path;
 
 return [
     'options' => [
-        'debug' => Env::get('APP_ENV') === 'development',
+        'debug' => 'development' === Env::get('APP_ENV'),
         'charset' => 'UTF-8',
         'strict_variables' => false,
         'autoescape' => 'html',
-        'cache' => Env::get('APP_ENV') === 'production' ? Path::storage('/cache/twig') : false,
+        'cache' => 'production' === Env::get('APP_ENV') ? Path::storage('/cache/twig') : false,
         'auto_reload' => true,
         'optimizations' => -1,
     ],

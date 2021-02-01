@@ -11,10 +11,10 @@
 
 namespace Core;
 
-use Core\Facades\App as AppRoute;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Slim\Interfaces\RouteCollectorProxyInterface;
 use Slim\Interfaces\RouteGroupInterface;
 use Slim\Interfaces\RouteInterface;
 
@@ -36,11 +36,32 @@ class Route
     protected static string $groupPattern = '';
 
     /**
+     * @var \Slim\Interfaces\RouteCollectorProxyInterface
+     */
+    protected static RouteCollectorProxyInterface $routeCollectorProxy;
+
+    /**
      * @param string $defaultNamespace
      */
     public static function setDefaultNamespace(string $defaultNamespace): void
     {
         self::$defaultNamespace = $defaultNamespace;
+    }
+
+    /**
+     * @param string $groupPattern
+     */
+    public static function setGroupPattern(string $groupPattern): void
+    {
+        self::$groupPattern = $groupPattern;
+    }
+
+    /**
+     * @param \Slim\Interfaces\RouteCollectorProxyInterface $routeCollectorProxy
+     */
+    public static function setRouteCollectorProxy(RouteCollectorProxyInterface $routeCollectorProxy): void
+    {
+        self::$routeCollectorProxy = $routeCollectorProxy;
     }
 
     /**
@@ -79,7 +100,7 @@ class Route
         $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
         $pattern = self::$groupPattern.(string)$pattern;
 
-        $route = AppRoute::map($methods, $pattern, self::handleCallableRouter($callable));
+        $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
 
         if (!empty($name)) {
             $route->setName($name);
@@ -101,7 +122,7 @@ class Route
             return;
         }
 
-        $routes = AppRoute::getRouteCollector()->getRoutes();
+        $routes = self::$routeCollectorProxy->getRouteCollector()->getRoutes();
 
         foreach ($routes as $route) {
             if ($route->getName() === $name) {
@@ -219,7 +240,7 @@ class Route
      */
     public static function enableOptions(): void
     {
-        AppRoute::options('/{routes:.*}', function ($request, ResponseInterface $response) {
+        self::$routeCollectorProxy->options('/{routes:.*}', function ($request, ResponseInterface $response) {
             return $response->withStatus(StatusCodeInterface::STATUS_OK);
         });
     }
@@ -235,11 +256,19 @@ class Route
         $pattern = self::$groupPattern.$pattern;
         self::$groupPattern = $pattern;
 
-        $group = AppRoute::group($pattern, $callable);
+        $group = self::$routeCollectorProxy->group($pattern, $callable);
 
         self::$groupPattern = '';
 
         return $group;
+    }
+
+    /**
+     * @param string $basePath
+     */
+    public static function setBasePath(string $basePath): void
+    {
+        self::$routeCollectorProxy->setBasePath($basePath);
     }
 
     /**
@@ -251,7 +280,7 @@ class Route
      */
     public static function redirect(string $from, $to, int $status = 302): RouteInterface
     {
-        return AppRoute::redirect($from, $to, $status);
+        return self::$routeCollectorProxy->redirect($from, $to, $status);
     }
 
     /**
