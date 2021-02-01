@@ -20,8 +20,6 @@ use Slim\Middleware\MethodOverrideMiddleware;
 
 return function (App $app) {
     $app->addBodyParsingMiddleware();
-    $app->add(MethodOverrideMiddleware::class);
-    $app->add(ContentLengthMiddleware::class);
 
     if (Env::get('ENABLE_CORS_ALL_ROUTES', false)) {
         $app->add(CorsMiddleware::class);
@@ -29,6 +27,8 @@ return function (App $app) {
 
     $app->addRoutingMiddleware();
 
+    $app->add(ContentLengthMiddleware::class);
+    $app->add(MethodOverrideMiddleware::class);
     $app->add(GenerateEnvMiddleware::class);
     $app->add(TrailingSlashMiddleware::class);
     $app->add(MaintenanceMiddleware::class);
