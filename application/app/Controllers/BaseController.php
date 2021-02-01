@@ -82,6 +82,18 @@ abstract class BaseController
     }
 
     /**
+     * @param string $value
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function withString(string $value): ResponseInterface
+    {
+        $this->response->getBody()->write($value);
+
+        return $this->response;
+    }
+
+    /**
      * @param string $routeName
      * @param array  $data
      * @param array  $queryParams
@@ -96,6 +108,18 @@ abstract class BaseController
         $destination = $this->pathFor($routeName, $data, $queryParams);
 
         return $this->withRedirect($destination);
+    }
+
+    /**
+     * @param string $routeName
+     * @param array  $data
+     * @param array  $queryParams
+     *
+     * @return string
+     */
+    public function pathFor(string $routeName, array $data = [], array $queryParams = []): string
+    {
+        return $this->container->get(RouteParserInterface::class)->urlFor($routeName, $data, $queryParams);
     }
 
     /**
@@ -117,17 +141,5 @@ abstract class BaseController
         $statusCode = $permanent ? StatusCodeInterface::STATUS_MOVED_PERMANENTLY : StatusCodeInterface::STATUS_FOUND;
 
         return $this->response->withStatus($statusCode)->withHeader('Location', $destination);
-    }
-
-    /**
-     * @param string $routeName
-     * @param array  $data
-     * @param array  $queryParams
-     *
-     * @return string
-     */
-    public function pathFor(string $routeName, array $data = [], array $queryParams = []): string
-    {
-        return $this->container->get(RouteParserInterface::class)->urlFor($routeName, $data, $queryParams);
     }
 }
