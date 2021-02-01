@@ -104,7 +104,7 @@ class Bootstrap
             $containerBuilder->enableCompilation(Path::storage('/cache/container'));
         }
 
-        $containerBuilder->useAutowiring(Env::get('CONTAINER_AUTO_WIRING', false));
+        $containerBuilder->useAutowiring(Env::get('CONTAINER_AUTO_WIRING', true));
 
         if (file_exists($containerPath)) {
             $container = require_once "{$containerPath}";
