@@ -11,6 +11,7 @@
 
 namespace App\Controllers;
 
+use Core\Helpers\Helper;
 use Core\Twig\Twig;
 use DI\Container;
 use Fig\Http\Message\StatusCodeInterface;
@@ -120,6 +121,23 @@ abstract class BaseController
     }
 
     /**
+     * @param string $template
+     * @param array  $context
+     *
+     * @return string
+     */
+    public function viewFetch(string $template, array $context = []): string
+    {
+        return $this->container
+            ->get(Twig::class)
+            ->fetch(
+                $template,
+                $context
+            )
+        ;
+    }
+
+    /**
      * @param string $value
      *
      * @return \Psr\Http\Message\ResponseInterface
@@ -205,5 +223,74 @@ abstract class BaseController
         $statusCode = $permanent ? StatusCodeInterface::STATUS_MOVED_PERMANENTLY : StatusCodeInterface::STATUS_FOUND;
 
         return $this->response->withStatus($statusCode)->withHeader('Location', $destination);
+    }
+
+    /**
+     * @param array<string, mixed> $only
+     *
+     * @return array<string, mixed>
+     */
+    public function getQueryParams(array $only = []): array
+    {
+        $queryParams = $this->request->getQueryParams() ?? [];
+
+        return $this->getRequestParams($queryParams, $only);
+    }
+
+    /**
+     * @param array<string, mixed> $only
+     *
+     * @return array<string, mixed>
+     */
+    public function getServerParams(array $only = []): array
+    {
+        $serverParams = $this->request->getServerParams() ?? [];
+
+        return $this->getRequestParams($serverParams, $only);
+    }
+
+    /**
+     * @param array<string, mixed> $only
+     *
+     * @return array<string, mixed>
+     */
+    public function getParsedBody(array $only = []): array
+    {
+        $parsedBody = $this->request->getParsedBody() ?? [];
+
+        return $this->getRequestParams($parsedBody, $only);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @param array<string, mixed> $only
+     *
+     * @return array<string, mixed>
+     */
+    private function getRequestParams(array $params, array $only): array
+    {
+        if (!empty($only) && !empty($params)) {
+            $params = array_intersect_key($params, array_flip($only));
+
+            foreach ($only as $key) {
+                $params[$key] = $params[$key] ?? null;
+            }
+        }
+
+        return Helper::filterRequestValues($params);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
+    public function __get(string $name): mixed
+    {
+        if ($this->container->has($name)) {
+            return $this->container->get($name);
+        }
+
+        return null;
     }
 }
