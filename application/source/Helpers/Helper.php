@@ -60,4 +60,28 @@ class Helper
             default => $value
         };
     }
+
+    /**
+     * @param array|string $values
+     *
+     * @return array
+     */
+    public static function filterRequestValues(array | string $values): array
+    {
+        $result = [];
+
+        if (!is_array($values)) {
+            $values = [$values];
+        }
+
+        foreach ($values as $key => $value) {
+            if (is_array($value)) {
+                $result[$key] = self::filterRequestValues($value);
+            } else {
+                $result[$key] = addslashes(strip_tags(trim(filter_var($value, FILTER_DEFAULT))));
+            }
+        }
+
+        return $result;
+    }
 }
