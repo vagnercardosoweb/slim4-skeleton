@@ -9,7 +9,7 @@
  * @copyright 01/02/2021 Vagner Cardoso
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Core\Handlers;
 
@@ -18,6 +18,7 @@ use Core\Handlers\ErrorHandler as MyErrorHandler;
 use Core\Helpers\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpInternalServerErrorException;
@@ -25,9 +26,9 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpUnauthorizedException;
-use Slim\Handlers\ErrorHandler;
+use Slim\Psr7\Response;
 
-class HttpErrorHandler extends ErrorHandler
+class HttpErrorHandler
 {
     /**
      * @var string[]
@@ -44,11 +45,22 @@ class HttpErrorHandler extends ErrorHandler
     ];
 
     /**
+     * @param \Psr\Http\Message\ServerRequestInterface $request
+     * @param \Throwable $exception
+     * @param bool $displayErrorDetails
+     * @param bool $logErrors
+     * @param bool $logErrorDetails
+     *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    protected function respond(): ResponseInterface
+    public function __invoke(
+        ServerRequestInterface $request,
+        \Throwable $exception,
+        bool $displayErrorDetails,
+        bool $logErrors,
+        bool $logErrorDetails
+    ): ResponseInterface
     {
-        $exception = $this->exception;
         $type = $this->types[$exception::class] ?? MyErrorHandler::BAD_REQUEST;
         $statusCode = $exception->getCode();
         $message = $exception->getMessage();
@@ -72,23 +84,22 @@ class HttpErrorHandler extends ErrorHandler
             ],
         ];
 
-        if ($this->displayErrorDetails) {
+        if ($displayErrorDetails) {
             $error['error'] += [
                 'line' => $exception->getLine(),
                 'file' => str_replace(Path::app(), '', $exception->getFile()),
-                'route' => "({$this->method}) {$this->request->getUri()->getPath()}",
+                'route' => "({$request->getMethod()}) {$request->getUri()->getPath()}",
                 'trace' => explode("\n", $exception->getTraceAsString()),
-                'headers' => array_map(fn ($header) => $header[0], $this->request->getHeaders()),
-                'queryParams' => $this->request->getQueryParams(),
-                'parsedBody' => $this->request->getParsedBody(),
-                'cookieParams' => $this->request->getCookieParams(),
+                'headers' => array_map(fn ($header) => $header[0], $request->getHeaders()),
+                'queryParams' => $request->getQueryParams(),
+                'parsedBody' => $request->getParsedBody(),
+                'cookieParams' => $request->getCookieParams(),
             ];
         }
 
-        $payload = json_encode($error, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        $response = $this->responseFactory->createResponse($statusCode);
+        $response = new Response($statusCode);
         $response->withHeader('Content-Type', 'application/json');
+        $payload = json_encode($error, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $response->getBody()->write($payload);
 
         return $response;

@@ -9,7 +9,7 @@
  * @copyright 01/02/2021 Vagner Cardoso
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Core;
 
@@ -57,14 +57,15 @@ class Bootstrap
      * @param string|null $registerRoutePath
      * @param string|null $registerMiddlewarePath
      * @param string|null $registerContainerPath
-     * @param bool|null   $immutableEnv
+     * @param bool|null $immutableEnv
      */
     public function __construct(
         private ?string $registerRoutePath = null,
         private ?string $registerMiddlewarePath = null,
         private ?string $registerContainerPath = null,
         private ?bool $immutableEnv = false
-    ) {
+    )
+    {
         Env::load($immutableEnv);
 
         $this->registerApp();
@@ -205,7 +206,7 @@ class Bootstrap
         $logErrorDetails = Env::get('SLIM_LOG_ERROR_DETAIL', true);
         $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
 
-        $httpErrorHandler = new HttpErrorHandler(self::$app->getCallableResolver(), self::$app->getResponseFactory());
+        $httpErrorHandler = new HttpErrorHandler();
         $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler, $displayErrorDetails);
         register_shutdown_function($shutdownErrorHandler);
 
