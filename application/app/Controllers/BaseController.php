@@ -6,11 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 31/01/2021 Vagner Cardoso
+ * @copyright 01/02/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
+use Core\Twig\Twig;
 use DI\Container;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Container\ContainerInterface;
@@ -26,6 +27,11 @@ use Slim\Interfaces\RouteParserInterface;
 abstract class BaseController
 {
     /**
+     * @var \Slim\Interfaces\RouteParserInterface
+     */
+    protected RouteParserInterface $routeParser;
+
+    /**
      * BaseController constructor.
      *
      * @param \Psr\Http\Message\ServerRequestInterface $request
@@ -37,6 +43,15 @@ abstract class BaseController
         protected ResponseInterface $response,
         protected Container $container
     ) {
+        $this->routeParser = $container->get(RouteParserInterface::class);
+    }
+
+    /**
+     * @return \Slim\Interfaces\RouteParserInterface
+     */
+    public function getRouteParser(): RouteParserInterface
+    {
+        return $this->routeParser;
     }
 
     /**
@@ -82,6 +97,29 @@ abstract class BaseController
     }
 
     /**
+     * @param string               $template
+     * @param array<string, mixed> $context
+     * @param int                  $status
+     *
+     * @return ResponseInterface
+     */
+    public function withView(
+        string $template,
+        array $context = [],
+        int $status = StatusCodeInterface::STATUS_OK
+    ): ResponseInterface {
+        return $this->container
+            ->get(Twig::class)
+            ->render(
+                $this->response,
+                $template,
+                $context,
+                $status
+            )
+        ;
+    }
+
+    /**
      * @param string $value
      *
      * @return \Psr\Http\Message\ResponseInterface
@@ -94,9 +132,9 @@ abstract class BaseController
     }
 
     /**
-     * @param string $routeName
-     * @param array  $data
-     * @param array  $queryParams
+     * @param string               $routeName
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $queryParams
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
@@ -105,27 +143,53 @@ abstract class BaseController
         array $data = [],
         array $queryParams = []
     ): ResponseInterface {
-        $destination = $this->pathFor($routeName, $data, $queryParams);
+        $destination = $this->getUrlFor($routeName, $data, $queryParams);
 
         return $this->withRedirect($destination);
     }
 
     /**
-     * @param string $routeName
-     * @param array  $data
-     * @param array  $queryParams
+     * @param string               $routeName
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $queryParams
      *
      * @return string
      */
-    public function pathFor(string $routeName, array $data = [], array $queryParams = []): string
+    public function getUrlFor(string $routeName, array $data = [], array $queryParams = []): string
     {
-        return $this->container->get(RouteParserInterface::class)->urlFor($routeName, $data, $queryParams);
+        return $this->routeParser->urlFor($routeName, $data, $queryParams);
     }
 
     /**
-     * @param string $destination
-     * @param array  $queryParams
-     * @param bool   $permanent
+     * @param string               $routeName
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $queryParams
+     *
+     * @return string
+     */
+    public function getFullUrlFor(string $routeName, array $data = [], array $queryParams = []): string
+    {
+        $uri = $this->request->getUri();
+
+        return $this->routeParser->fullUrlFor($uri, $routeName, $data, $queryParams);
+    }
+
+    /**
+     * @param string               $routeName
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $queryParams
+     *
+     * @return string
+     */
+    public function getRelativeUrlFor(string $routeName, array $data = [], array $queryParams = []): string
+    {
+        return $this->routeParser->relativeUrlFor($routeName, $data, $queryParams);
+    }
+
+    /**
+     * @param string               $destination
+     * @param array<string, mixed> $queryParams
+     * @param bool                 $permanent
      *
      * @return \Psr\Http\Message\ResponseInterface
      */

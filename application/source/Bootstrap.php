@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 31/01/2021 Vagner Cardoso
+ * @copyright 01/02/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -69,13 +69,12 @@ class Bootstrap
         $this->registerApp();
         $this->registerFacade();
         $this->registerMiddleware();
+        $this->registerErrorHandler();
+        $this->registerPhpSettings();
 
         if ($registerRoutePath) {
             Route::registerPath($registerRoutePath);
         }
-
-        $this->registerErrorHandler();
-        $this->registerPhpSettings();
     }
 
     /**
@@ -110,7 +109,9 @@ class Bootstrap
             $container = require_once "{$containerPath}";
 
             if (!is_array($container)) {
-                throw new \DomainException("The [{$containerPath}] file must return an array.");
+                throw new \DomainException(
+                    "The [{$containerPath}] file must return an array."
+                );
             }
         }
 

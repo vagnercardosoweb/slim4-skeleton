@@ -6,12 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 31/01/2021 Vagner Cardoso
+ * @copyright 01/02/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
 use Core\Bootstrap;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class IndexController.
@@ -21,8 +22,6 @@ use Core\Bootstrap;
 class IndexController extends BaseController
 {
     /**
-     * @throws \Exception
-     *
      * @return array
      */
     public function index(): array
@@ -32,5 +31,15 @@ class IndexController extends BaseController
             'version' => Bootstrap::VERSION,
             'datetime' => new \DateTimeImmutable(),
         ];
+    }
+
+    /**
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function template(): ResponseInterface
+    {
+        return $this->withView('index', [
+            'version' => Bootstrap::VERSION,
+        ]);
     }
 }

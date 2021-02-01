@@ -6,7 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 31/01/2021 Vagner Cardoso
+ * @copyright 01/02/2021 Vagner Cardoso
  */
 
-return [];
+use App\Providers\TwigProvider;
+use Core\Twig\Twig;
+use function DI\factory;
+
+return [
+    Twig::class => factory(TwigProvider::class),
+];

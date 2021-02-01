@@ -6,13 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 31/01/2021 Vagner Cardoso
+ * @copyright 01/02/2021 Vagner Cardoso
  */
 
-use App\Middleware\CorsMiddleware;
-use App\Middleware\GenerateEnvMiddleware;
-use App\Middleware\MaintenanceMiddleware;
-use App\Middleware\TrailingSlashMiddleware;
+use App\Middlewares\CorsMiddleware;
+use App\Middlewares\GenerateEnvMiddleware;
+use App\Middlewares\MaintenanceMiddleware;
+use App\Middlewares\TrailingSlashMiddleware;
 use Core\Helpers\Env;
 use Slim\App;
 use Slim\Middleware\ContentLengthMiddleware;

@@ -3,6 +3,11 @@
   "description": "Slim4 Skeleton",
   "version": "1.0.0",
   "license": "MIT",
+  "support": {
+    "email": "vagnercardosoweb@gmail.com",
+    "issues": "https://github.com/vagnercardosoweb/slim4-skeleton/issues",
+    "source": "https://github.com/vagnercardosoweb/slim4-skeleton"
+  },
   "authors": [
     {
       "name": "Vagner Cardoso",
@@ -16,6 +21,7 @@
     "slim/psr7": "^1.3",
     "slim/slim": "^4.7",
     "symfony/var-dumper": "^5.2",
+    "twig/twig": "^3.2",
     "vlucas/phpdotenv": "^5.3"
   },
   "require-dev": {
