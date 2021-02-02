@@ -9,13 +9,6 @@
  * @copyright 02/02/2021 Vagner Cardoso
  */
 
-use App\Providers\SymfonyConsoleProvider;
-use App\Providers\TwigProvider;
-use Core\Twig\Twig;
-use Symfony\Component\Console\Application;
-use function DI\factory;
-
 return [
-    Twig::class => factory(TwigProvider::class),
-    Application::class => factory(SymfonyConsoleProvider::class),
+    // \App\Commands\CommandNameCommand::class,
 ];
