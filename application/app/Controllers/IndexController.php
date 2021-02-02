@@ -6,12 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 02/02/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
 use Core\Bootstrap;
+use JetBrains\PhpStorm\ArrayShape;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -21,9 +22,11 @@ use Psr\Http\Message\ResponseInterface;
  */
 class IndexController extends BaseController
 {
-    /**
-     * @return array
-     */
+    #[ArrayShape([
+        'path' => 'string',
+        'version' => 'string',
+        'datetime' => '\\DateTimeImmutable',
+    ])]
     public function index(): array
     {
         return [
