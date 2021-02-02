@@ -6,13 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 02/02/2021 Vagner Cardoso
  */
 
 use App\Middlewares\CorsMiddleware;
 use App\Middlewares\GenerateEnvMiddleware;
 use App\Middlewares\MaintenanceMiddleware;
 use App\Middlewares\TrailingSlashMiddleware;
+use App\Middlewares\TranslatorMiddleware;
 use Core\Helpers\Env;
 use Slim\App;
 use Slim\Middleware\ContentLengthMiddleware;
@@ -31,5 +32,6 @@ return function (App $app) {
     $app->add(MethodOverrideMiddleware::class);
     $app->add(GenerateEnvMiddleware::class);
     $app->add(TrailingSlashMiddleware::class);
+    $app->add(TranslatorMiddleware::class);
     $app->add(MaintenanceMiddleware::class);
 };
