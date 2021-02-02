@@ -59,6 +59,6 @@ $bootstrap = (new Bootstrap(
     registerContainerPath: sprintf('%s/providers.php', CONFIG_PATH)
 ));
 
-if (!Bootstrap::isCli()) {
+if (!Bootstrap::isCli() && !Bootstrap::isTesting()) {
     $bootstrap->run();
 }

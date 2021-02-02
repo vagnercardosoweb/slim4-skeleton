@@ -6,13 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 02/02/2021 Vagner Cardoso
  */
 
 namespace Core;
 
 /**
- * Class EventEmitter
+ * Class EventEmitter.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
@@ -24,7 +24,7 @@ abstract class EventEmitter
     protected static array $listeners = [];
 
     /**
-     * @param string $eventName
+     * @param string   $eventName
      * @param callable $callable
      */
     public static function on(string $eventName, callable $callable): void
@@ -70,7 +70,7 @@ abstract class EventEmitter
     }
 
     /**
-     * @param string $eventName
+     * @param string   $eventName
      * @param int|null $index
      */
     public static function remove(string $eventName, ?int $index = null): void

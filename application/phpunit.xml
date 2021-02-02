@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  bootstrap="./tests/bootstrap.php"
+  colors="true"
+  backupGlobals="false"
+  backupStaticAttributes="false"
+  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+  cacheResult="false"
+>
+  <coverage processUncoveredFiles="true">
+    <include>
+      <directory suffix=".php">./app/</directory>
+      <directory suffix=".php">./source/</directory>
+    </include>
+    <exclude>
+      <directory>config</directory>
+      <directory>routes</directory>
+      <directory>resources</directory>
+      <directory>storage</directory>
+      <directory>vendor</directory>
+    </exclude>
+  </coverage>
+  <testsuites>
+    <testsuite name="Test Suite">
+      <directory suffix="Test.php">./app/</directory>
+      <directory suffix="Test.php">./source/</directory>
+      <directory suffix="Test.php">./tests/</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <env name="APP_ENV" value="testing"/>
+    <env name="PHPUNIT_TEST_SUITE" value="1"/>
+    <const name="PHPUNIT_TESTSUITE_RESULTCACHE" value="0"/>
+  </php>
+</phpunit>
