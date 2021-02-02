@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 02/02/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -248,15 +248,20 @@ class Route
     /**
      * @param string   $pattern
      * @param \Closure $callable
+     * @param array    $middlewares
      *
      * @return \Slim\Interfaces\RouteGroupInterface
      */
-    public static function group(string $pattern, \Closure $callable): RouteGroupInterface
+    public static function group(string $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
     {
         $pattern = self::$groupPattern.$pattern;
         self::$groupPattern = $pattern;
 
         $group = self::$routeCollectorProxy->group($pattern, $callable);
+
+        foreach ($middlewares as $middleware) {
+            $group->add($middleware);
+        }
 
         self::$groupPattern = '';
 
