@@ -24,10 +24,8 @@
 !/**/storage/cache/container/.gitkeep
 
 # Logs
-/**/storage/logs/php/*
-/**/storage/logs/errors/*
-!/**/storage/logs/php/.gitkeep
-!/**/storage/logs/errors/.gitkeep
+/**/storage/logs/*
+/**/storage/logs/**/.gitkeep
 
 # Session
 /**/storage/sessions/*

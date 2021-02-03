@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core;
 
@@ -57,15 +57,14 @@ class Bootstrap
      * @param string|null $registerRoutePath
      * @param string|null $registerMiddlewarePath
      * @param string|null $registerContainerPath
-     * @param bool|null $immutableEnv
+     * @param bool|null   $immutableEnv
      */
     public function __construct(
         private ?string $registerRoutePath = null,
         private ?string $registerMiddlewarePath = null,
         private ?string $registerContainerPath = null,
         private ?bool $immutableEnv = false
-    )
-    {
+    ) {
         Env::load($immutableEnv);
 
         $this->registerApp();
@@ -231,7 +230,7 @@ class Bootstrap
         setlocale(LC_ALL, $locale, "{$locale}.{$charset}");
 
         ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
-        ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('dmY')));
+        ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('Y-m-d')));
     }
 
     /**

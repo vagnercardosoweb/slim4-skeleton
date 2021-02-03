@@ -6,12 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 namespace App\Providers;
 
 use Core\Config;
+use Core\Contracts\ServiceProvider;
 use Core\Twig\Twig;
 use Core\Twig\TwigExtension;
 use Psr\Container\ContainerInterface;
@@ -20,7 +21,7 @@ use Slim\App;
 use Slim\Interfaces\RouteParserInterface;
 use Twig\Extension\DebugExtension;
 
-class TwigProvider
+class TwigProvider implements ServiceProvider
 {
     /**
      * @param \Psr\Container\ContainerInterface $container

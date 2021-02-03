@@ -13,6 +13,7 @@ namespace App\Providers;
 
 use Core\Bootstrap;
 use Core\Config;
+use Core\Contracts\ServiceProvider;
 use DI\Container;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputOption;
@@ -23,7 +24,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class SymfonyConsoleProvider
+class SymfonyConsoleProvider implements ServiceProvider
 {
     /**
      * @param \DI\Container $container
