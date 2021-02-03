@@ -13,28 +13,30 @@ namespace App\Providers;
 
 use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
+use Core\Support\Encryption;
 use Core\Support\Env;
-use Core\Support\Jwt;
 use DI\Container;
 
 /**
- * Class JwtProvider.
+ * Class EncryptionProvider.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class JwtProvider implements ServiceProvider
+class EncryptionProvider implements ServiceProvider
 {
     /**
      * @param \DI\Container $container
      *
-     * @return \Core\Support\Jwt
+     * @return \Core\Support\Encryption
      */
-    public function __invoke(Container $container): Jwt
+    public function __invoke(Container $container): Encryption
     {
-        Facade::setAliases(['Jwt' => Jwt::class]);
+        Facade::setAliases(['Encryption' => Encryption::class]);
 
         $key = Env::get('APP_KEY');
+        $key = str_replace('vcw:', '', $key);
+        $key = mb_substr($key, 0, 32);
 
-        return new Jwt($key);
+        return new Encryption($key);
     }
 }

@@ -13,6 +13,7 @@ namespace App\Providers;
 
 use Core\Config;
 use Core\Contracts\ServiceProvider;
+use Core\Facades\Facade;
 use Core\Logger;
 use Core\Support\Str;
 use DI\Container;
@@ -31,6 +32,8 @@ class LoggerProvider implements ServiceProvider
      */
     public function __invoke(Container $container): Logger
     {
+        Facade::registerAliases(['Logger' => Logger::class]);
+
         $name = Config::get('app.name', 'app');
         $name = Str::kebab(strtolower($name));
 

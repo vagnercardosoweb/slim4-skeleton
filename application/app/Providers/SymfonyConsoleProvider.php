@@ -14,6 +14,7 @@ namespace App\Providers;
 use Core\Bootstrap;
 use Core\Config;
 use Core\Contracts\ServiceProvider;
+use Core\Facades\Facade;
 use DI\Container;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,6 +34,8 @@ class SymfonyConsoleProvider implements ServiceProvider
      */
     public function __invoke(Container $container): Application
     {
+        Facade::registerAliases(['Application' => Application::class]);
+
         $application = new Application('Slim 4 Skeleton', Bootstrap::VERSION);
 
         $optionEnv = new InputOption(
@@ -54,7 +57,6 @@ class SymfonyConsoleProvider implements ServiceProvider
                 $output = new ConsoleOutput();
                 $output->writeln("Add command error: <error>{$command}</error>");
                 $output->writeln($e->getMessage());
-
                 // exit(0);
             }
         }

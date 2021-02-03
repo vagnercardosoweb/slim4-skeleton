@@ -104,7 +104,7 @@ abstract class BaseController
      *
      * @return ResponseInterface
      */
-    public function withView(
+    public function withTwig(
         string $template,
         array $context = [],
         int $status = StatusCodeInterface::STATUS_OK
@@ -126,7 +126,7 @@ abstract class BaseController
      *
      * @return string
      */
-    public function viewFetch(string $template, array $context = []): string
+    public function twigFetch(string $template, array $context = []): string
     {
         return $this->container
             ->get(Twig::class)

@@ -41,7 +41,7 @@ class IndexController extends BaseController
      */
     public function template(): ResponseInterface
     {
-        return $this->withView('index', [
+        return $this->withTwig('index', [
             'version' => Bootstrap::VERSION,
         ]);
     }

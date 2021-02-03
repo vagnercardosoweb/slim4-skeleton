@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 namespace Core\Facades;
@@ -82,6 +82,14 @@ abstract class Facade
     }
 
     /**
+     * @return string[]
+     */
+    public static function getAliases(): array
+    {
+        return self::$aliases;
+    }
+
+    /**
      * @return \Slim\App
      */
     public static function getApp(): App
@@ -117,7 +125,10 @@ abstract class Facade
         try {
             return static::$resolvedInstance[$name] = $container->get($name);
         } catch (\Exception $e) {
-            throw new \RuntimeException("A facade {$name} root has not been set.");
+            throw new \RuntimeException(
+                "A facade {$name} root has not been set.\n".
+                "{$e->getMessage()}"
+            );
         }
     }
 

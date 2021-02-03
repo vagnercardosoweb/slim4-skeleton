@@ -17,6 +17,7 @@
   "require": {
     "php": "^8.0",
     "ext-pdo": "*",
+    "ext-openssl": "*",
     "illuminate/support": "^8.25",
     "monolog/monolog": "^2.2",
     "php-di/php-di": "^6.3",

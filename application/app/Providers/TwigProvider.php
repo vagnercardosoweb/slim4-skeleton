@@ -13,6 +13,7 @@ namespace App\Providers;
 
 use Core\Config;
 use Core\Contracts\ServiceProvider;
+use Core\Facades\Facade;
 use Core\Twig\Twig;
 use Core\Twig\TwigExtension;
 use Psr\Container\ContainerInterface;
@@ -30,6 +31,8 @@ class TwigProvider implements ServiceProvider
      */
     public function __invoke(ContainerInterface $container): Twig
     {
+        Facade::registerAliases(['Twig' => Twig::class]);
+
         $config = Config::get('twig');
         $twig = new Twig($config['templates'], $config['options']);
 
