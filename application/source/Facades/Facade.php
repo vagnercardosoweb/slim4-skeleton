@@ -126,8 +126,8 @@ abstract class Facade
             return static::$resolvedInstance[$name] = $container->get($name);
         } catch (\Exception $e) {
             throw new \RuntimeException(
-                "A facade {$name} root has not been set.\n".
-                "{$e->getMessage()}"
+                "A facade {$name} root has not been set.".
+                " {$e->getMessage()}"
             );
         }
     }

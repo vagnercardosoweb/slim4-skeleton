@@ -11,32 +11,32 @@
 
 namespace App\Providers;
 
-use Core\Config;
 use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
-use Core\Logger;
-use Core\Support\Str;
+use Core\Password\Password;
+use Core\Password\PasswordFactory;
+use Core\Support\Env;
 use DI\Container;
 
 /**
- * Class LoggerProvider.
+ * Class PasswordProvider.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class LoggerProvider implements ServiceProvider
+class PasswordProvider implements ServiceProvider
 {
     /**
      * @param \DI\Container $container
      *
-     * @return \Core\Logger
+     * @return \Core\Password\Password
      */
-    public function __invoke(Container $container): Logger
+    public function __invoke(Container $container): Password
     {
-        Facade::setAliases(['Logger' => Logger::class]);
+        Facade::setAliases(['Password' => Password::class]);
 
-        $name = Config::get('app.name', 'app');
-        $name = Str::kebab(strtolower($name));
+        $driver = Env::get('PASSWORD_DEFAULT_DRIVER', $driver ?? 'bcrypt');
+        $verifyAlgorithm = Env::get('PASSWORD_VERIFY_ALGORITHM', false);
 
-        return new Logger($name);
+        return PasswordFactory::create($driver, $verifyAlgorithm);
     }
 }

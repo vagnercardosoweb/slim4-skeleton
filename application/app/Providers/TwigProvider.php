@@ -31,7 +31,7 @@ class TwigProvider implements ServiceProvider
      */
     public function __invoke(ContainerInterface $container): Twig
     {
-        Facade::registerAliases(['Twig' => Twig::class]);
+        Facade::setAliases(['Twig' => Twig::class]);
 
         $config = Config::get('twig');
         $twig = new Twig($config['templates'], $config['options']);

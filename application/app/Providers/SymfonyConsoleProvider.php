@@ -34,7 +34,7 @@ class SymfonyConsoleProvider implements ServiceProvider
      */
     public function __invoke(Container $container): Application
     {
-        Facade::registerAliases(['Application' => Application::class]);
+        Facade::setAliases(['Application' => Application::class]);
 
         $application = new Application('Slim 4 Skeleton', Bootstrap::VERSION);
 

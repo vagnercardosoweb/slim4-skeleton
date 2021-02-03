@@ -19,6 +19,15 @@ namespace Core\Facades;
  * @method static \Core\Logger addConsoleHandler(int $level = null)
  * @method static \Core\Logger addSlackWebhookHandler(string $webhookUrl, ?string $channel = null, ?string $username = null, bool $useAttachment = true, ?string $iconEmoji = ':boom:', bool $useShortAttachment = false, bool $includeContextAndExtra = false, int $level = Logger::CRITICAL, bool $bubble = true, array $excludeFields = [])
  * @method static \Core\Logger addFileHandler(string $path, array $settings = []) [maxFiles: int, level: int, bubble: bool, permission: int]
+ * @method static void emergency($message, array $context = [])
+ * @method static void alert($message, array $context = [])
+ * @method static void critical($message, array $context = [])
+ * @method static void error($message, array $context = [])
+ * @method static void warning($message, array $context = [])
+ * @method static void notice($message, array $context = [])
+ * @method static void info($message, array $context = [])
+ * @method static void debug($message, array $context = [])
+ * @method static void log($level, $message, array $context = [])
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */

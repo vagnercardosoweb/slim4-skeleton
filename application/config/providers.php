@@ -12,9 +12,11 @@
 use App\Providers\EncryptionProvider;
 use App\Providers\JwtProvider;
 use App\Providers\LoggerProvider;
+use App\Providers\PasswordProvider;
 use App\Providers\SymfonyConsoleProvider;
 use App\Providers\TwigProvider;
 use Core\Logger;
+use Core\Password\Password;
 use Core\Support\Encryption;
 use Core\Support\Jwt;
 use Core\Twig\Twig;
@@ -27,4 +29,5 @@ return [
     Logger::class => factory(LoggerProvider::class),
     Application::class => factory(SymfonyConsoleProvider::class),
     Encryption::class => factory(EncryptionProvider::class),
+    Password::class => factory(PasswordProvider::class),
 ];
