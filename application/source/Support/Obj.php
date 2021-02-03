@@ -71,6 +71,27 @@ class Obj
     }
 
     /**
+     * @param mixed        $object
+     * @param string|array $methods
+     *
+     * @return bool
+     */
+    public static function checkMethodExists(mixed $object, array | string $methods): bool
+    {
+        if (!is_array($methods)) {
+            $methods = [$methods];
+        }
+
+        foreach ($methods as $method) {
+            if (!empty($method) && method_exists($object, $method)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param object|array $object
      *
      * @return string
