@@ -12,8 +12,6 @@
 namespace App\Controllers;
 
 use Core\Bootstrap;
-use Core\Facades\Logger;
-use Core\Helpers\Path;
 use JetBrains\PhpStorm\ArrayShape;
 use Psr\Http\Message\ResponseInterface;
 
@@ -31,8 +29,6 @@ class IndexController extends BaseController
     ])]
     public function index(): array
     {
-        Logger::addFileHandler(Path::storage('/logs/tests'))->info('ola');
-
         return [
             'path' => $this->request->getUri()->getPath(),
             'version' => Bootstrap::VERSION,
