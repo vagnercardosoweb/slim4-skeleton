@@ -19,6 +19,40 @@ namespace Core\Support;
 class Str extends \Illuminate\Support\Str
 {
     /**
+     * Limit number of letters in a string.
+     *
+     * @param string $string $string
+     * @param int    $limit
+     * @param string $end
+     *
+     * @return string
+     */
+    public static function chars(string $string, int $limit = 50, string $end = '...'): string
+    {
+        if (strlen($string) <= $limit) {
+            return $string;
+        }
+
+        $length = strrpos(self::substr($string, 0, $limit), ' ');
+
+        return self::substr($string, 0, $length).$end;
+    }
+
+    /**
+     * @param string $value
+     *
+     * @return string|null
+     */
+    public static function removeSpaces(string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        return trim(preg_replace('/\s+/', '', $value));
+    }
+
+    /**
      * @throws \Exception
      *
      * @return string

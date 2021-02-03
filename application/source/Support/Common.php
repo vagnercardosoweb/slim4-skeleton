@@ -84,4 +84,18 @@ class Common
 
         return $result;
     }
+
+    /**
+     * @param string|int $value
+     *
+     * @return string|null
+     */
+    public static function onlyNumber(int | string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        return trim(preg_replace('/[^0-9]/', '', $value));
+    }
 }
