@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 02/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 use Core\Bootstrap;
@@ -39,6 +39,14 @@ if (
 define('BASE_URL', "{$schema}://{$host}");
 define('REQUEST_URI', $_SERVER['REQUEST_URI'] ?? '/');
 define('FULL_URL', BASE_URL.REQUEST_URI);
+
+// Date formats
+define('DATE_BR', 'd/m/Y');
+define('DATE_TIME_BR', 'd/m/Y H:i:s');
+define('DATE_DATABASE', 'Y-m-d H:i:s');
+
+// Error success using in throw
+define('E_USER_SUCCESS', 'success');
 
 // Autoload.
 $autoloadPath = sprintf('%s/vendor/autoload.php', APP_PATH);
