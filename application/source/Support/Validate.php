@@ -488,7 +488,7 @@ class Validate
         $statement = self::$pdo->prepare($sql);
 
         if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+            throw new \UnexpectedValueException("Invalid SQL statement: {$sql}");
         }
 
         foreach ($bindValues as $key => $value) {
