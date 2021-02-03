@@ -26,6 +26,6 @@ class Jwt extends Facade
      */
     protected static function getAccessor(): string
     {
-        return \Core\Helpers\Jwt::class;
+        return \Core\Support\Jwt::class;
     }
 }

@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
-namespace Core\Helpers;
+namespace Core\Support;
 
 use Dotenv\Dotenv;
 use Dotenv\Repository\Adapter\ApacheAdapter;
@@ -143,7 +143,7 @@ class Env
             return $default;
         }
 
-        $value = Helper::normalizeValue($value);
+        $value = Common::normalizeValue($value);
 
         if (preg_match('/\A([\'"])(.*)\1\z/', $value, $matches)) {
             return $matches[2];

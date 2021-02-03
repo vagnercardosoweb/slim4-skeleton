@@ -9,7 +9,7 @@
  * @copyright 03/02/2021 Vagner Cardoso
  */
 
-use Core\Helpers\Env;
+use Core\Support\Env;
 
 return [
     'name' => Env::get('APP_NAME', 'Slim 4 Skeleton'),

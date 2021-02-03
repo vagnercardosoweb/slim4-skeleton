@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
-use Core\Helpers\Helper;
+use Core\Support\Common;
 use Core\Twig\Twig;
 use DI\Container;
 use Fig\Http\Message\StatusCodeInterface;
@@ -277,7 +277,7 @@ abstract class BaseController
             }
         }
 
-        return Helper::filterRequestValues($params);
+        return Common::filterRequestValues($params);
     }
 
     /**

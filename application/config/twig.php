@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 use Core\Config;
-use Core\Helpers\Env;
-use Core\Helpers\Path;
+use Core\Support\Env;
+use Core\Support\Path;
 
 return [
     'options' => [

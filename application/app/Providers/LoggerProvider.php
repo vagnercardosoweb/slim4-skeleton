@@ -13,8 +13,8 @@ namespace App\Providers;
 
 use Core\Config;
 use Core\Contracts\ServiceProvider;
-use Core\Helpers\Str;
 use Core\Logger;
+use Core\Support\Str;
 use DI\Container;
 
 /**

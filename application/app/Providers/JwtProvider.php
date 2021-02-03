@@ -12,8 +12,8 @@
 namespace App\Providers;
 
 use Core\Contracts\ServiceProvider;
-use Core\Helpers\Env;
-use Core\Helpers\Jwt;
+use Core\Support\Env;
+use Core\Support\Jwt;
 use DI\Container;
 
 /**
@@ -26,7 +26,7 @@ class JwtProvider implements ServiceProvider
     /**
      * @param \DI\Container $container
      *
-     * @return \Core\Helpers\Jwt
+     * @return \Core\Support\Jwt
      */
     public function __invoke(Container $container): Jwt
     {

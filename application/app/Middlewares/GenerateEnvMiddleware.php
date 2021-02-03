@@ -6,14 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 namespace App\Middlewares;
 
-use Core\Helpers\Env;
-use Core\Helpers\Helper;
-use Core\Helpers\Str;
+use Core\Support\Common;
+use Core\Support\Env;
+use Core\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -36,7 +36,7 @@ class GenerateEnvMiddleware implements MiddlewareInterface
     {
         foreach (['APP_KEY', 'API_SECRET_KEY', 'DEPLOY_SECRET_KEY'] as $key) {
             $value = Env::get($key, null);
-            $value = Helper::normalizeValue($value);
+            $value = Common::normalizeValue($value);
 
             if (empty($value)) {
                 $quote = preg_quote("={$value}", '/');

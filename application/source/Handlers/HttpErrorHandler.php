@@ -6,16 +6,16 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
 use Core\Handlers\ErrorHandler as MyErrorHandler;
-use Core\Helpers\Path;
+use Core\Support\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -46,10 +46,10 @@ class HttpErrorHandler
 
     /**
      * @param \Psr\Http\Message\ServerRequestInterface $request
-     * @param \Throwable $exception
-     * @param bool $displayErrorDetails
-     * @param bool $logErrors
-     * @param bool $logErrorDetails
+     * @param \Throwable                               $exception
+     * @param bool                                     $displayErrorDetails
+     * @param bool                                     $logErrors
+     * @param bool                                     $logErrorDetails
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
@@ -59,8 +59,7 @@ class HttpErrorHandler
         bool $displayErrorDetails,
         bool $logErrors,
         bool $logErrorDetails
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         $type = $this->types[$exception::class] ?? MyErrorHandler::BAD_REQUEST;
         $statusCode = $exception->getCode();
         $message = $exception->getMessage();

@@ -6,14 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 namespace Core;
 
-use Core\Helpers\Arr;
-use Core\Helpers\Helper;
-use Core\Helpers\Path;
+use Core\Support\Arr;
+use Core\Support\Common;
+use Core\Support\Path;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -121,7 +121,7 @@ class Config
             if (is_array($value)) {
                 $config[$key] = self::normalize($value);
             } else {
-                $config[$key] = Helper::normalizeValue($value);
+                $config[$key] = Common::normalizeValue($value);
             }
         }
 
