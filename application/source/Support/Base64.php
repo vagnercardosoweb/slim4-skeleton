@@ -9,7 +9,7 @@
  * @copyright 03/02/2021 Vagner Cardoso
  */
 
-namespace Core\Helpers;
+namespace Core\Support;
 
 /**
  * Class Base64.
