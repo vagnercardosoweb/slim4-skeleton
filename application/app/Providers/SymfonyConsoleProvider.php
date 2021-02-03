@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 02/02/2021 Vagner Cardoso
+ * @copyright 03/02/2021 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -54,7 +54,7 @@ class SymfonyConsoleProvider
                 $output->writeln("Add command error: <error>{$command}</error>");
                 $output->writeln($e->getMessage());
 
-                exit(0);
+                // exit(0);
             }
         }
 
