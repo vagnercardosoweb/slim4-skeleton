@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 03/02/2021 Vagner Cardoso
+ * @copyright 05/02/2021 Vagner Cardoso
  */
 
 use Core\Bootstrap;
@@ -61,12 +61,8 @@ if (!file_exists($autoloadPath)) {
 require_once "{$autoloadPath}";
 
 // Start application
-$bootstrap = (new Bootstrap(
+(new Bootstrap(
     registerRoutePath: ROUTE_PATH,
     registerMiddlewarePath: sprintf('%s/middleware.php', CONFIG_PATH),
     registerContainerPath: sprintf('%s/providers.php', CONFIG_PATH)
-));
-
-if (!Bootstrap::isCli() && !Bootstrap::isTesting()) {
-    $bootstrap->run();
-}
+))->run();

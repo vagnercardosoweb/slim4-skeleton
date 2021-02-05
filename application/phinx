@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+./vendor/bin/phinx "$@" -c "$(pwd)/config/phinx.php" --ansi -vvv

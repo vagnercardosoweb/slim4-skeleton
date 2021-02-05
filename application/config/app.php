@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 03/02/2021 Vagner Cardoso
+ * @copyright 05/02/2021 Vagner Cardoso
  */
 
 use Core\Support\Env;

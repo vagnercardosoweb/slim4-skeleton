@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 03/02/2021 Vagner Cardoso
+ * @copyright 05/02/2021 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -35,7 +35,7 @@ class GenerateEnvMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         foreach (['APP_KEY', 'API_SECRET_KEY', 'DEPLOY_SECRET_KEY'] as $key) {
-            $value = Env::get($key, null);
+            $value = Env::get($key);
             $value = Common::normalizeValue($value);
 
             if (empty($value)) {

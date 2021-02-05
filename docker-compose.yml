@@ -6,14 +6,14 @@ networks:
 
 services:
   web:
-    build: ./.docker
+    build: .docker
     working_dir: /var/www
     restart: always
     container_name: slimphp-api
     networks:
       - slimphp-network
-    #    depends_on:
-    #      - mysql
+    depends_on:
+      - mysql
     #      - postgres
     #      - redis
     ports:
@@ -21,29 +21,30 @@ services:
       - '443:443'
     volumes:
       - .:/var/www
-      - ./.docker/php/php.ini:/usr/local/etc/php/conf.d/99-php.ini
-      - ./.docker/apache/vhosts/localhost.conf:/etc/apache2/sites-available/000-default.conf
-      - ./.docker/apache/vhosts/localhost-ssl.conf:/etc/apache2/sites-available/default-ssl.conf
+      - .docker/php/php.ini:/usr/local/etc/php/conf.d/99-php.ini
+      - .docker/apache/vhosts/localhost.conf:/etc/apache2/sites-available/000-default.conf
+      - .docker/apache/vhosts/localhost-ssl.conf:/etc/apache2/sites-available/default-ssl.conf
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
       - DOCUMENT_ROOT=/var/www/public_html
       - APACHE_LOG_DIR=/var/www/.docker/apache/logs
 
-  #  mysql:
-  #    image: mysql:5.7
-  #    restart: always
-  #    container_name: slimphp-mysql
-  #    networks:
-  #      - slimphp-network
-  #    ports:
-  #      - '3306:3306'
-  #    volumes:
-  #      - './.docker/mysql/config:/etc/mysql/conf.d'
-  #      - './.docker/mysql/database:/var/lib/mysql'
-  #    environment:
-  #      - MYSQL_PASSWORD=root
-  #      - MYSQL_ROOT_PASSWORD=root
-  #      - MYSQL_DATABASE=development
+  mysql:
+    image: mysql:8
+    tty: true
+    restart: always
+    container_name: slimphp-mysql
+    networks:
+      - slimphp-network
+    ports:
+      - '3306:3306'
+    volumes:
+      - '.docker/mysql/config/my.cnf:/etc/mysql/conf.d/custom.cnf:ro'
+      - '.docker/mysql/database:/var/lib/mysql'
+    environment:
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=development
 
   #  phpmyadmin:
   #    image: phpmyadmin/phpmyadmin
@@ -67,7 +68,7 @@ services:
   #    ports:
   #      - '5432:5432'
   #    volumes:
-  #      - './.docker/postgres:/var/lib/postgresql/data'
+  #      - '.docker/postgres:/var/lib/postgresql/data'
   #    environment:
   #      - POSTGRES_USER=root
   #      - POSTGRES_PASSWORD=root
@@ -78,7 +79,7 @@ services:
   #    restart: always
   #    container_name: slimphp-redis
   #    volumes:
-  #      - ./.docker/redis:/bitnami/redis/data
+  #      - .docker/redis:/bitnami/redis/data
   #    networks:
   #      - slimphp-network
   #    environment:
