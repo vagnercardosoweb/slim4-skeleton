@@ -9,12 +9,14 @@
  * @copyright 05/02/2021 Vagner Cardoso
  */
 
+use App\Providers\DatabaseProvider;
 use App\Providers\EncryptionProvider;
 use App\Providers\JwtProvider;
 use App\Providers\LoggerProvider;
 use App\Providers\PasswordProvider;
 use App\Providers\SymfonyConsoleProvider;
 use App\Providers\TwigProvider;
+use Core\Database\Database;
 use Core\Logger;
 use Core\Password\Password;
 use Core\Support\Encryption;
@@ -30,4 +32,5 @@ return [
     Application::class => factory(SymfonyConsoleProvider::class),
     Encryption::class => factory(EncryptionProvider::class),
     Password::class => factory(PasswordProvider::class),
+    Database::class => factory(DatabaseProvider::class),
 ];

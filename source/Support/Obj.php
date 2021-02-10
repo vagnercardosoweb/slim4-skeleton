@@ -19,11 +19,11 @@ namespace Core\Support;
 class Obj
 {
     /**
-     * @param array|object $array
+     * @param object|array|null $array
      *
-     * @return object
+     * @return object|null
      */
-    public static function fromArray(object | array $array): object
+    public static function fromArray(object|array|null $array): ?object
     {
         if (is_object($array)) {
             return $array;
@@ -47,9 +47,9 @@ class Obj
     }
 
     /**
-     * @param object      $object
+     * @param object $object
      * @param string|null $name
-     * @param mixed       $default
+     * @param mixed $default
      *
      * @return mixed
      */
@@ -71,12 +71,12 @@ class Obj
     }
 
     /**
-     * @param mixed        $object
+     * @param mixed $object
      * @param string|array $methods
      *
      * @return bool
      */
-    public static function checkMethodExists(mixed $object, array | string $methods): bool
+    public static function checkMethodExists(mixed $object, array|string $methods): bool
     {
         if (!is_array($methods)) {
             $methods = [$methods];
@@ -96,17 +96,17 @@ class Obj
      *
      * @return string
      */
-    public static function toJson(object | array $object): string
+    public static function toJson(object|array $object): string
     {
         return json_encode(self::toArray($object), JSON_UNESCAPED_SLASHES, JSON_PRETTY_PRINT);
     }
 
     /**
-     * @param object|array $object
+     * @param object|array|null $object
      *
-     * @return array
+     * @return array|null
      */
-    public static function toArray(object | array $object): array
+    public static function toArray(object|array|null $object): ?array
     {
         $array = [];
 
