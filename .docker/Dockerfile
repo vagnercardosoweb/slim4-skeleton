@@ -39,7 +39,7 @@ RUN  apt-get update \
   && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 # Configura dependencia do php
-RUN docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu
+#RUN docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu
 RUN docker-php-ext-configure soap --enable-soap
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
@@ -54,7 +54,7 @@ RUN docker-php-ext-install \
   pdo \
   pdo_mysql \
   pdo_pgsql \
-  pdo_dblib \
+#  pdo_dblib \
   mysqli \
   zip \
   opcache \
