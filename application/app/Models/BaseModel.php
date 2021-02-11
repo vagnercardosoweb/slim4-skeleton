@@ -10,15 +10,19 @@ use Core\Facades\Database;
  *
  * @package App\Models
  */
-class BaseModel extends Model
+abstract class BaseModel extends Model
 {
     /**
      * BaseModel constructor.
+     *
+     * @throws \Exception
      */
     public function __construct()
     {
         if (is_null(self::$database)) {
-            self::setDatabase(Database::getResolvedInstance());
+            $database = Database::getResolvedInstance();
+
+            self::setDatabase($database->driver($this->driver));
         }
     }
 }
