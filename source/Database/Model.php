@@ -256,12 +256,10 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     protected function buildSqlStatement(): Statement
     {
-        $statement = static::$database
-            ->driver($this->driver)
-            ->query(
-                $this->getQuery(),
-                $this->bindings
-            );
+        $statement = static::$database->query(
+            $this->getQuery(),
+            $this->bindings
+        );
 
         $this->clear();
 
@@ -584,9 +582,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function transaction(Closure $callback): mixed
     {
-        $db = static::$database->driver($this->driver);
-
-        return $db->transaction($callback, $this);
+        return self::$database->transaction($callback, $this);
     }
 
     /**
@@ -639,7 +635,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function fetchById(int|string $id): ?self
     {
         if (empty($this->primaryKey)) {
-            throw new \Exception(sprintf('Primary key is not configured in the model (%s).', self::class));
+            throw new \Exception(sprintf('Primary key is not configured in the model (%s).', static::class));
         }
 
         array_unshift($this->where, "AND {$this->table}.{$this->primaryKey} = :u{$this->primaryKey}");
@@ -687,14 +683,12 @@ abstract class Model implements ArrayAccess, JsonSerializable
             );
         }
 
-        $rows = static::$database
-            ->driver($this->driver)
-            ->update(
-                $this->table,
-                $this->data,
-                "WHERE {$this->normalizeProperty($this->where)}",
-                $this->bindings
-            );
+        $rows = static::$database->update(
+            $this->table,
+            $this->data,
+            "WHERE {$this->normalizeProperty($this->where)}",
+            $this->bindings
+        );
 
         $this->clear();
 
@@ -768,9 +762,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     {
         $this->data($data, $validate);
 
-        $lastInsertId = static::$database
-            ->driver($this->driver)
-            ->create($this->table, $this->data);
+        $lastInsertId = static::$database->create($this->table, $this->data);
 
         $new = clone $this;
 
@@ -893,7 +885,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function getDriver(): ?string
     {
-        return $this->driver ?? null;
+        return $this->driver;
     }
 
     /**
@@ -917,13 +909,11 @@ abstract class Model implements ArrayAccess, JsonSerializable
             );
         }
 
-        $rows = static::$database
-            ->driver($this->driver)
-            ->delete(
-                $this->table,
-                "WHERE {$this->normalizeProperty($this->where)}",
-                $this->bindings
-            );
+        $rows = static::$database->delete(
+            $this->table,
+            "WHERE {$this->normalizeProperty($this->where)}",
+            $this->bindings
+        );
 
         if (!$rows) {
             return null;
@@ -945,7 +935,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function getStatement(): Statement
     {
-        $statement = static::$database->driver($this->driver)->prepare($this->getQuery());
+        $statement = static::$database->prepare($this->getQuery());
         $statement->bindValues($this->bindings);
 
         return $statement;
@@ -954,11 +944,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * @param string $driver
      *
+     * @throws \Exception
      * @return $this
      */
     public function driver(string $driver): self
     {
         $this->driver = $driver;
+
+        self::setDatabase(self::$database->driver($this->driver));
 
         return $this;
     }
@@ -969,5 +962,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public static function query(): self
     {
         return new static();
+    }
+
+    /**
+     * @return \Core\Database\Database|null
+     */
+    public function getDatabase(): ?Database
+    {
+        return static::$database;
     }
 }
