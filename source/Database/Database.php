@@ -1,12 +1,12 @@
 <?php
 
 /*
- * VCWeb Networks <https://www.vcwebnetworks.com.br/>
+ * Vagner Cardoso <https://github.com/vagnercardosoweb>
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/01/2021 Vagner Cardoso
+ * @copyright 11/02/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -76,7 +76,7 @@ class Database
 
     /**
      * @param string $method
-     * @param mixed $arguments
+     * @param mixed  $arguments
      *
      * @return mixed
      */
@@ -93,7 +93,7 @@ class Database
 
     /**
      * @param string $driver
-     * @param array $connection
+     * @param array  $connection
      *
      * @return $this
      */
@@ -144,9 +144,9 @@ class Database
         if (!$this->connections[$driver] instanceof PDO) {
             if ('pgsql' == $connection['driver']) {
                 $this->connections[$driver] = (new PostgreSqlConnection($connection));
-            } else if ('sqlsrv' == $connection['driver']) {
+            } elseif ('sqlsrv' == $connection['driver']) {
                 $this->connections[$driver] = (new SqlServerConnection($connection));
-            } else if ('sqlite' == $connection['driver']) {
+            } elseif ('sqlite' == $connection['driver']) {
                 $this->connections[$driver] = (new SQLiteConnection($connection));
             } else {
                 $this->connections[$driver] = (new MySqlConnection($connection));
@@ -231,14 +231,14 @@ class Database
     }
 
     /**
-     * @param string $table
+     * @param string       $table
      * @param array|object $data
      *
      * @throws \Exception
      *
      * @return int|null
      */
-    public function create(string $table, object|array $data): ?int
+    public function create(string $table, object | array $data): ?int
     {
         $data = Obj::fromArray($data);
         $data = $bindings = ($this->event("{$table}:creating", $data) ?: $data);
@@ -270,9 +270,9 @@ class Database
     }
 
     /**
-     * @param string $sql
+     * @param string       $sql
      * @param string|array $bindings
-     * @param array $driverOptions
+     * @param array        $driverOptions
      *
      * @throws \Exception
      *
@@ -295,16 +295,16 @@ class Database
     }
 
     /**
-     * @param string $table
+     * @param string       $table
      * @param array|object $data
-     * @param string $condition
-     * @param null $bindings
+     * @param string       $condition
+     * @param null         $bindings
      *
      * @throws \Exception
      *
      * @return object[]|null
      */
-    public function update(string $table, object|array $data, string $condition, $bindings = null): ?array
+    public function update(string $table, object | array $data, string $condition, $bindings = null): ?array
     {
         if (!$rows = $this->findAndTransformRowsObject($table, $condition, $bindings)) {
             return null;
@@ -335,8 +335,8 @@ class Database
     }
 
     /**
-     * @param string $table
-     * @param string $condition
+     * @param string       $table
+     * @param string       $condition
      * @param array|string $bindings
      *
      * @throws \Exception
@@ -355,9 +355,9 @@ class Database
     }
 
     /**
-     * @param string $table
+     * @param string      $table
      * @param string|null $condition
-     * @param null $bindings
+     * @param null        $bindings
      *
      * @throws \Exception
      *
@@ -369,8 +369,8 @@ class Database
     }
 
     /**
-     * @param string $table
-     * @param string $condition
+     * @param string       $table
+     * @param string       $condition
      * @param string|array $bindings
      *
      * @throws \Exception

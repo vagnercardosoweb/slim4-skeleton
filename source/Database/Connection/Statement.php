@@ -1,12 +1,12 @@
 <?php
 
 /*
- * VCWeb Networks <https://www.vcwebnetworks.com.br/>
+ * Vagner Cardoso <https://github.com/vagnercardosoweb>
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/01/2021 Vagner Cardoso
+ * @copyright 11/02/2021 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -75,8 +75,8 @@ class Statement extends \PDOStatement
 
     /**
      * @param mixed $mode
-     * @param int $cursorOrientation
-     * @param int $cursorOffset
+     * @param int   $cursorOrientation
+     * @param int   $cursorOffset
      *
      * @return mixed
      */
@@ -129,7 +129,7 @@ class Statement extends \PDOStatement
     /**
      * @param array|string|object|null $bindings
      */
-    public function bindValues(object|array|string|null $bindings): void
+    public function bindValues(object | array | string | null $bindings): void
     {
         if (empty($bindings)) {
             return;

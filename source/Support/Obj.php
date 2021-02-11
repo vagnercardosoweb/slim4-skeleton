@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/02/2021 Vagner Cardoso
+ * @copyright 11/02/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -23,7 +23,7 @@ class Obj
      *
      * @return object|null
      */
-    public static function fromArray(object|array|null $array): ?object
+    public static function fromArray(object | array | null $array): ?object
     {
         if (is_object($array)) {
             return $array;
@@ -47,9 +47,9 @@ class Obj
     }
 
     /**
-     * @param object $object
+     * @param object      $object
      * @param string|null $name
-     * @param mixed $default
+     * @param mixed       $default
      *
      * @return mixed
      */
@@ -71,12 +71,12 @@ class Obj
     }
 
     /**
-     * @param mixed $object
+     * @param mixed        $object
      * @param string|array $methods
      *
      * @return bool
      */
-    public static function checkMethodExists(mixed $object, array|string $methods): bool
+    public static function checkMethodExists(mixed $object, array | string $methods): bool
     {
         if (!is_array($methods)) {
             $methods = [$methods];
@@ -96,7 +96,7 @@ class Obj
      *
      * @return string
      */
-    public static function toJson(object|array $object): string
+    public static function toJson(object | array $object): string
     {
         return json_encode(self::toArray($object), JSON_UNESCAPED_SLASHES, JSON_PRETTY_PRINT);
     }
@@ -106,7 +106,7 @@ class Obj
      *
      * @return array|null
      */
-    public static function toArray(object|array|null $object): ?array
+    public static function toArray(object | array | null $object): ?array
     {
         $array = [];
 

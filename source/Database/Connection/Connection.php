@@ -1,12 +1,12 @@
 <?php
 
 /*
- * VCWeb Networks <https://www.vcwebnetworks.com.br/>
+ * Vagner Cardoso <https://github.com/vagnercardosoweb>
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/01/2021 Vagner Cardoso
+ * @copyright 11/02/2021 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -190,11 +190,11 @@ abstract class Connection extends \PDO
             foreach ((array)$config['events'] as $class) {
                 if (!is_a($class, ConnectionEvent::class, true)) {
                     throw new \RuntimeException(
-                        sprintf("Class %s must implement class %s.", $class, ConnectionEvent::class)
+                        sprintf('Class %s must implement class %s.', $class, ConnectionEvent::class)
                     );
                 }
 
-                call_user_func([new $class, '__invoke'], $this);
+                call_user_func([new $class(), '__invoke'], $this);
             }
         }
     }
