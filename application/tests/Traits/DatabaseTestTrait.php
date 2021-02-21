@@ -19,9 +19,9 @@ use Tests\Fixture\FixtureInterface;
 use UnexpectedValueException;
 
 /**
- * Database test.
+ * Trait DatabaseTestTrait.
  */
-trait MySQLDatabaseTestTrait
+trait DatabaseTestTrait
 {
     /**
      * @var string Path to schema.sql
@@ -108,9 +108,9 @@ trait MySQLDatabaseTestTrait
      */
     protected function getDatabaseVariable(string $variable): ?string
     {
-        $statement = $this->getConnection()->prepare('SHOW VARIABLES LIKE ?');
+        $statement = $this->getConnection()->prepare("SHOW VARIABLES LIKE '{$variable}'");
 
-        if (!$statement || false === $statement->execute([$variable])) {
+        if (!$statement || false === $statement->execute()) {
             throw new UnexpectedValueException('Invalid SQL statement');
         }
 

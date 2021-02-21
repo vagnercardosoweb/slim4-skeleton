@@ -13,6 +13,7 @@ namespace Tests;
 
 use Core\Bootstrap;
 use Core\Support\Arr;
+use Core\Support\Path;
 use DI\Container;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
@@ -60,6 +61,10 @@ class TestCase extends PHPUnitTestCase
             throw new \UnexpectedValueException(
                 'Container is not an instance DI\\Container.'
             );
+        }
+
+        if (method_exists($this, 'setUpDatabase')) {
+            $this->setUpDatabase(Path::resources('/database/schema.sql'));
         }
     }
 
