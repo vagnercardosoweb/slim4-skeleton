@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -14,6 +14,7 @@ namespace App\Providers;
 use Core\Config;
 use Core\Contracts\ServiceProvider;
 use Core\Database\Database;
+use Core\Facades\Facade;
 use DI\Container;
 
 /**
@@ -30,6 +31,8 @@ class DatabaseProvider implements ServiceProvider
      */
     public function __invoke(Container $container): Database
     {
+        Facade::setAliases(['Database' => Database::class]);
+
         $database = new Database();
         $database->setDefaultDriver(Config::get('database.default', 'mysql'));
 

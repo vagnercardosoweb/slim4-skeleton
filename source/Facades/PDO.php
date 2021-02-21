@@ -12,17 +12,17 @@
 namespace Core\Facades;
 
 /**
- * Class Database.
+ * Class PDO.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class Database extends Facade
+class PDO extends Facade
 {
     /**
      * @return string
      */
     protected static function getAccessor(): string
     {
-        return \Core\Database\Database::class;
+        return \PDO::class;
     }
 }

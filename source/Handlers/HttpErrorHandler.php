@@ -61,7 +61,7 @@ class HttpErrorHandler
         bool $logErrorDetails
     ): ResponseInterface {
         $type = $this->types[$exception::class] ?? MyErrorHandler::BAD_REQUEST;
-        $statusCode = $exception->getCode();
+        $statusCode = $exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
         $message = $exception->getMessage();
 
         if (
