@@ -765,15 +765,19 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
         $lastInsertId = static::$database->create($this->table, $this->data);
 
-        $new = clone $this;
-
         if ($lastInsertId && $this->primaryKey) {
-            $new->{$this->primaryKey} = $lastInsertId;
+            $row = $this->fetchById($lastInsertId);
+        } else {
+            foreach ($this->data as $key => $value) {
+                $this->whereBy($key, $value);
+            }
+
+            return $this->fetch();
         }
 
         $this->clear(['data']);
 
-        return $new;
+        return $row;
     }
 
     /**
