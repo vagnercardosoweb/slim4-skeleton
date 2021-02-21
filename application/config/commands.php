@@ -10,5 +10,5 @@
  */
 
 return [
-    // \App\Commands\CommandNameCommand::class,
+    \App\Commands\SchemaDumpCommand::class,
 ];
