@@ -772,7 +772,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
                 $this->whereBy($key, $value);
             }
 
-            return $this->fetch();
+            $row = $this->fetch();
         }
 
         $this->clear(['data']);
