@@ -11,7 +11,12 @@
 
 namespace Tests\Traits;
 
+use DomainException;
+use InvalidArgumentException;
+use PDO;
+use PDOStatement;
 use Tests\Fixture\FixtureInterface;
+use UnexpectedValueException;
 
 /**
  * Database test.
@@ -54,47 +59,9 @@ trait MySQLDatabaseTestTrait
      *
      * @return \PDO The PDO instance
      */
-    protected function getConnection(): \PDO
+    protected function getConnection(): PDO
     {
-        return $this->container->get(\PDO::class);
-    }
-
-    /**
-     * Workaround for MySQL 8: update_time not working.
-     *
-     * https://bugs.mysql.com/bug.php?id=95407
-     *
-     * @return void
-     */
-    private function unsetStatsExpiry()
-    {
-        if (version_compare($this->getMySqlVersion(), '8.0.0') >= 0) {
-            $this->getConnection()->exec('SET information_schema_stats_expiry=0;');
-        }
-    }
-
-    /**
-     * Get MySql version.
-     *
-     * @throws \UnexpectedValueException
-     *
-     * @return string The version
-     */
-    private function getMySqlVersion(): string
-    {
-        $statement = $this->getConnection()->query("SHOW VARIABLES LIKE 'version';");
-
-        if (false === $statement) {
-            throw new \UnexpectedValueException('Invalid sql statement');
-        }
-
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
-
-        if (false === $row) {
-            throw new \UnexpectedValueException('Version not found');
-        }
-
-        return (string)$row['Value'];
+        return $this->container->get(PDO::class);
     }
 
     /**
@@ -108,6 +75,7 @@ trait MySQLDatabaseTestTrait
             return;
         }
 
+        $this->unsetStatsExpiry();
         $this->dropTables();
         $this->importSchema();
 
@@ -115,9 +83,48 @@ trait MySQLDatabaseTestTrait
     }
 
     /**
-     * Clean up database. Truncate tables.
+     * Workaround for MySQL 8: update_time not working.
      *
-     * @throws \UnexpectedValueException
+     * https://bugs.mysql.com/bug.php?id=95407
+     *
+     * @return void
+     */
+    private function unsetStatsExpiry()
+    {
+        $expiry = $this->getDatabaseVariable('information_schema_stats_expiry');
+        $version = (string)$this->getDatabaseVariable('version');
+
+        if (null !== $expiry && version_compare($version, '8.0.0', '>=')) {
+            $this->getConnection()->exec('SET information_schema_stats_expiry=0;');
+        }
+    }
+
+    /**
+     * Get database variable.
+     *
+     * @param string $variable The variable
+     *
+     * @return string|null The value
+     */
+    protected function getDatabaseVariable(string $variable): ?string
+    {
+        $statement = $this->getConnection()->prepare('SHOW VARIABLES LIKE ?');
+
+        if (!$statement || false === $statement->execute([$variable])) {
+            throw new UnexpectedValueException('Invalid SQL statement');
+        }
+
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if (false === $row) {
+            return null;
+        }
+
+        return (string)$row['Value'];
+    }
+
+    /**
+     * Clean up database. Truncate tables.
      *
      * @return void
      */
@@ -130,11 +137,11 @@ trait MySQLDatabaseTestTrait
         $statement = $this->createQueryStatement(
             'SELECT TABLE_NAME
                 FROM information_schema.tables
-                WHERE table_schema = database()'
+                WHERE table_schema = DATABASE()'
         );
 
         $sql = [];
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
             $sql[] = sprintf('DROP TABLE `%s`;', $row['TABLE_NAME']);
         }
 
@@ -154,12 +161,12 @@ trait MySQLDatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    private function createQueryStatement(string $sql): \PDOStatement
+    private function createQueryStatement(string $sql): PDOStatement
     {
-        $statement = $this->getConnection()->query($sql, \PDO::FETCH_ASSOC);
+        $statement = $this->getConnection()->query($sql, PDO::FETCH_ASSOC);
 
-        if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+        if (!$statement instanceof PDOStatement) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
         return $statement;
@@ -175,11 +182,11 @@ trait MySQLDatabaseTestTrait
     protected function importSchema(): void
     {
         if (!$this->schemaFile) {
-            throw new \UnexpectedValueException('The path for schema.sql is not defined');
+            throw new UnexpectedValueException('The path for schema.sql is not defined');
         }
 
         if (!file_exists($this->schemaFile)) {
-            throw new \UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
+            throw new UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
         }
 
         $pdo = $this->getConnection();
@@ -190,8 +197,6 @@ trait MySQLDatabaseTestTrait
 
     /**
      * Clean up database.
-     *
-     * @throws \UnexpectedValueException
      *
      * @return void
      */
@@ -205,12 +210,12 @@ trait MySQLDatabaseTestTrait
         $statement = $this->createQueryStatement(
             'SELECT TABLE_NAME
                 FROM information_schema.tables
-                WHERE table_schema = database()
+                WHERE table_schema = DATABASE()
                 AND update_time IS NOT NULL'
         );
 
         $sql = [];
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
             $sql[] = sprintf('TRUNCATE TABLE `%s`;', $row['TABLE_NAME']);
         }
 
@@ -232,7 +237,7 @@ trait MySQLDatabaseTestTrait
     {
         foreach ($fixtures as $fixture) {
             if (!is_a($fixture, FixtureInterface::class)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     "Fixture {$fixture} must be an instance of: Tests\\Fixture\\FixtureInterface."
                 );
             }
@@ -277,12 +282,12 @@ trait MySQLDatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    private function createPreparedStatement(string $sql): \PDOStatement
+    private function createPreparedStatement(string $sql): PDOStatement
     {
         $statement = $this->getConnection()->prepare($sql);
 
-        if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+        if (!$statement instanceof PDOStatement) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
         return $statement;
@@ -330,10 +335,10 @@ trait MySQLDatabaseTestTrait
         $statement = $this->createPreparedStatement($sql);
         $statement->execute(['id' => $id]);
 
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (empty($row)) {
-            throw new \DomainException(sprintf('Row not found: %s', $id));
+            throw new DomainException(sprintf('Row not found: %s', $id));
         }
 
         if ($fields) {
@@ -415,7 +420,7 @@ trait MySQLDatabaseTestTrait
     {
         $sql = sprintf('SELECT COUNT(*) AS counter FROM `%s`;', $table);
         $statement = $this->createQueryStatement($sql);
-        $row = $statement->fetch(\PDO::FETCH_ASSOC) ?: [];
+        $row = $statement->fetch(PDO::FETCH_ASSOC) ?: [];
 
         return (int)($row['counter'] ?? 0);
     }
@@ -440,8 +445,6 @@ trait MySQLDatabaseTestTrait
      * @param string $table Table name
      * @param int    $id    The primary key value
      *
-     * @throws \DomainException
-     *
      * @return array<mixed> Row
      */
     protected function findTableRowById(string $table, int $id): array
@@ -450,7 +453,7 @@ trait MySQLDatabaseTestTrait
         $statement = $this->createPreparedStatement($sql);
         $statement->execute(['id' => $id]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC) ?: [];
+        return $statement->fetch(PDO::FETCH_ASSOC) ?: [];
     }
 
     /**

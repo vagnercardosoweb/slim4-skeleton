@@ -16,10 +16,12 @@ use Core\Support\Arr;
 use DI\Container;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Slim\App;
+use Slim\Interfaces\RouteParserInterface;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /**
@@ -81,7 +83,9 @@ class TestCase extends PHPUnitTestCase
             ->getMock()
         ;
 
-        $this->container->set($class, $mock);
+        if ($this->container instanceof ContainerInterface && method_exists($this->container, 'set')) {
+            $this->container->set($class, $mock);
+        }
 
         return $mock;
     }
@@ -155,6 +159,20 @@ class TestCase extends PHPUnitTestCase
         $this->assertJson($actual);
 
         return (array)json_decode($actual, true);
+    }
+
+    /**
+     * Build the path for a named route including the base path.
+     *
+     * @param string   $routeName   Route name
+     * @param string[] $data        Named argument replacement data
+     * @param string[] $queryParams Optional query string parameters
+     *
+     * @return string route with base path
+     */
+    protected function getUrlFor(string $routeName, array $data = [], array $queryParams = []): string
+    {
+        return $this->container->get(RouteParserInterface::class)->urlFor($routeName, $data, $queryParams);
     }
 
     /**
