@@ -70,14 +70,14 @@ class Bootstrap
         $this->registerApp();
         $this->registerFacade();
 
-        if (self::runningInWebserver()) {
+        if ($this->runningWebserverOrTest()) {
             $this->registerMiddleware();
         }
 
         $this->registerErrorHandler();
         $this->registerPhpSettings();
 
-        if (self::runningInWebserver() && $registerRoutePath) {
+        if ($this->runningWebserverOrTest() && $registerRoutePath) {
             Route::setRouteCollectorProxy(self::$app);
             Route::registerPath($registerRoutePath);
         }
@@ -254,7 +254,15 @@ class Bootstrap
      */
     public static function runningInConsole(): bool
     {
-        return in_array(PHP_SAPI, ['cli', 'phpdbg']) || 'testing' === Env::get('APP_ENV');
+        return in_array(PHP_SAPI, ['cli', 'phpdbg']);
+    }
+
+    /**
+     * @return bool
+     */
+    public static function runningInTest(): bool
+    {
+        return Env::has('PHPUNIT_TEST_SUITE');
     }
 
     /**
@@ -266,11 +274,19 @@ class Bootstrap
     }
 
     /**
+     * @return bool
+     */
+    public function runningWebserverOrTest(): bool
+    {
+        return self::runningInWebserver() || self::runningInTest();
+    }
+
+    /**
      * @return void
      */
     public function run(): void
     {
-        if (self::runningInConsole()) {
+        if (!self::runningInWebserver()) {
             return;
         }
 
