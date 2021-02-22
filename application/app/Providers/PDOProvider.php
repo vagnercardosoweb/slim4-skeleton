@@ -12,29 +12,31 @@
 namespace App\Providers;
 
 use Core\Contracts\ServiceProvider;
+use Core\Database\Database;
 use Core\Facades\Facade;
-use Core\Support\Env;
-use Core\Support\Jwt;
 use DI\Container;
 
 /**
- * Class JwtProvider.
+ * Class PDOProvider.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class JwtProvider implements ServiceProvider
+class PDOProvider implements ServiceProvider
 {
     /**
      * @param \DI\Container $container
      *
-     * @return \Core\Support\Jwt
+     * @throws \DI\DependencyException
+     * @throws \DI\NotFoundException
+     *
+     * @return \PDO
      */
-    public function __invoke(Container $container): Jwt
+    public function __invoke(Container $container): \PDO
     {
-        Facade::setAliases(['Jwt' => Jwt::class]);
+        Facade::setAliases(['PDO' => \PDO::class]);
 
-        $key = Env::get('APP_KEY');
+        $database = $container->get(Database::class);
 
-        return new Jwt($key);
+        return $database->getPdo();
     }
 }

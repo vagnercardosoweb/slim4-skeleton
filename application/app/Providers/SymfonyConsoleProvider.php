@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -36,7 +36,7 @@ class SymfonyConsoleProvider implements ServiceProvider
     {
         Facade::setAliases(['Application' => Application::class]);
 
-        $application = new Application('Slim 4 Skeleton', Bootstrap::VERSION);
+        $application = new Application(Config::get('app.name'), Bootstrap::VERSION);
 
         $optionEnv = new InputOption(
             name: '--env',
@@ -57,7 +57,7 @@ class SymfonyConsoleProvider implements ServiceProvider
                 $output = new ConsoleOutput();
                 $output->writeln("Add command error: <error>{$command}</error>");
                 $output->writeln($e->getMessage());
-                // exit(0);
+                exit(0);
             }
         }
 

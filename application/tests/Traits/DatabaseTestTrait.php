@@ -6,22 +6,39 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 22/02/2021 Vagner Cardoso
  */
 
 namespace Tests\Traits;
 
+use DomainException;
+use InvalidArgumentException;
+use PDO;
+use PDOStatement;
 use Tests\Fixture\FixtureInterface;
+use UnexpectedValueException;
 
 /**
- * Database test.
+ * Trait DatabaseTestTrait.
  */
-trait MySQLDatabaseTestTrait
+trait DatabaseTestTrait
 {
     /**
-     * @var string Path to schema.sql
+     * Path to schema.sql.
+     *
+     * @var string|null
      */
-    protected string $schemaFile = '';
+    protected ?string $schemaFile = null;
+
+    /**
+     * @var bool
+     */
+    protected bool $runPhinx = false;
+
+    /**
+     * @var FixtureInterface[]
+     */
+    protected array $fixtures = [];
 
     /**
      * Create tables and insert fixtures.
@@ -29,20 +46,23 @@ trait MySQLDatabaseTestTrait
      * TestCases must call this method inside setUp().
      *
      * @param string|null $schemaFile The sql schema file
-     *
-     * @return void
+     * @param bool        $runPhinx
      */
-    protected function setUpDatabase(string $schemaFile = null): void
+    protected function setUpDatabase(string $schemaFile = null, bool $runPhinx = false)
     {
-        if (isset($schemaFile)) {
-            $this->schemaFile = $schemaFile;
-        }
+        $this->schemaFile = $schemaFile;
+        $this->runPhinx = $runPhinx;
 
         $this->getConnection();
 
-        $this->unsetStatsExpiry();
-        $this->createTables();
-        $this->truncateTables();
+        if ($runPhinx && empty($schemaFile)) {
+            $this->phinxMigrate();
+        }
+
+        if (!empty($schemaFile)) {
+            $this->unsetStatsExpiry();
+            $this->importSchema();
+        }
 
         if (!empty($this->fixtures)) {
             $this->insertFixtures($this->fixtures);
@@ -50,13 +70,42 @@ trait MySQLDatabaseTestTrait
     }
 
     /**
+     * This method is called after each test.
+     */
+    protected function tearDownDatabase(): void
+    {
+        $this->unsetStatsExpiry();
+        $this->dropTables();
+    }
+
+    /**
+     * Run rollback.
+     *
+     * @return void
+     */
+    protected function phinxRollback(): void
+    {
+        shell_exec('./phinx rollback -t 0');
+    }
+
+    /**
+     * Run migrate.
+     *
+     * @return void
+     */
+    protected function phinxMigrate(): void
+    {
+        shell_exec('./phinx migrate');
+    }
+
+    /**
      * Get database connection.
      *
      * @return \PDO The PDO instance
      */
-    protected function getConnection(): \PDO
+    protected function getConnection(): PDO
     {
-        return $this->container->get(\PDO::class);
+        return $this->container->get(PDO::class);
     }
 
     /**
@@ -68,81 +117,70 @@ trait MySQLDatabaseTestTrait
      */
     private function unsetStatsExpiry()
     {
-        if (version_compare($this->getMySqlVersion(), '8.0.0') >= 0) {
+        $expiry = $this->getDatabaseVariable('information_schema_stats_expiry');
+        $version = (string)$this->getDatabaseVariable('version');
+
+        if (null !== $expiry && version_compare($version, '8.0.0', '>=')) {
             $this->getConnection()->exec('SET information_schema_stats_expiry=0;');
         }
     }
 
     /**
-     * Get MySql version.
+     * Get database variable.
      *
-     * @throws \UnexpectedValueException
+     * @param string $variable The variable
      *
-     * @return string The version
+     * @return string|null The value
      */
-    private function getMySqlVersion(): string
+    protected function getDatabaseVariable(string $variable): ?string
     {
-        $statement = $this->getConnection()->query("SHOW VARIABLES LIKE 'version';");
+        $statement = $this->getConnection()->prepare("SHOW VARIABLES LIKE '{$variable}'");
 
-        if (false === $statement) {
-            throw new \UnexpectedValueException('Invalid sql statement');
+        if (!$statement || false === $statement->execute()) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (false === $row) {
-            throw new \UnexpectedValueException('Version not found');
+            return null;
         }
 
         return (string)$row['Value'];
     }
 
     /**
-     * Create tables.
-     *
-     * @return void
+     * @return array
      */
-    protected function createTables(): void
+    protected function getSchemaTables(): array
     {
-        if (defined('DB_TEST_TRAIT_INIT')) {
-            return;
-        }
+        $statement = $this->createQueryStatement('
+            SELECT TABLE_NAME AS tableName
+            FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+        ');
 
-        $this->dropTables();
-        $this->importSchema();
-
-        define('DB_TEST_TRAIT_INIT', 1);
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
      * Clean up database. Truncate tables.
      *
-     * @throws \UnexpectedValueException
-     *
      * @return void
      */
     protected function dropTables(): void
     {
-        $pdo = $this->getConnection();
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
+            $sql = [];
 
-        $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
+            foreach ($this->getSchemaTables() as $row) {
+                $sql[] = sprintf('DROP TABLE `%s`;', $row['tableName']);
+            }
 
-        $statement = $this->createQueryStatement(
-            'SELECT TABLE_NAME
-                FROM information_schema.tables
-                WHERE table_schema = database()'
-        );
-
-        $sql = [];
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $sql[] = sprintf('DROP TABLE `%s`;', $row['TABLE_NAME']);
-        }
-
-        if ($sql) {
-            $pdo->exec(implode("\n", $sql));
-        }
-
-        $pdo->exec('SET unique_checks=1; SET foreign_key_checks=1;');
+            if ($sql) {
+                $pdo->exec(implode("\n", $sql));
+            }
+        });
     }
 
     /**
@@ -154,12 +192,12 @@ trait MySQLDatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    private function createQueryStatement(string $sql): \PDOStatement
+    private function createQueryStatement(string $sql): PDOStatement
     {
-        $statement = $this->getConnection()->query($sql, \PDO::FETCH_ASSOC);
+        $statement = $this->getConnection()->query($sql, PDO::FETCH_ASSOC);
 
-        if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+        if (!$statement instanceof PDOStatement) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
         return $statement;
@@ -174,51 +212,52 @@ trait MySQLDatabaseTestTrait
      */
     protected function importSchema(): void
     {
-        if (!$this->schemaFile) {
-            throw new \UnexpectedValueException('The path for schema.sql is not defined');
+        if (empty($this->schemaFile)) {
+            return;
         }
 
         if (!file_exists($this->schemaFile)) {
-            throw new \UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
+            throw new UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
         }
 
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
+            $pdo->exec((string)file_get_contents($this->schemaFile));
+        });
+    }
+
+    /**
+     * Disable checking ethnic types and foreign keys.
+     *
+     * @param \Closure $callable
+     *
+     * @return void
+     */
+    protected function disableForeignAndUniqueCheck(\Closure $callable): void
+    {
         $pdo = $this->getConnection();
         $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
-        $pdo->exec((string)file_get_contents($this->schemaFile));
+        call_user_func($callable, $pdo);
         $pdo->exec('SET unique_checks=1; SET foreign_key_checks=1;');
     }
 
     /**
      * Clean up database.
      *
-     * @throws \UnexpectedValueException
-     *
      * @return void
      */
     protected function truncateTables(): void
     {
-        $pdo = $this->getConnection();
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
+            $sql = [];
 
-        $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
+            foreach ($this->getSchemaTables() as $row) {
+                $sql[] = sprintf('TRUNCATE TABLE `%s`;', $row['tableName']);
+            }
 
-        // Truncate only changed tables
-        $statement = $this->createQueryStatement(
-            'SELECT TABLE_NAME
-                FROM information_schema.tables
-                WHERE table_schema = database()
-                AND update_time IS NOT NULL'
-        );
-
-        $sql = [];
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $sql[] = sprintf('TRUNCATE TABLE `%s`;', $row['TABLE_NAME']);
-        }
-
-        if ($sql) {
-            $pdo->exec(implode("\n", $sql));
-        }
-
-        $pdo->exec('SET unique_checks=1; SET foreign_key_checks=1;');
+            if ($sql) {
+                $pdo->exec(implode("\n", $sql));
+            }
+        });
     }
 
     /**
@@ -232,7 +271,7 @@ trait MySQLDatabaseTestTrait
     {
         foreach ($fixtures as $fixture) {
             if (!is_a($fixture, FixtureInterface::class)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     "Fixture {$fixture} must be an instance of: Tests\\Fixture\\FixtureInterface."
                 );
             }
@@ -264,7 +303,8 @@ trait MySQLDatabaseTestTrait
             }
         );
 
-        $statement = $this->createPreparedStatement(sprintf('INSERT INTO `%s` SET %s', $table, implode(',', $fields)));
+        $sql = sprintf('INSERT INTO `%s` SET %s', $table, implode(',', $fields));
+        $statement = $this->createPreparedStatement($sql);
         $statement->execute($row);
     }
 
@@ -277,12 +317,12 @@ trait MySQLDatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    private function createPreparedStatement(string $sql): \PDOStatement
+    private function createPreparedStatement(string $sql): PDOStatement
     {
         $statement = $this->getConnection()->prepare($sql);
 
-        if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+        if (!$statement instanceof PDOStatement) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
         return $statement;
@@ -330,10 +370,10 @@ trait MySQLDatabaseTestTrait
         $statement = $this->createPreparedStatement($sql);
         $statement->execute(['id' => $id]);
 
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (empty($row)) {
-            throw new \DomainException(sprintf('Row not found: %s', $id));
+            throw new DomainException(sprintf('Row not found: %s', $id));
         }
 
         if ($fields) {
@@ -415,7 +455,7 @@ trait MySQLDatabaseTestTrait
     {
         $sql = sprintf('SELECT COUNT(*) AS counter FROM `%s`;', $table);
         $statement = $this->createQueryStatement($sql);
-        $row = $statement->fetch(\PDO::FETCH_ASSOC) ?: [];
+        $row = $statement->fetch(PDO::FETCH_ASSOC) ?: [];
 
         return (int)($row['counter'] ?? 0);
     }
@@ -440,8 +480,6 @@ trait MySQLDatabaseTestTrait
      * @param string $table Table name
      * @param int    $id    The primary key value
      *
-     * @throws \DomainException
-     *
      * @return array<mixed> Row
      */
     protected function findTableRowById(string $table, int $id): array
@@ -450,7 +488,7 @@ trait MySQLDatabaseTestTrait
         $statement = $this->createPreparedStatement($sql);
         $statement->execute(['id' => $id]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC) ?: [];
+        return $statement->fetch(PDO::FETCH_ASSOC) ?: [];
     }
 
     /**

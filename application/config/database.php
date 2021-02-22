@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 use Core\Support\Env;
@@ -20,7 +20,7 @@ return [
         'sqlite' => [
             'url' => null,
             'driver' => 'sqlite',
-            'database' => 'PATH_DATABASE_SQLITE', // Location database sqlite
+            'database' => Env::get('DB_DATABASE', 'memory'), // Location database sqlite (memory or path)
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)

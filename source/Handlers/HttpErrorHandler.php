@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -61,7 +61,7 @@ class HttpErrorHandler
         bool $logErrorDetails
     ): ResponseInterface {
         $type = $this->types[$exception::class] ?? MyErrorHandler::BAD_REQUEST;
-        $statusCode = $exception->getCode();
+        $statusCode = $exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
         $message = $exception->getMessage();
 
         if (

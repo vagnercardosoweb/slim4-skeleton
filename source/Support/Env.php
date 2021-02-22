@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -73,6 +73,16 @@ class Env
     }
 
     /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public static function has(string $name): bool
+    {
+        return self::repository()->has($name);
+    }
+
+    /**
      * @return \Dotenv\Repository\RepositoryInterface
      */
     protected static function repository(): RepositoryInterface
@@ -103,12 +113,12 @@ class Env
     public static function load(bool $immutable = false): Dotenv
     {
         self::$immutable = $immutable;
-        $envPath = dirname(self::path());
+        $envPathInfo = pathinfo(self::path());
 
         if (!$immutable) {
-            $dotenv = Dotenv::create(self::repository(), $envPath);
+            $dotenv = Dotenv::create(self::repository(), $envPathInfo['dirname'], $envPathInfo['basename']);
         } else {
-            $dotenv = Dotenv::createImmutable($envPath);
+            $dotenv = Dotenv::createImmutable($envPathInfo['dirname'], $envPathInfo['basename']);
         }
 
         self::$environments = $dotenv->load();
@@ -121,7 +131,9 @@ class Env
      */
     public static function path(): string
     {
-        $env = Path::app('/.env');
+        $envFile = $_ENV['PHPUNIT_TEST_SUITE'] ?? false ? '.testing' : '';
+
+        $env = Path::app("/.env{$envFile}");
         $example = Path::app('/.env.example');
 
         if (!file_exists($env) && file_exists($example)) {

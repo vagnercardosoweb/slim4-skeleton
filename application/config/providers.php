@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 use App\Providers\DatabaseProvider;
@@ -14,6 +14,7 @@ use App\Providers\EncryptionProvider;
 use App\Providers\JwtProvider;
 use App\Providers\LoggerProvider;
 use App\Providers\PasswordProvider;
+use App\Providers\PDOProvider;
 use App\Providers\SymfonyConsoleProvider;
 use App\Providers\TwigProvider;
 use Core\Database\Database;
@@ -33,4 +34,5 @@ return [
     Encryption::class => factory(EncryptionProvider::class),
     Password::class => factory(PasswordProvider::class),
     Database::class => factory(DatabaseProvider::class),
+    PDO::class => factory(PDOProvider::class),
 ];

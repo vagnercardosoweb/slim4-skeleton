@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/02/2021 Vagner Cardoso
+ * @copyright 21/02/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -765,15 +765,19 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
         $lastInsertId = static::$database->create($this->table, $this->data);
 
-        $new = clone $this;
-
         if ($lastInsertId && $this->primaryKey) {
-            $new->{$this->primaryKey} = $lastInsertId;
+            $row = $this->fetchById($lastInsertId);
+        } else {
+            foreach ($this->data as $key => $value) {
+                $this->whereBy($key, $value);
+            }
+
+            $row = $this->fetch();
         }
 
         $this->clear(['data']);
 
-        return $new;
+        return $row;
     }
 
     /**
