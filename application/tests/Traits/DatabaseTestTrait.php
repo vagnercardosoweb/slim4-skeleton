@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 22/02/2021 Vagner Cardoso
  */
 
 namespace Tests\Traits;
@@ -24,9 +24,21 @@ use UnexpectedValueException;
 trait DatabaseTestTrait
 {
     /**
-     * @var string Path to schema.sql
+     * Path to schema.sql.
+     *
+     * @var string|null
      */
-    protected string $schemaFile = '';
+    protected ?string $schemaFile = null;
+
+    /**
+     * @var bool
+     */
+    protected bool $runPhinx = false;
+
+    /**
+     * @var FixtureInterface[]
+     */
+    protected array $fixtures = [];
 
     /**
      * Create tables and insert fixtures.
@@ -34,24 +46,56 @@ trait DatabaseTestTrait
      * TestCases must call this method inside setUp().
      *
      * @param string|null $schemaFile The sql schema file
-     *
-     * @return void
+     * @param bool        $runPhinx
      */
-    protected function setUpDatabase(string $schemaFile = null): void
+    protected function setUpDatabase(string $schemaFile = null, bool $runPhinx = false)
     {
-        if (isset($schemaFile)) {
-            $this->schemaFile = $schemaFile;
-        }
+        $this->schemaFile = $schemaFile;
+        $this->runPhinx = $runPhinx;
 
         $this->getConnection();
 
-        $this->unsetStatsExpiry();
-        $this->createTables();
-        $this->truncateTables();
+        if ($runPhinx && empty($schemaFile)) {
+            $this->phinxMigrate();
+        }
+
+        if (!empty($schemaFile)) {
+            $this->unsetStatsExpiry();
+            $this->importSchema();
+        }
 
         if (!empty($this->fixtures)) {
             $this->insertFixtures($this->fixtures);
         }
+    }
+
+    /**
+     * This method is called after each test.
+     */
+    protected function tearDownDatabase(): void
+    {
+        $this->unsetStatsExpiry();
+        $this->dropTables();
+    }
+
+    /**
+     * Run rollback.
+     *
+     * @return void
+     */
+    protected function phinxRollback(): void
+    {
+        shell_exec('./phinx rollback -t 0');
+    }
+
+    /**
+     * Run migrate.
+     *
+     * @return void
+     */
+    protected function phinxMigrate(): void
+    {
+        shell_exec('./phinx migrate');
     }
 
     /**
@@ -62,24 +106,6 @@ trait DatabaseTestTrait
     protected function getConnection(): PDO
     {
         return $this->container->get(PDO::class);
-    }
-
-    /**
-     * Create tables.
-     *
-     * @return void
-     */
-    protected function createTables(): void
-    {
-        if (defined('DB_TEST_TRAIT_INIT')) {
-            return;
-        }
-
-        $this->unsetStatsExpiry();
-        $this->dropTables();
-        $this->importSchema();
-
-        define('DB_TEST_TRAIT_INIT', 1);
     }
 
     /**
@@ -124,32 +150,37 @@ trait DatabaseTestTrait
     }
 
     /**
+     * @return array
+     */
+    protected function getSchemaTables(): array
+    {
+        $statement = $this->createQueryStatement('
+            SELECT TABLE_NAME AS tableName
+            FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+        ');
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Clean up database. Truncate tables.
      *
      * @return void
      */
     protected function dropTables(): void
     {
-        $pdo = $this->getConnection();
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
+            $sql = [];
 
-        $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
+            foreach ($this->getSchemaTables() as $row) {
+                $sql[] = sprintf('DROP TABLE `%s`;', $row['tableName']);
+            }
 
-        $statement = $this->createQueryStatement(
-            'SELECT TABLE_NAME
-                FROM information_schema.tables
-                WHERE table_schema = DATABASE()'
-        );
-
-        $sql = [];
-        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $sql[] = sprintf('DROP TABLE `%s`;', $row['TABLE_NAME']);
-        }
-
-        if ($sql) {
-            $pdo->exec(implode("\n", $sql));
-        }
-
-        $pdo->exec('SET unique_checks=1; SET foreign_key_checks=1;');
+            if ($sql) {
+                $pdo->exec(implode("\n", $sql));
+            }
+        });
     }
 
     /**
@@ -181,17 +212,31 @@ trait DatabaseTestTrait
      */
     protected function importSchema(): void
     {
-        if (!$this->schemaFile) {
-            throw new UnexpectedValueException('The path for schema.sql is not defined');
+        if (empty($this->schemaFile)) {
+            return;
         }
 
         if (!file_exists($this->schemaFile)) {
             throw new UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
         }
 
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
+            $pdo->exec((string)file_get_contents($this->schemaFile));
+        });
+    }
+
+    /**
+     * Disable checking ethnic types and foreign keys.
+     *
+     * @param \Closure $callable
+     *
+     * @return void
+     */
+    protected function disableForeignAndUniqueCheck(\Closure $callable): void
+    {
         $pdo = $this->getConnection();
         $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
-        $pdo->exec((string)file_get_contents($this->schemaFile));
+        call_user_func($callable, $pdo);
         $pdo->exec('SET unique_checks=1; SET foreign_key_checks=1;');
     }
 
@@ -202,28 +247,17 @@ trait DatabaseTestTrait
      */
     protected function truncateTables(): void
     {
-        $pdo = $this->getConnection();
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
+            $sql = [];
 
-        $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
+            foreach ($this->getSchemaTables() as $row) {
+                $sql[] = sprintf('TRUNCATE TABLE `%s`;', $row['tableName']);
+            }
 
-        // Truncate only changed tables
-        $statement = $this->createQueryStatement(
-            'SELECT TABLE_NAME
-                FROM information_schema.tables
-                WHERE table_schema = DATABASE()
-                AND update_time IS NOT NULL'
-        );
-
-        $sql = [];
-        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $sql[] = sprintf('TRUNCATE TABLE `%s`;', $row['TABLE_NAME']);
-        }
-
-        if ($sql) {
-            $pdo->exec(implode("\n", $sql));
-        }
-
-        $pdo->exec('SET unique_checks=1; SET foreign_key_checks=1;');
+            if ($sql) {
+                $pdo->exec(implode("\n", $sql));
+            }
+        });
     }
 
     /**
@@ -269,7 +303,8 @@ trait DatabaseTestTrait
             }
         );
 
-        $statement = $this->createPreparedStatement(sprintf('INSERT INTO `%s` SET %s', $table, implode(',', $fields)));
+        $sql = sprintf('INSERT INTO `%s` SET %s', $table, implode(',', $fields));
+        $statement = $this->createPreparedStatement($sql);
         $statement->execute($row);
     }
 

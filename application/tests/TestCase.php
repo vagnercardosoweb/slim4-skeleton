@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 22/02/2021 Vagner Cardoso
  */
 
 namespace Tests;
@@ -64,7 +64,21 @@ class TestCase extends PHPUnitTestCase
         }
 
         if (method_exists($this, 'setUpDatabase')) {
-            $this->setUpDatabase(Path::resources('/database/schema.sql'));
+            if (file_exists($path = Path::resources('/database/schema.sql'))) {
+                $this->setUpDatabase($path, false);
+            } else {
+                $this->setUpDatabase(null, true);
+            }
+        }
+    }
+
+    /**
+     * This method is called after each test.
+     */
+    protected function tearDown(): void
+    {
+        if (method_exists($this, 'tearDownDatabase')) {
+            $this->tearDownDatabase();
         }
     }
 

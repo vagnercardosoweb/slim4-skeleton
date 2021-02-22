@@ -24,12 +24,11 @@
   <testsuites>
     <testsuite name="Test Suite">
       <directory suffix="Test.php">./app/</directory>
-      <directory suffix="Test.php">./source/</directory>
+      <directory suffix="Test.php">../source/</directory>
       <directory suffix="Test.php">./tests/</directory>
     </testsuite>
   </testsuites>
   <php>
-    <env name="APP_ENV" value="testing"/>
     <env name="PHPUNIT_TEST_SUITE" value="1"/>
     <const name="PHPUNIT_TESTSUITE_RESULTCACHE" value="0"/>
   </php>

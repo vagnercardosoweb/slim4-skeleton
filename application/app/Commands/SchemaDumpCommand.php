@@ -6,11 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 22/02/2021 Vagner Cardoso
  */
 
 namespace App\Commands;
 
+use Core\Config;
 use Core\Support\Path;
 use PDO;
 use PDOStatement;
@@ -66,17 +67,17 @@ final class SchemaDumpCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // Lazy loading, because the database may not exists
         $output->writeln(sprintf('Use database: %s', (string)$this->query('select database()')->fetchColumn()));
+        $migrationName = Config::get('phinx.environments.default_migration_table', 'migrations');
 
-        $statement = $this->query('SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = DATABASE()');
+        $statement = $this->query("SELECT TABLE_NAME
+                FROM information_schema.TABLES
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME != '{$migrationName}'");
 
         $sql = [];
         while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $row = array_change_key_case($row);
-            $statement2 = $this->query(sprintf('SHOW CREATE TABLE `%s`;', (string)$row['table_name']));
+            $statement2 = $this->query(sprintf('SHOW CREATE TABLE `%s`;', (string)$row['TABLE_NAME']));
             $createTableSql = $statement2->fetch(PDO::FETCH_ASSOC)['Create Table'];
             $sql[] = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableSql).';';
         }
@@ -107,8 +108,6 @@ final class SchemaDumpCommand extends Command
         if (!$statement) {
             throw new UnexpectedValueException('Query failed');
         }
-
-        $statement->setFetchMode(PDO::FETCH_ASSOC);
 
         return $statement;
     }

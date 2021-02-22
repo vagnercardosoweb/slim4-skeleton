@@ -20,7 +20,7 @@ return [
         'sqlite' => [
             'url' => null,
             'driver' => 'sqlite',
-            'database' => 'PATH_DATABASE_SQLITE', // Location database sqlite
+            'database' => Env::get('DB_DATABASE', 'memory'), // Location database sqlite (memory or path)
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)
