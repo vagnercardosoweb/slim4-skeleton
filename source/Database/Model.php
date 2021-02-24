@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 24/02/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -889,7 +889,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function getDriver(): ?string
     {
-        return $this->driver;
+        return $this->driver ?? null;
     }
 
     /**
