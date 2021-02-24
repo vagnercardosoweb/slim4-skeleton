@@ -6,9 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 24/02/2021 Vagner Cardoso
  */
 
+use App\Providers\CurlProvider;
 use App\Providers\DatabaseProvider;
 use App\Providers\EncryptionProvider;
 use App\Providers\JwtProvider;
@@ -17,6 +18,7 @@ use App\Providers\PasswordProvider;
 use App\Providers\PDOProvider;
 use App\Providers\SymfonyConsoleProvider;
 use App\Providers\TwigProvider;
+use Core\Curl\Curl;
 use Core\Database\Database;
 use Core\Logger;
 use Core\Password\Password;
@@ -35,4 +37,5 @@ return [
     Password::class => factory(PasswordProvider::class),
     Database::class => factory(DatabaseProvider::class),
     PDO::class => factory(PDOProvider::class),
+    Curl::class => factory(CurlProvider::class),
 ];
