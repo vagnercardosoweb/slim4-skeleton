@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 24/02/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -45,6 +45,8 @@ class Route
      */
     public static function setDefaultNamespace(string $defaultNamespace): void
     {
+        $defaultNamespace = str_ireplace('/', '\\', $defaultNamespace);
+
         self::$defaultNamespace = $defaultNamespace;
     }
 
@@ -164,7 +166,7 @@ class Route
                     }
                 }
 
-                $result = call_user_func_array([$controller, $method], $params);
+                $result = call_user_func_array([$controller, $method], array_values($params));
                 $response = $controller->getResponse();
             }
 
@@ -246,15 +248,37 @@ class Route
     }
 
     /**
-     * @param string   $pattern
-     * @param \Closure $callable
-     * @param array    $middlewares
+     * @param string|array $pattern
+     * @param \Closure     $callable
+     * @param array        $middlewares
      *
      * @return \Slim\Interfaces\RouteGroupInterface
      */
-    public static function group(string $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
+    public static function group(string | array $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
     {
-        $pattern = self::$groupPattern.$pattern;
+        $namespace = null;
+        $resetNamespace = false;
+
+        if (is_array($pattern)) {
+            $namespace = $pattern['namespace'] ?? null;
+            $resetNamespace = $pattern['resetNamespace'] ?? false;
+            $middlewares = array_merge($middlewares, $pattern['middlewares'] ?? []);
+            $pattern = $pattern['pattern'] ?? '';
+        }
+
+        $currentDefaultNamespace = self::$defaultNamespace;
+
+        if (!empty($namespace)) {
+            if (!$resetNamespace && '/' !== $namespace[0] && '\\' !== $namespace[0]) {
+                $namespace = "\\{$namespace}";
+            }
+
+            $namespace = $resetNamespace ? "App\\{$namespace}" : $currentDefaultNamespace.$namespace;
+            self::setDefaultNamespace($namespace);
+        }
+
+        $currentGroupPattern = self::$groupPattern;
+        $pattern = $currentGroupPattern.$pattern;
         self::$groupPattern = $pattern;
 
         $group = self::$routeCollectorProxy->group($pattern, $callable);
@@ -263,7 +287,8 @@ class Route
             $group->add($middleware);
         }
 
-        self::$groupPattern = '';
+        self::$groupPattern = $currentGroupPattern;
+        self::$defaultNamespace = $currentDefaultNamespace;
 
         return $group;
     }
