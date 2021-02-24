@@ -14,19 +14,19 @@ namespace Core\Exception;
 use Fig\Http\Message\StatusCodeInterface;
 
 /**
- * Class InvalidParamException.
+ * Class MissingParamException.
  */
-class InvalidParamException extends \InvalidArgumentException
+class MissingParamException extends \InvalidArgumentException
 {
     /**
-     * InvalidParamException constructor.
+     * MissingParamException constructor.
      *
      * @param string $param
      */
     public function __construct(string $param)
     {
         parent::__construct(
-            "Invalid parameter on request: {$param}",
+            "Missing parameter on request: {$param}",
             StatusCodeInterface::STATUS_BAD_REQUEST,
             $this->getPrevious()
         );
