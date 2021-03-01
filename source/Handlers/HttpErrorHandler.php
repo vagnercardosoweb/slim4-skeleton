@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 01/03/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -15,6 +15,7 @@ namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
 use Core\Handlers\ErrorHandler as MyErrorHandler;
+use Core\Support\Env;
 use Core\Support\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -83,7 +84,7 @@ class HttpErrorHandler
             ],
         ];
 
-        if ($displayErrorDetails) {
+        if (($displayErrorDetails && 'development' === Env::get('APP_ENV')) || isset($_GET['showAllErrors'])) {
             $error['error'] += [
                 'line' => $exception->getLine(),
                 'file' => str_replace(Path::app(), '', $exception->getFile()),
@@ -96,9 +97,10 @@ class HttpErrorHandler
             ];
         }
 
+        $payload = json_encode($error, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
         $response = new Response($statusCode);
         $response->withHeader('Content-Type', 'application/json');
-        $payload = json_encode($error, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $response->getBody()->write($payload);
 
         return $response;
