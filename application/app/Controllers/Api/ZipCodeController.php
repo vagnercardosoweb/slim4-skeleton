@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 24/02/2021 Vagner Cardoso
+ * @copyright 01/03/2021 Vagner Cardoso
  */
 
 namespace App\Controllers\Api;
@@ -32,8 +32,7 @@ class ZipCodeController extends BaseController
             throw new \InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
         }
 
-        $curl = new Curl();
-        $response = $curl->get("https://viacep.com.br/ws/{$zipCode}/json");
+        $response = $this->container->get(Curl::class)->get("https://viacep.com.br/ws/{$zipCode}/json");
         $body = $response->toJson();
 
         if (200 !== $response->getStatusCode() || !empty($body->erro)) {
@@ -49,7 +48,7 @@ class ZipCodeController extends BaseController
         );
 
         if ($googleMapsKey = Env::get('GOOGLE_GEOCODE_API_KEY', null)) {
-            $responseMap = $curl
+            $responseMap = $this->container->get(Curl::class)
                 ->setHeaders('Content-Type', 'application/json')
                 ->get('https://maps.google.com/maps/api/geocode/json', json_encode([
                     'key' => $googleMapsKey,

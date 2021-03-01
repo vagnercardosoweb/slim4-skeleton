@@ -135,7 +135,8 @@
       <link rel="shortcut icon" type="image/png" href="{{ asset.path('/assets/icons/icon-32x32.png', true) }}">
 
       {# Stylesheets #}
-      <link rel="stylesheet" href="{{ asset.path('/assets/web/app.css') }}">
+      {# <link rel="stylesheet" href="{{ asset.path('/assets/web/app.css') }}"> #}
+      <style>{{ asset.source(['/assets/web/app.css']) }}</style>
       {% block styles %}{% endblock %}
 
       <!--[if lt IE 9]
@@ -157,8 +158,8 @@
       {# <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script> #}
 
-      {# <script>{{ asset.source(['/assets/web/app.js']) }}</script> #}
-      <script src="{{ asset.path('/assets/web/app.js') }}"></script>
+      <script>{{ asset.source(['/assets/web/app.js'])|raw }}</script>
+      {# <script src="{{ asset.path('/assets/web/app.js') }}"></script> #}
       {% block scripts %}{% endblock %}
     </body>
   </html>
