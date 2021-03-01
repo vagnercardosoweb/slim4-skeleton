@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 01/03/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -25,15 +25,15 @@ class Asset
      *
      * @return string|null
      */
-    public static function path(string $path, string $baseUrl = null, bool $version = false): ?string
+    public static function path(string $path, string $baseUrl = null, bool $version = true): ?string
     {
-        $path = Path::public_html($path);
+        $fullPath = Path::public_html($path);
 
-        if (!file_exists($path)) {
+        if (!file_exists($fullPath)) {
             return null;
         }
 
-        $hash = $version ? '?v='.substr(md5_file($path), 0, 15) : '';
+        $hash = $version ? '?v='.substr(md5_file($fullPath), 0, 15) : '';
         $baseUrl = $baseUrl ?? defined('BASE_URL') ? BASE_URL : '';
 
         return "{$baseUrl}{$path}{$hash}";
