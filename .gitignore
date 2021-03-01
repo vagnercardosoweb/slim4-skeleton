@@ -5,7 +5,7 @@
 /**/node_modules
 /**/.DS_Store
 /**/.php_cs.cache
-!/**/.env.example
+/**/*.map
 /**/resources/database/schema.sql
 
 # Docker

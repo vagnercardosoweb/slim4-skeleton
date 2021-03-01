@@ -95,6 +95,11 @@ RUN a2enmod ssl
 RUN a2ensite default-ssl
 RUN echo "ServerName docker" >> /etc/apache2/apache2.conf
 
+# Install node
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install -y nodejs
+RUN npm i -g npm yarn
+
 # Permissão de usuários
 RUN usermod -u 1000 www-data
 RUN chown www-data:1000 -R /var/www/

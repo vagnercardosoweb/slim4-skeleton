@@ -6,13 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 01/03/2021 Vagner Cardoso
  */
 
 namespace App\Controllers;
 
 use Core\Bootstrap;
-use JetBrains\PhpStorm\ArrayShape;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -22,11 +21,9 @@ use Psr\Http\Message\ResponseInterface;
  */
 class IndexController extends BaseController
 {
-    #[ArrayShape([
-        'path' => 'string',
-        'version' => 'string',
-        'datetime' => '\\DateTimeImmutable',
-    ])]
+    /**
+     * @return array
+     */
     public function index(): array
     {
         return [
@@ -41,7 +38,7 @@ class IndexController extends BaseController
      */
     public function template(): ResponseInterface
     {
-        return $this->withTwig('index', [
+        return $this->withTwig('home', [
             'version' => Bootstrap::VERSION,
         ]);
     }
