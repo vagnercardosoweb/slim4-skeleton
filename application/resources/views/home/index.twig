@@ -1,0 +1,20 @@
+{# Layout #}
+{% extends "_layout/main.twig" %}
+
+{# Variables #}
+{% set type = null %}
+{% set title = null %}
+{% set keywords = null %}
+{% set abstract = null %}
+{% set description = null %}
+{% set image = null %}
+
+{# Content #}
+{% block content %}
+  <main class="d-flex justify-content-center flex-column vc-welcome">
+    <header class="text-center">
+      <h1 class="text-white"><i class="fa fa-home"></i> Bem vindo(a)!</h1>
+      <p class="text-white mb-0">Você é capaz e sempre de o melhor de sí em tudo oque fizer.</p>
+    </header>
+  </main>
+{% endblock %}

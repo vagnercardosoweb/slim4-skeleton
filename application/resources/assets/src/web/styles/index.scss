@@ -1,0 +1,13 @@
+@import '../../shared/styles/index';
+
+// Welcome
+.vc-welcome {
+  height: 100vh;
+  background: url('../images/background.jpeg') fixed no-repeat;
+  background-size: cover;
+
+  header {
+    background: rgba(#000000, 0.6);
+    padding: 50px 0;
+  }
+}

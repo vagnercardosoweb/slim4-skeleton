@@ -6,11 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 24/02/2021 Vagner Cardoso
  */
 
+use Core\Bootstrap;
 use Core\Support\Env;
 
 return [
     'name' => Env::get('APP_NAME', 'Slim 4 Skeleton'),
+    'version' => Bootstrap::VERSION,
 ];
