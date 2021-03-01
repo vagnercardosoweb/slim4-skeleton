@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 21/02/2021 Vagner Cardoso
+ * @copyright 24/02/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -417,5 +417,47 @@ class Common
         }
 
         return false;
+    }
+
+    /**
+     * @param string $url
+     *
+     * @return string|null
+     */
+    public static function getYoutubeVideoId(string $url): ?string
+    {
+        if (strpos($url, 'youtu.be/')) {
+            preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $matches);
+
+            return $matches[4];
+        }
+
+        if (strstr($url, '/v/')) {
+            $aux = explode('v/', $url);
+            $aux2 = explode('?', $aux[1]);
+
+            return $aux2[0];
+        }
+
+        if (strstr($url, 'v=')) {
+            $aux = explode('v=', $url);
+            $aux2 = explode('&', $aux[1]);
+
+            return $aux2[0];
+        }
+
+        if (strstr($url, '/embed/')) {
+            $aux = explode('/embed/', $url);
+
+            return $aux[1];
+        }
+
+        if (strstr($url, 'be/')) {
+            $aux = explode('be/', $url);
+
+            return $aux[1];
+        }
+
+        return null;
     }
 }
