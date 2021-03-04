@@ -9,13 +9,15 @@
 /**/resources/database/schema.sql
 
 # Docker
-/**/.docker/mysql/*
-/**/.docker/postgres/*
-/**/.docker/apache/logs/*
-!/**/.docker/mysql/config
-!/**/.docker/mysql/database/.gitkeep
-!/**/.docker/postgres/.gitkeep
-!/**/.docker/apache/logs/.gitkeep
+/**/docker/mysql/*
+/**/docker/postgres/*
+/**/docker/apache/logs/*
+/**/docker/nginx/logs/*
+!/**/docker/mysql/config
+!/**/docker/mysql/database/.gitkeep
+!/**/docker/postgres/.gitkeep
+!/**/docker/apache/logs/.gitkeep
+!/**/docker/nginx/logs/.gitkeep
 
 # Cache
 /**/storage/cache/app/*

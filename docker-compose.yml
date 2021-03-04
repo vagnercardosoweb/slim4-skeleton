@@ -5,30 +5,50 @@ networks:
     driver: bridge
 
 services:
-  web:
-    build: .docker
-    working_dir: /var/www
+  php:
+    build: ./docker/php
     restart: always
-    container_name: slimphp-api
+    tty: true
+    container_name: slimphp-php
     networks:
       - slimphp-network
     depends_on:
       - mariadb
-    #      - mysql
-    #      - postgres
-    #      - redis
+    ports:
+      - '9000:9000'
+    volumes:
+      - .:/home/app
+
+  #  nginx:
+  #    build: ./docker/nginx
+  #    container_name: slimphp-nginx
+  #    restart: always
+  #    tty: true
+  #    depends_on:
+  #      - php
+  #      - mariadb
+  #    ports:
+  #      - "80:80"
+  #      - "433:433"
+  #    volumes:
+  #      - .:/home/app
+  #    networks:
+  #      - slimphp-network
+
+  apache:
+    build: ./docker/apache
+    restart: always
+    container_name: slimphp-apache
+    networks:
+      - slimphp-network
+    depends_on:
+      - php
+      - mariadb
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - .:/var/www
-      - .docker/php/php.ini:/usr/local/etc/php/conf.d/99-php.ini
-      - .docker/apache/vhosts/localhost.conf:/etc/apache2/sites-available/000-default.conf
-      - .docker/apache/vhosts/localhost-ssl.conf:/etc/apache2/sites-available/default-ssl.conf
-    environment:
-      - COMPOSER_ALLOW_SUPERUSER=1
-      - DOCUMENT_ROOT=/var/www/public_html
-      - APACHE_LOG_DIR=/var/www/.docker/apache/logs
+      - .:/home/app
 
   mariadb:
     image: mariadb
@@ -40,8 +60,8 @@ services:
     ports:
       - '3306:3306'
     volumes:
-      - '.docker/mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:ro'
-      - '.docker/mysql/database:/var/lib/mysql'
+      - './docker/mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:ro'
+      - './docker/mysql/database:/var/lib/mysql'
     environment:
       - MYSQL_PASSWORD=root
       - MYSQL_ROOT_PASSWORD=root
@@ -57,36 +77,42 @@ services:
   #    ports:
   #      - '3306:3306'
   #    volumes:
-  #      - '.docker/mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:ro'
-  #      - '.docker/mysql/database:/var/lib/mysql'
+  #      - './docker/mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:ro'
+  #      - './docker/mysql/database:/var/lib/mysql'
   #    environment:
   #      - MYSQL_PASSWORD=root
   #      - MYSQL_ROOT_PASSWORD=root
   #      - MYSQL_DATABASE=development
 
   #  phpmyadmin:
-  #    image: phpmyadmin/phpmyadmin
+  #    image: library/phpmyadmin
   #    container_name: slimphp-phpmyadmin
+  #    tty: true
   #    networks:
   #      - slimphp-network
   #    depends_on:
   #      - mysql
+  #      - mariadb
   #    environment:
-  #      PMA_HOST: mysql
+  #      PMA_USER: root
+  #      PMA_PASSWORD: root
+  #      PMA_HOSTS: mysql,mariadb
   #      PMA_PORT: 3306
+  #      PMA_ARBITRARY: 1
   #    ports:
   #      - '8080:80'
 
   #  postgres:
-  #    image: postgres:alpine
+  #    image: library/postgres:13-alpine
   #    container_name: slimphp-postgres
+  #    tty: true
   #    restart: always
   #    networks:
   #      - slimphp-network
   #    ports:
   #      - '5432:5432'
   #    volumes:
-  #      - '.docker/postgres:/var/lib/postgresql/data'
+  #      - './docker/postgres:/var/lib/postgresql/data'
   #    environment:
   #      - POSTGRES_USER=root
   #      - POSTGRES_PASSWORD=root
@@ -95,9 +121,10 @@ services:
   #  redis:
   #    image: bitnami/redis:latest
   #    restart: always
+  #    tty: true
   #    container_name: slimphp-redis
   #    volumes:
-  #      - .docker/redis:/bitnami/redis/data
+  #      - ./docker/redis:/bitnami/redis/data
   #    networks:
   #      - slimphp-network
   #    environment:
