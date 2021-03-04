@@ -1,12 +1,8 @@
 FROM nginx:1.19.7-alpine
 
-ENV TZ=America/Sao_Paulo
-ENV APP_ROOT=/home/app
-ENV SERVER_NAME=localhost
-ENV DOCUMENT_ROOT=/home/app/public_html
-ENV NGINX_LOG_DIR=${APP_ROOT}/docker/nginx/logs
+WORKDIR /home/app
 
-WORKDIR ${APP_ROOT}
+ENV TZ=America/Sao_Paulo
 
 RUN apk add --update --no-cache tzdata
 

@@ -9,15 +9,17 @@
 /**/resources/database/schema.sql
 
 # Docker
+/**/docker/redis/*
 /**/docker/mysql/*
-/**/docker/postgres/*
 /**/docker/apache/logs/*
+/**/docker/postgres/*
 /**/docker/nginx/logs/*
 !/**/docker/mysql/config
 !/**/docker/mysql/database/.gitkeep
 !/**/docker/postgres/.gitkeep
 !/**/docker/apache/logs/.gitkeep
 !/**/docker/nginx/logs/.gitkeep
+!/**/docker/redis/.gitkeep
 
 # Cache
 /**/storage/cache/app/*
