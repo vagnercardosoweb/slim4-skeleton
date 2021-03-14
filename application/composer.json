@@ -20,6 +20,8 @@
     "ext-libxml": "*",
     "ext-openssl": "*",
     "ext-pdo": "*",
+    "ext-exif": "*",
+    "ext-gd": "*",
     "ext-simplexml": "*",
     "illuminate/support": "^8.25",
     "monolog/monolog": "^2.2",
