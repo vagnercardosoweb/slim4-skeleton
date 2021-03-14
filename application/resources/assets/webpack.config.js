@@ -71,6 +71,16 @@ module.exports = {
     filename: outputFilename,
     publicPath: '/',
   },
+  // devServer: {
+  //   hot: true,
+  //   port: 9000,
+  //   compress: true,
+  //   progress: true,
+  //   contentBase: PUBLIC_FOLDER,
+  //   writeToDisk: true,
+  //   watchContentBase: true,
+  //   historyApiFallback: true,
+  // },
   plugins,
   optimization,
   module: {
