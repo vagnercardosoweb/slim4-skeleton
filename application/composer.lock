@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "620299b1c2c536b80380a5b4dac21b41",
+    "content-hash": "edcc310c3eb21d7efbdf2fd642676b89",
     "packages": [
         {
             "name": "cakephp/core",
@@ -6438,6 +6438,8 @@
     "platform": {
         "php": "^8.0",
         "ext-curl": "*",
+        "ext-exif": "*",
+        "ext-gd": "*",
         "ext-libxml": "*",
         "ext-openssl": "*",
         "ext-pdo": "*",
