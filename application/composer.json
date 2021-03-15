@@ -17,6 +17,8 @@
   "require": {
     "php": "^8.0",
     "ext-curl": "*",
+    "ext-exif": "*",
+    "ext-gd": "*",
     "ext-libxml": "*",
     "ext-openssl": "*",
     "ext-pdo": "*",

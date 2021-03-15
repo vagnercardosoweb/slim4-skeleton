@@ -107,12 +107,7 @@ function checkFormRequired(form) {
 
     // Verifica se e textarea e caso não tenha valor
     // pega o html
-    if (
-      $(element)
-        .prop('tagName')
-        .toLowerCase() === 'textarena' &&
-      !value
-    ) {
+    if ($(element).prop('tagName').toLowerCase() === 'textarena' && !value) {
       value = $(element).html();
     }
 
@@ -191,9 +186,7 @@ function mountFormData(form, formData) {
         var value = $(element).val() || '';
 
         if (
-          $(element)
-            .prop('tagName')
-            .toLowerCase() === 'textarea' &&
+          $(element).prop('tagName').toLowerCase() === 'textarea' &&
           value === ''
         ) {
           value = $(element).html();
@@ -229,7 +222,7 @@ function redirectAndReload(json) {
     ) {
       loadPage(
         (window.history.state && window.history.state.content) ||
-        '#content-ajax',
+          '#content-ajax',
         json.location,
         true,
         true,
@@ -248,7 +241,7 @@ function redirectAndReload(json) {
     ) {
       loadPage(
         (window.history.state && window.history.state.content) ||
-        '#content-ajax',
+          '#content-ajax',
         '',
         true,
         true,
@@ -283,25 +276,21 @@ export function vcAjax(element, url, formData, method, form, change, modal) {
   /* Variáveis */
   var html = element.html();
   var loadding =
-        element.attr('vc-loading') !== undefined
-          ? element.attr('vc-loading')
-          ? element.attr('vc-loading')
-          : 'Aguarde...'
-          : change
-          ? false
-          : html;
+    element.attr('vc-loading') !== undefined
+      ? element.attr('vc-loading')
+        ? element.attr('vc-loading')
+        : 'Aguarde...'
+      : change
+      ? false
+      : html;
   var message;
   var headers = {};
 
-  /* Upload file */
+  /* Uploader file */
   var enableUpload = element.attr('vc-upload') !== undefined;
 
   /* Cancelar requisição */
-  var ajaxAbort = element
-    .parent()
-    .parent()
-    .parent()
-    .find('*[vc-abort]');
+  var ajaxAbort = element.parent().parent().parent().find('*[vc-abort]');
 
   /* Message */
   if (modal) {
@@ -311,11 +300,7 @@ export function vcAjax(element, url, formData, method, form, change, modal) {
       message = form.find('#vc-message');
 
       if (message.length <= 0) {
-        message = form
-          .parent()
-          .parent()
-          .parent()
-          .find('#vc-message');
+        message = form.parent().parent().parent().find('#vc-message');
       }
     } else if (element.attr('vc-message')) {
       message = $(document).find(element.attr('vc-message'));
@@ -392,7 +377,7 @@ export function vcAjax(element, url, formData, method, form, change, modal) {
     xhr: function () {
       var xhr = $.ajaxSettings.xhr();
 
-      /* Upload progress */
+      /* Uploader progress */
       if (enableUpload) {
         var startTime = new Date().getTime();
 
@@ -403,7 +388,7 @@ export function vcAjax(element, url, formData, method, form, change, modal) {
               var diffTime = new Date().getTime() - startTime;
               var uploadPercent = parseInt((e.loaded / e.total) * 100);
               var durationTime =
-                    ((100 - uploadPercent) * diffTime) / uploadPercent;
+                ((100 - uploadPercent) * diffTime) / uploadPercent;
               // var calculateTimeFormat = calculateTimeUpload(durationTime);
 
               if (uploadPercent === 100) {
@@ -747,10 +732,10 @@ $(document).ready(function () {
 
       /* Form */
       var form =
-            elementClicked.attr('vc-form') &&
-            elementClicked.attr('vc-form').length > 0
-              ? $('form[name="' + elementClicked.attr('vc-form') + '"]')
-              : elementClicked.closest('form');
+        elementClicked.attr('vc-form') &&
+        elementClicked.attr('vc-form').length > 0
+          ? $('form[name="' + elementClicked.attr('vc-form') + '"]')
+          : elementClicked.closest('form');
 
       /* Método */
       formData.append('_METHOD', form.attr('method') || 'POST');
@@ -759,8 +744,8 @@ $(document).ready(function () {
       if (form.length <= 0) {
         alert(
           'Formulário com ([name="' +
-          elementClicked.attr('vc-form') +
-          '"]) não foi encontrado em seu documento html.',
+            elementClicked.attr('vc-form') +
+            '"]) não foi encontrado em seu documento html.',
         );
 
         return false;
@@ -787,66 +772,74 @@ $(document).ready(function () {
     }
 
     /* REQUEST :: Verbos HTTP */
-    $.each(['get', 'post', 'put', 'delete', 'options', 'ajax'], function (
-      index,
-      http,
-    ) {
-      var elementHttp = elementClicked.attr('vc-' + http);
+    $.each(
+      ['get', 'post', 'put', 'delete', 'options', 'ajax'],
+      function (index, http) {
+        var elementHttp = elementClicked.attr('vc-' + http);
 
-      /* Verifica se pode presseguir */
-      if (elementHttp !== undefined && (elementHttp === '' || elementHttp)) {
-        event.preventDefault(event);
-        event.stopPropagation(event);
+        /* Verifica se pode presseguir */
+        if (elementHttp !== undefined && (elementHttp === '' || elementHttp)) {
+          event.preventDefault(event);
+          event.stopPropagation(event);
 
-        /* Variávies */
-        var elementHttpJson = parseJSON(elementHttp);
-        var method = http.toUpperCase();
+          /* Variávies */
+          var elementHttpJson = parseJSON(elementHttp);
+          var method = http.toUpperCase();
 
-        /* Verifica se não e um json e cria o padrão */
-        if (!elementHttpJson) {
-          elementHttpJson = {};
+          /* Verifica se não e um json e cria o padrão */
+          if (!elementHttpJson) {
+            elementHttpJson = {};
 
-          /* Verifica método caso seja ajax padrão */
-          if (http === 'ajax') {
-            method = elementClicked.attr('vc-method') || 'POST';
+            /* Verifica método caso seja ajax padrão */
+            if (http === 'ajax') {
+              method = elementClicked.attr('vc-method') || 'POST';
+            }
+
+            Object.assign(elementHttpJson, {
+              url: checkElementUrl(
+                elementClicked,
+                http.toString().toLowerCase(),
+              ),
+              method: method,
+              data: undefined,
+            });
           }
 
-          Object.assign(elementHttpJson, {
-            url: checkElementUrl(elementClicked, http.toString().toLowerCase()),
-            method: method,
-            data: undefined,
-          });
-        }
+          /* Se for DELETE */
+          if (http === 'delete') {
+            var verify = confirm(
+              'Essa ação é irreversível.\nDeseja continuar?',
+            );
 
-        /* Se for DELETE */
-        if (http === 'delete') {
-          var verify = confirm('Essa ação é irreversível.\nDeseja continuar?');
-
-          if (verify === false) {
-            return false;
+            if (verify === false) {
+              return false;
+            }
           }
+
+          /* Monta o data se existir */
+          if (elementHttpJson.data !== undefined) {
+            elementClicked.attr(
+              'vc-data',
+              JSON.stringify(elementHttpJson.data),
+            );
+          }
+
+          /* Método */
+          formData.append('_METHOD', elementHttpJson.method || method);
+
+          /* Requisição */
+          vcAjax(
+            elementClicked,
+            elementHttpJson.url,
+            formData,
+            elementHttpJson.method !== 'GET' ? 'POST' : 'GET',
+            {},
+            false,
+            false,
+          );
         }
-
-        /* Monta o data se existir */
-        if (elementHttpJson.data !== undefined) {
-          elementClicked.attr('vc-data', JSON.stringify(elementHttpJson.data));
-        }
-
-        /* Método */
-        formData.append('_METHOD', elementHttpJson.method || method);
-
-        /* Requisição */
-        vcAjax(
-          elementClicked,
-          elementHttpJson.url,
-          formData,
-          elementHttpJson.method !== 'GET' ? 'POST' : 'GET',
-          {},
-          false,
-          false,
-        );
-      }
-    });
+      },
+    );
   });
 });
 
