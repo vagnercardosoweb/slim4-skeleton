@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/03/2021 Vagner Cardoso
+ * @copyright 15/03/2021 Vagner Cardoso
  */
 
 namespace Core\Uploader;
@@ -335,7 +335,7 @@ class Uploader
     /**
      * @param string $uploadFileDir
      */
-    public function moveUploadedFile(string $uploadFileDir): void
+    protected function moveUploadedFile(string $uploadFileDir): void
     {
         if (!move_uploaded_file($this->uploadFile['tmp_name'], $uploadFileDir)) {
             throw new \RuntimeException(sprintf(
