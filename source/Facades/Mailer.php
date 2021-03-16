@@ -20,7 +20,7 @@ namespace Core\Facades;
  * @method static \Core\Mailer\Mailer addBCC(string $address, ?string $name = null)
  * @method static \Core\Mailer\Mailer to(string $address, ?string $name = null)
  * @method static \Core\Mailer\Mailer subject(string $subject)
- * @method static \Core\Mailer\Mailer addAttachment(string $path, ?string $name = null)
+ * @method static \Core\Mailer\Mailer addFile(string $path, ?string $name = null)
  * @method static \Core\Mailer\Mailer body(string $message)
  * @method static \Core\Mailer\Mailer altBody(string $message)
  * @method static mixed send()
