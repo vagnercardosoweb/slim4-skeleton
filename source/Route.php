@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/03/2021 Vagner Cardoso
+ * @copyright 16/03/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -45,7 +45,7 @@ class Route
      */
     public static function setDefaultNamespace(string $defaultNamespace): void
     {
-        $defaultNamespace = str_ireplace('/', '\\', $defaultNamespace);
+        $defaultNamespace = self::normalizeNamespace($defaultNamespace);
 
         self::$defaultNamespace = $defaultNamespace;
     }
@@ -348,5 +348,15 @@ class Route
         } else {
             throw new \DomainException("Path [{$path}] of routes not found.");
         }
+    }
+
+    /**
+     * @param string $namespace
+     *
+     * @return string
+     */
+    protected static function normalizeNamespace(string $namespace): string
+    {
+        return str_ireplace('/', '\\', $namespace);
     }
 }
