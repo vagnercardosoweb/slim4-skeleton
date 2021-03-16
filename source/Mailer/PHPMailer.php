@@ -6,24 +6,20 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/03/2021 Vagner Cardoso
+ * @copyright 16/03/2021 Vagner Cardoso
  */
 
 namespace Core\Mailer;
 
 use Core\Contracts\Mailer as MailerContract;
 use PHPMailer\PHPMailer\PHPMailer as LIBPHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 
 /**
  * Class PHPMailer.
  */
-class PHPMailer implements MailerContract
+class PHPMailer extends LIBPHPMailer implements MailerContract
 {
-    /**
-     * @var \PHPMailer\PHPMailer\PHPMailer
-     */
-    protected LIBPHPMailer $mailer;
-
     /**
      * PHPMailer constructor.
      *
@@ -31,6 +27,8 @@ class PHPMailer implements MailerContract
      */
     public function __construct(array $config)
     {
+        parent::__construct($config['exception'] ?? true);
+
         $this->validateConfig($config);
         $this->configurePhpMailer($config);
     }
@@ -45,7 +43,7 @@ class PHPMailer implements MailerContract
      */
     public function from(string $address, ?string $name = null): PHPMailer
     {
-        $this->mailer->setFrom($address, $name);
+        $this->setFrom($address, $name);
 
         return $this;
     }
@@ -58,9 +56,9 @@ class PHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function reply(string $address, ?string $name = null): PHPMailer
+    public function addTo(string $address, ?string $name = null): PHPMailer
     {
-        $this->mailer->addReplyTo($address, $name);
+        $this->addAddress($address, $name);
 
         return $this;
     }
@@ -73,9 +71,9 @@ class PHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addCC(string $address, ?string $name = null): PHPMailer
+    public function addReply(string $address, ?string $name = null): PHPMailer
     {
-        $this->mailer->addCC($address, $name);
+        $this->addReplyTo($address, $name);
 
         return $this;
     }
@@ -84,13 +82,13 @@ class PHPMailer implements MailerContract
      * @param string      $address
      * @param string|null $name
      *
-     * @throws \Exception
+     * @throws \PHPMailer\PHPMailer\Exception
      *
      * @return $this
      */
-    public function addBCC(string $address, ?string $name = null): PHPMailer
+    public function addToBcc(string $address, ?string $name = null): PHPMailer
     {
-        $this->mailer->addBCC($address, $name);
+        $this->addBCC($address, $name);
 
         return $this;
     }
@@ -99,13 +97,13 @@ class PHPMailer implements MailerContract
      * @param string      $address
      * @param string|null $name
      *
-     * @throws \Exception
+     * @throws \PHPMailer\PHPMailer\Exception
      *
      * @return $this
      */
-    public function to(string $address, ?string $name = null): PHPMailer
+    public function addToCc(string $address, ?string $name = null): PHPMailer
     {
-        $this->mailer->addAddress($address, $name);
+        $this->addCC($address, $name);
 
         return $this;
     }
@@ -117,7 +115,7 @@ class PHPMailer implements MailerContract
      */
     public function subject(string $subject): PHPMailer
     {
-        $this->mailer->Subject = $subject;
+        $this->Subject = $subject;
 
         return $this;
     }
@@ -130,9 +128,9 @@ class PHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addAttachment(string $path, ?string $name = null): PHPMailer
+    public function addFile(string $path, ?string $name = null): PHPMailer
     {
-        $this->mailer->addAttachment($path, $name);
+        $this->addAttachment($path, $name);
 
         return $this;
     }
@@ -146,7 +144,7 @@ class PHPMailer implements MailerContract
      */
     public function body(string $message): PHPMailer
     {
-        $this->mailer->msgHTML($message);
+        $this->msgHTML($message);
 
         return $this;
     }
@@ -158,7 +156,7 @@ class PHPMailer implements MailerContract
      */
     public function altBody(string $message): PHPMailer
     {
-        $this->mailer->AltBody = $message;
+        $this->AltBody = $message;
 
         return $this;
     }
@@ -170,13 +168,13 @@ class PHPMailer implements MailerContract
      */
     public function send(): LIBPHPMailer
     {
-        if (!$this->mailer->send()) {
-            throw new \RuntimeException($this->mailer->ErrorInfo);
+        if (!parent::send()) {
+            throw new \RuntimeException($this->ErrorInfo);
         }
 
         $this->clear();
 
-        return $this->mailer;
+        return $this;
     }
 
     /**
@@ -184,13 +182,13 @@ class PHPMailer implements MailerContract
      */
     protected function clear(): void
     {
-        $this->mailer->clearAddresses();
-        $this->mailer->clearAllRecipients();
-        $this->mailer->clearAttachments();
-        $this->mailer->clearBCCs();
-        $this->mailer->clearCCs();
-        $this->mailer->clearCustomHeaders();
-        $this->mailer->clearReplyTos();
+        $this->clearAddresses();
+        $this->clearAllRecipients();
+        $this->clearAttachments();
+        $this->clearBCCs();
+        $this->clearCCs();
+        $this->clearCustomHeaders();
+        $this->clearReplyTos();
     }
 
     /**
@@ -216,38 +214,37 @@ class PHPMailer implements MailerContract
      */
     protected function configurePhpMailer(array $config): void
     {
-        // PHPMailer
-        $this->mailer = new LIBPHPMailer($config['exception'] ?? true);
-
         // Settings
-        $this->mailer->SMTPDebug = $config['debug'] ?? 0;
-        $this->mailer->CharSet = $config['charset'] ?? LIBPHPMailer::CHARSET_UTF8;
-        $this->mailer->isSMTP();
-        $this->mailer->isHTML(true);
-        $this->mailer->setLanguage(
-            $config['language']['code'] ?? 'pt_br',
-            $config['language']['path'] ?? ''
-        );
+        $this->SMTPDebug = $config['debug'] ? SMTP::DEBUG_SERVER : SMTP::DEBUG_OFF;
+        $this->CharSet = $config['charset'] ?? LIBPHPMailer::CHARSET_UTF8;
+        $this->isSMTP();
+        $this->isHTML(true);
+
+        // Language
+        $langCode = $config['language']['code'] ?? 'pt_br';
+        $langPath = $config['language']['path'] ?? '';
+
+        $this->setLanguage($langCode, $langPath);
 
         // Authentication
-        $this->mailer->SMTPAuth = $config['auth'] ?? true;
+        $this->SMTPAuth = $config['auth'] ?? true;
 
         if (!empty($config['secure'])) {
-            $this->mailer->SMTPSecure = $config['secure'] ?? LIBPHPMailer::ENCRYPTION_STARTTLS;
+            $this->SMTPSecure = $config['secure'] ?? LIBPHPMailer::ENCRYPTION_STARTTLS;
         }
 
         // Server e-mail
-        $this->mailer->Host = $this->buildHost($config['host']);
-        $this->mailer->Port = $config['port'] ?? 587;
-        $this->mailer->Username = $config['username'];
-        $this->mailer->Password = $config['password'];
+        $this->Host = $this->buildHost($config['host']);
+        $this->Port = $config['port'] ?? 587;
+        $this->Username = $config['username'];
+        $this->Password = $config['password'];
 
         // Default from
         if (!empty($config['from']['mail'])) {
-            $this->mailer->From = $config['from']['mail'];
+            $this->From = $config['from']['mail'];
 
             if (!empty($config['from']['name'])) {
-                $this->mailer->FromName = $config['from']['name'];
+                $this->FromName = $config['from']['name'];
             }
         }
     }

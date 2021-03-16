@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 15/03/2021 Vagner Cardoso
+ * @copyright 16/03/2021 Vagner Cardoso
  */
 
 namespace Core\Mailer;
@@ -49,7 +49,7 @@ class Mailer
      */
     public function reply(string $address, ?string $name = null): Mailer
     {
-        $this->mailer->reply($address, $name);
+        $this->mailer->addReply($address, $name);
 
         return $this;
     }
@@ -62,7 +62,7 @@ class Mailer
      */
     public function addCC(string $address, ?string $name = null): Mailer
     {
-        $this->mailer->addCC($address, $name);
+        $this->mailer->addToCc($address, $name);
 
         return $this;
     }
@@ -75,7 +75,7 @@ class Mailer
      */
     public function addBCC(string $address, ?string $name = null): Mailer
     {
-        $this->mailer->addBCC($address, $name);
+        $this->mailer->addToBcc($address, $name);
 
         return $this;
     }
@@ -88,7 +88,7 @@ class Mailer
      */
     public function to(string $address, ?string $name = null): Mailer
     {
-        $this->mailer->to($address, $name);
+        $this->mailer->addTo($address, $name);
 
         return $this;
     }
@@ -111,9 +111,9 @@ class Mailer
      *
      * @return Mailer
      */
-    public function addAttachment(string $path, ?string $name = null): Mailer
+    public function addFile(string $path, ?string $name = null): Mailer
     {
-        $this->mailer->addAttachment($path, $name);
+        $this->mailer->addFile($path, $name);
 
         return $this;
     }

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/03/2021 Vagner Cardoso
+ * @copyright 16/03/2021 Vagner Cardoso
  */
 
 use App\Providers\CurlProvider;
@@ -14,6 +14,7 @@ use App\Providers\DatabaseProvider;
 use App\Providers\EncryptionProvider;
 use App\Providers\JwtProvider;
 use App\Providers\LoggerProvider;
+use App\Providers\MailerProvider;
 use App\Providers\PasswordProvider;
 use App\Providers\PDOProvider;
 use App\Providers\SymfonyConsoleProvider;
@@ -21,6 +22,7 @@ use App\Providers\TwigProvider;
 use Core\Curl\Curl;
 use Core\Database\Database;
 use Core\Logger;
+use Core\Mailer\Mailer;
 use Core\Password\Password;
 use Core\Support\Encryption;
 use Core\Support\Jwt;
@@ -38,4 +40,5 @@ return [
     Database::class => factory(DatabaseProvider::class),
     PDO::class => factory(PDOProvider::class),
     Curl::class => factory(CurlProvider::class),
+    Mailer::class => factory(MailerProvider::class),
 ];
