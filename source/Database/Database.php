@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/03/2021 Vagner Cardoso
+ * @copyright 16/03/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -97,7 +97,7 @@ class Database
      *
      * @return $this
      */
-    public function addConnection(string $driver, array $connection): self
+    public function addConnection(string $driver, array $connection): Database
     {
         $this->connections[$driver] = $connection;
 
@@ -171,7 +171,7 @@ class Database
      *
      * @return \Core\Database\Database
      */
-    public function setDefaultDriver(string $defaultDriver): self
+    public function setDefaultDriver(string $defaultDriver): Database
     {
         $this->defaultDriver = $defaultDriver;
 
