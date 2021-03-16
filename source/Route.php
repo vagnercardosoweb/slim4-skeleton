@@ -269,11 +269,10 @@ class Route
         $currentDefaultNamespace = self::$defaultNamespace;
 
         if (!empty($namespace)) {
-            if (!$resetNamespace && '/' !== $namespace[0] && '\\' !== $namespace[0]) {
-                $namespace = "\\{$namespace}";
+            if (!$resetNamespace) {
+                $namespace = $currentDefaultNamespace.$namespace;
             }
 
-            $namespace = $resetNamespace ? "App\\{$namespace}" : $currentDefaultNamespace.$namespace;
             self::setDefaultNamespace($namespace);
         }
 
