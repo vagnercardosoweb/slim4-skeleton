@@ -76,6 +76,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 #RUN cd ${WORKDIR}/applcation && composer install -o
 
 # Expose port 9000 and start php-fpm server
-EXPOSE 9000
+#EXPOSE 9000
 
-CMD ["php-fpm"]
+#CMD ["php-fpm"]
