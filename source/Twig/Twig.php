@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/03/2021 Vagner Cardoso
+ * @copyright 16/03/2021 Vagner Cardoso
  */
 
 namespace Core\Twig;
@@ -40,6 +40,8 @@ class Twig
     /**
      * @param string|array $path
      * @param array        $options
+     *
+     * @throws \Exception
      */
     public function __construct(array | string $path, array $options = [])
     {
@@ -178,6 +180,23 @@ class Twig
     }
 
     /**
+     * @param string      $path
+     * @param string|null $namespace
+     *
+     * @throws \Exception
+     *
+     * @return $this
+     */
+    public function addPath(string $path, ?string $namespace = null): Twig
+    {
+        $namespace = $namespace ?? FilesystemLoader::MAIN_NAMESPACE;
+
+        $this->loader->addPath($path, $namespace);
+
+        return $this;
+    }
+
+    /**
      * @param string $template
      *
      * @return string
@@ -202,6 +221,8 @@ class Twig
 
     /**
      * @param string|array $path
+     *
+     * @throws \Exception
      *
      * @return \Twig\Loader\FilesystemLoader
      */
