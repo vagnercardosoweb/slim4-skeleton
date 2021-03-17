@@ -136,7 +136,7 @@
 
       {# Stylesheets #}
       {# <link rel="stylesheet" href="{{ asset.path('/assets/web/app.css') }}"> #}
-      <style>{{ asset.source(['/assets/web/bundle.css']) }}</style>
+      <style>{{ asset.source(['/assets/web/bundle.css'])|raw }}</style>
       {% block styles %}{% endblock %}
 
       <!--[if lt IE 9]
