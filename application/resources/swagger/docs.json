@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VCWeb Slim4 Skeleton",
+    "version": "1.0.0",
+    "description": "API Description",
+    "termsOfService": "https://vcwebnetworks.com.br/terms-of-service",
+    "contact": {
+      "name": "VCWeb Networks",
+      "email": "contact@vcwebnetworks.com.br",
+      "url": "https://vcwebnetworks.com.br"
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "helpers",
+      "description": "APIs auxiliares"
+    }
+  ],
+  "paths": {
+    "/api/zipcode/{code}": {
+      "get": {
+        "tags": ["helpers"],
+        "summary": "Recupera informações do cep.",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "example": "999999-999",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 9
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "in": "header",
+        "type": "http",
+        "scheme": "bearer",
+        "description": "JWT ou Token de autorização."
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost",
+      "description": "Servidor local"
+    }
+  ]
+}

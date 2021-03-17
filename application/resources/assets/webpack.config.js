@@ -18,7 +18,7 @@ const outputFilename = ({ chunk: { name } }) => {
     return `assets/react/${name}.js`;
   }
 
-  return 'assets/[name]/app.js';
+  return 'assets/[name]/bundle.js';
 };
 
 let optimization = {};
@@ -26,8 +26,8 @@ let optimization = {};
 const plugins = [
   new webpack.ProgressPlugin(),
   new MiniCssExtractPlugin({
-    filename: 'assets/[name]/app.css',
-    chunkFilename: 'assets/[name]/app.css',
+    filename: 'assets/[name]/bundle.css',
+    chunkFilename: 'assets/[name]/bundle.css',
   }),
   new webpack.ProvidePlugin({
     $: 'jquery',
@@ -53,7 +53,7 @@ if (NODE_ENV === 'production') {
       new CssMinimizerPlugin(),
       new TerserWebPackPlugin({
         parallel: true,
-        extractComments: true,
+        extractComments: false,
       }),
     ],
   };
@@ -64,6 +64,7 @@ module.exports = {
   devtool: DEV_TOOL,
   entry: {
     web: path.resolve(ASSETS_SRC, 'web', 'index.ts'),
+    swagger: path.resolve(ASSETS_SRC, 'swagger', 'index.ts'),
     ...REACT_COMPONENTS,
   },
   output: {
