@@ -6,12 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/03/2021 Vagner Cardoso
+ * @copyright 17/03/2021 Vagner Cardoso
  */
 
 use App\Middlewares\CorsMiddleware;
 use App\Middlewares\GenerateEnvMiddleware;
 use App\Middlewares\MaintenanceMiddleware;
+use App\Middlewares\TokenMiddleware;
 use App\Middlewares\TrailingSlashMiddleware;
 use App\Middlewares\TranslatorMiddleware;
 use Core\Support\Env;
@@ -27,6 +28,10 @@ return function (App $app) {
     }
 
     $app->addRoutingMiddleware();
+
+    if (Env::get('ENABLE_VALIDATE_TOKEN_ALL_ROUTES', false)) {
+        $app->add(TokenMiddleware::class);
+    }
 
     $app->add(ContentLengthMiddleware::class);
     $app->add(MethodOverrideMiddleware::class);

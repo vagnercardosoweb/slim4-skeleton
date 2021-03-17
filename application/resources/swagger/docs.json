@@ -29,9 +29,8 @@
         "summary": "Recupera informações do cep.",
         "parameters": [
           {
-            "name": "code",
             "in": "path",
-            "example": "999999-999",
+            "name": "code",
             "required": true,
             "schema": {
               "type": "string",
