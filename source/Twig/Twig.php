@@ -63,7 +63,7 @@ class Twig
         array $context = [],
         int $status = StatusCodeInterface::STATUS_OK
     ): ResponseInterface {
-        // $response = $response->withHeader('Content-Type', 'text/html; charset=utf-8');
+        $response = $response->withHeader('Content-Type', 'text/html; charset=utf-8');
         $response->getBody()->write($this->fetch($template, $context));
 
         return $response->withStatus($status);
