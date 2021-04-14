@@ -54,19 +54,19 @@ class Paginator
     protected int $currentPage;
 
     /**
-     * @param int    $totalRows
-     * @param int    $limit
+     * @param int $totalRows
+     * @param int $limit
      * @param string $link
-     * @param int    $rangePages
+     * @param int $rangePages
      * @param string $pageString
      */
     public function __construct(int $totalRows, string $link, int $limit = 10, int $rangePages = 4, string $pageString = 'page')
     {
         // Attributes
-        $this->totalRows = (int)$totalRows;
-        $this->link = (string)$link;
-        $this->limit = (int)($limit ? $limit : 10);
-        $this->rangePages = (int)($rangePages ? $rangePages : 4);
+        $this->totalRows = $totalRows;
+        $this->link = $link;
+        $this->limit = $limit ?: 10;
+        $this->rangePages = $rangePages ?: 4;
 
         // Calculates total pages
         $this->totalPages = max((int)ceil($this->totalRows / $this->limit), 1);
@@ -74,7 +74,7 @@ class Paginator
         // Filter page
         $currentPage = filter_input(INPUT_GET, $pageString, FILTER_DEFAULT);
         $currentPage = ($currentPage > PHP_INT_MAX) ? $this->totalPages : $currentPage;
-        $this->currentPage = (int)(isset($currentPage) ? $currentPage : 1);
+        $this->currentPage = (int)($currentPage ?? 1);
 
         // Calculate offset
         $this->offset = ($this->currentPage * $this->limit) - $this->limit;
@@ -167,7 +167,7 @@ class Paginator
     public function getPrevPage(): ?string
     {
         if ($this->currentPage > 1) {
-            $prevPage = (int)($this->currentPage - 1);
+            $prevPage = $this->currentPage - 1;
 
             return "{$this->link}{$prevPage}";
         }
@@ -181,7 +181,7 @@ class Paginator
     public function getNextPage(): ?string
     {
         if ($this->totalPages > $this->currentPage) {
-            $nextPage = (int)($this->currentPage + 1);
+            $nextPage = $this->currentPage + 1;
 
             return "{$this->link}{$nextPage}";
         }
@@ -194,7 +194,7 @@ class Paginator
      */
     public function getCurrentPage(): int
     {
-        return (int)$this->currentPage;
+        return $this->currentPage;
     }
 
     /**
@@ -221,7 +221,7 @@ class Paginator
         $last = $first + $this->limit - 1;
 
         return $last > $this->totalRows
-            ? (int)$this->totalRows
+            ? $this->totalRows
             : (int)$last;
     }
 
@@ -312,7 +312,7 @@ class Paginator
     }
 
     /**
-     * @param int  $number
+     * @param int $number
      * @param bool $current
      *
      * @return array
