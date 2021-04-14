@@ -41,7 +41,7 @@ class ErrorHandler
      */
     public static function getHtmlClass(int | string $code): string
     {
-        if (is_string($code) && 200 !== $code) {
+        if (is_string($code) && 200 != $code) {
             $code = E_USER_ERROR;
         }
 
