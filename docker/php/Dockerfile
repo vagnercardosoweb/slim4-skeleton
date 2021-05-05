@@ -1,8 +1,7 @@
 FROM php:8-fpm-alpine
 
-# Workdir
+# Environments
 ENV WORKDIR=/home/app
-WORKDIR ${WORKDIR}
 
 # Updates and installs system dependencies
 RUN apk add --update --no-cache \
@@ -59,6 +58,10 @@ RUN pecl install xdebug \
 RUN pecl -v install redis
 RUN docker-php-ext-enable redis
 
+# Install mongodb
+RUN pecl -v install mongodb
+RUN docker-php-ext-enable mongodb
+
 # Install extension rar
 RUN pecl -v install rar
 RUN docker-php-ext-enable rar
@@ -70,12 +73,10 @@ COPY ./php.ini ${PHP_INI_DIR}/conf.d/99-php.ini
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copy files to container
-#COPY . ${WORKDIR}
-
-# Installs composer dependencies
-#RUN cd ${WORKDIR}/applcation && composer install -o
+# COPY . ${WORKDIR}
 
 # Expose port 9000 and start php-fpm server
-#EXPOSE 9000
+# EXPOSE 9000
 
-#CMD ["php-fpm"]
+USER root
+WORKDIR ${WORKDIR}
