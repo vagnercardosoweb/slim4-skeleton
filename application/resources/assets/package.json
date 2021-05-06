@@ -39,14 +39,14 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.2",
-    "bootstrap": "^4.6.0",
+    "@fortawesome/fontawesome-free": "^5.15.3",
+    "bootstrap": "^5.0.0",
     "jquery": "^3.6.0",
     "jquery-mask-plugin": "^1.14.16",
     "popper.js": "^1.16.1",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "styled-components": "^5.2.1",
-    "swagger-ui": "^3.45.0"
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "styled-components": "^5.3.0",
+    "swagger-ui": "^3.48.0"
   }
 }

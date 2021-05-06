@@ -1,0 +1,101 @@
+version: '3.7'
+
+networks:
+  slim4-network:
+    driver: bridge
+
+services:
+  server:
+    build: .
+    container_name: "slim4.server"
+    tty: true
+    depends_on:
+      - mariadb
+    ports:
+      - "80:80"
+      - "433:433"
+    volumes:
+      - ../../:/var/www/app.dev:z
+      - ../../application/resources/assets/node_modules:/var/www/app.dev/application/resources/assets/node_modules:z
+      - ../server/cache:/etc/nginx/cache:z
+    networks:
+      - slim4-network
+
+  mariadb:
+    image: mariadb
+    tty: true
+    container_name: "slim4.mariadb"
+    networks:
+      - slim4-network
+    ports:
+      - '3306:3306'
+    volumes:
+      - ../mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:z
+      - ../mysql/database:/var/lib/mysql:z
+    environment:
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=development
+
+  #  mysql:
+  #    image: mysql:8
+  #    tty: true
+  #    container_name: "slim4.mysql"
+  #    networks:
+  #      - slim4-network
+  #    ports:
+  #      - '3306:3306'
+  #    volumes:
+  #      - ../mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:z
+  #      - ../mysql/database:/var/lib/mysql:z
+  #    environment:
+  #      - MYSQL_PASSWORD=root
+  #      - MYSQL_ROOT_PASSWORD=root
+  #      - MYSQL_DATABASE=development
+
+  #  phpmyadmin:
+  #    image: library/phpmyadmin
+  #    container_name: "slim4.phpmyadmin"
+  #    tty: true
+  #    networks:
+  #      - slim4-network
+  #    depends_on:
+  #      - mysql
+  #      - mariadb
+  #    environment:
+  #      PMA_USER: root
+  #      PMA_PASSWORD: root
+  #      PMA_HOSTS: mysql,mariadb
+  #      PMA_PORT: 3306
+  #      PMA_ARBITRARY: 1
+  #    ports:
+  #      - '8080:80'
+
+  #  postgres:
+  #    image: library/postgres:13-alpine
+  #    container_name: "slim4.postgres"
+  #    tty: true
+  #    networks:
+  #      - slim4-network
+  #    ports:
+  #      - '5432:5432'
+  #    volumes:
+  #      - ../postgres:/var/lib/postgresql/data:z
+  #    environment:
+  #      - POSTGRES_USER=root
+  #      - POSTGRES_PASSWORD=root
+  #      - POSTGRES_DB=development
+
+  #  redis:
+  #    image: bitnami/redis:latest
+  #    tty: true
+  #    container_name: "slim4.redis"
+  #    volumes:
+  #      - ../redis:/bitnami/redis/data:z
+  #    networks:
+  #      - slim4-network
+  #    environment:
+  #      - ALLOW_EMPTY_PASSWORD=no
+  #      - REDIS_PASSWORD=root
+  #    ports:
+  #      - '6379:6379'
