@@ -6,9 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 07/05/2021 Vagner Cardoso
  */
 
+use App\Providers\CacheProvider;
 use App\Providers\CurlProvider;
 use App\Providers\DatabaseProvider;
 use App\Providers\EncryptionProvider;
@@ -17,8 +18,10 @@ use App\Providers\LoggerProvider;
 use App\Providers\MailerProvider;
 use App\Providers\PasswordProvider;
 use App\Providers\PDOProvider;
+use App\Providers\RedisProvider;
 use App\Providers\SymfonyConsoleProvider;
 use App\Providers\TwigProvider;
+use Core\Cache\Cache;
 use Core\Curl\Curl;
 use Core\Database\Database;
 use Core\Logger;
@@ -27,6 +30,7 @@ use Core\Password\Password;
 use Core\Support\Encryption;
 use Core\Support\Jwt;
 use Core\Twig\Twig;
+use Predis\Client;
 use Symfony\Component\Console\Application;
 use function DI\factory;
 
@@ -41,4 +45,6 @@ return [
     PDO::class => factory(PDOProvider::class),
     Curl::class => factory(CurlProvider::class),
     Mailer::class => factory(MailerProvider::class),
+    Client::class => factory(RedisProvider::class),
+    Cache::class => factory(CacheProvider::class),
 ];

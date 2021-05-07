@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 07/05/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -60,10 +60,10 @@ class Bootstrap
      * @param bool|null   $immutableEnv
      */
     public function __construct(
-        private ?string $registerRoutePath = null,
-        private ?string $registerMiddlewarePath = null,
-        private ?string $registerContainerPath = null,
-        private ?bool $immutableEnv = false
+        protected ?string $registerRoutePath = null,
+        protected ?string $registerMiddlewarePath = null,
+        protected ?string $registerContainerPath = null,
+        protected ?bool $immutableEnv = false
     ) {
         Env::load($immutableEnv);
 
