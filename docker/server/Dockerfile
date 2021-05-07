@@ -15,31 +15,35 @@ RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash -
 # Updates and installs system dependencies
 RUN yum update -y && \
     yum install -y \
+    gcc \
+    re2c \
+    gcc-c++ \
+    unixODBC-devel \
     vim \
     tar \
     zip \
+    less \
     unzip \
+    php-pear \
+    php-devel \
     php-pdo \
     php-pgsql \
     php-opcache \
-    php-xls \
     php-exif \
     php-soap \
     php-mbstring \
     php-xml \
-    php-bcmatch \
     php-iconv \
-    php-sybase \
     php-cli \
     php-zip \
     php-mysqli \
     php-xml \
     php-gd \
-    php-rar \
-    php-xdebug \
-    php-mongodb \
-    php-redis \
     nodejs
+
+# Install pecl extensions
+RUN pecl channel-update pecl.php.net
+RUN pecl -v install rar redis xdebug mongodb sqlsrv pdo_sqlsrv
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

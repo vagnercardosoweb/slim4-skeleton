@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #npm install --prefix /var/www/app.dev/application/resources/assets
-composer install --working-dir=/var/www/app.dev/application
+composer install -o --working-dir=/var/www/app.dev/application
 
 php-fpm -D && nginx -g 'daemon off;'
 #npm run dev --prefix /var/www/app.dev/application/resources/assets

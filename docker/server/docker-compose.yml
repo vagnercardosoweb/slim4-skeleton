@@ -10,13 +10,13 @@ services:
     container_name: "slim4.server"
     tty: true
     depends_on:
+      - redis
       - mariadb
     ports:
       - "80:80"
       - "433:433"
     volumes:
       - ../../:/var/www/app.dev:z
-      - ../../application/resources/assets/node_modules:/var/www/app.dev/application/resources/assets/node_modules:z
       - ../server/cache:/etc/nginx/cache:z
     networks:
       - slim4-network
@@ -86,16 +86,16 @@ services:
   #      - POSTGRES_PASSWORD=root
   #      - POSTGRES_DB=development
 
-  #  redis:
-  #    image: bitnami/redis:latest
-  #    tty: true
-  #    container_name: "slim4.redis"
-  #    volumes:
-  #      - ../redis:/bitnami/redis/data:z
-  #    networks:
-  #      - slim4-network
-  #    environment:
-  #      - ALLOW_EMPTY_PASSWORD=no
-  #      - REDIS_PASSWORD=root
-  #    ports:
-  #      - '6379:6379'
+  redis:
+    image: bitnami/redis:latest
+    tty: true
+    container_name: "slim4.redis"
+    volumes:
+      - ../redis:/bitnami/redis/data:z
+    networks:
+      - slim4-network
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_PASSWORD=root
+    ports:
+      - '6379:6379'
