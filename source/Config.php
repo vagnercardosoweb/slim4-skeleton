@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 07/05/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -53,7 +53,7 @@ class Config
     public static function get(array | string $key, mixed $default = null): mixed
     {
         if (empty(self::$items)) {
-            self::$items = self::loadItems();
+            self::loadItems();
         }
 
         if (is_array($key)) {
@@ -150,12 +150,16 @@ class Config
 
     /**
      * @param array|string $key
-     * @param mixed        $value
+     * @param mixed|null   $value
      *
      * @return void
      */
-    public static function set(array | string $key, $value = null)
+    public static function set(array | string $key, mixed $value = null)
     {
+        if (empty(self::$items)) {
+            self::loadItems();
+        }
+
         $keys = is_array($key) ? $key : [$key => $value];
 
         foreach ($keys as $key => $value) {
@@ -197,6 +201,10 @@ class Config
      */
     public static function all(): array
     {
+        if (empty(self::$items)) {
+            self::loadItems();
+        }
+
         return self::$items;
     }
 
@@ -207,6 +215,10 @@ class Config
      */
     public function exists(string $key): bool
     {
+        if (empty(self::$items)) {
+            self::loadItems();
+        }
+
         return Arr::has(self::$items, $key);
     }
 }
