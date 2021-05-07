@@ -1,6 +1,7 @@
 {
   "name": "Slim4 Skeleton",
   "short_name": "Slim4 Skeleton",
+  "description": "Slim4 Skeleton",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "display": "standalone",

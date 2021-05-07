@@ -38,7 +38,7 @@ if (
 
 define('BASE_URL', "{$schema}://{$host}");
 define('REQUEST_URI', $_SERVER['REQUEST_URI'] ?? '/');
-define('FULL_URL', BASE_URL.REQUEST_URI);
+define('FULL_URL', BASE_URL . REQUEST_URI);
 
 // Date formats
 define('DATE_BR', 'd/m/Y');

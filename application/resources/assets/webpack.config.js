@@ -5,6 +5,7 @@ const TerserWebPackPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const DEV_TOOL = NODE_ENV === 'development' ? 'source-map' : false;
@@ -43,6 +44,13 @@ if (NODE_ENV === 'production') {
   plugins.push(
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['static/*'],
+    }),
+    new WorkboxPlugin.GenerateSW({
+      swDest: 'static/service-worker',
+      cacheId: 'slim4',
+      additionalManifestEntries: [{ url: '/offline', revision: null }],
+      skipWaiting: true,
+      clientsClaim: true,
     }),
   );
 
