@@ -14,6 +14,7 @@ namespace App\Providers;
 use Core\Config;
 use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
+use Core\Support\Env;
 use Core\Twig\Twig;
 use Core\Twig\TwigExtension;
 use Psr\Container\ContainerInterface;
@@ -56,6 +57,10 @@ class TwigProvider implements ServiceProvider
 
         foreach ($globals as $name => $value) {
             $twig->addGlobal($name, $resolveCallable($value));
+        }
+
+        if ('development' === Env::get('APP_ENV')) {
+            $twig->getEnvironment()->enableDebug();
         }
 
         return $twig;
