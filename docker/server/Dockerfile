@@ -4,7 +4,6 @@ LABEL server="Slim4 Skeleton"
 
 # Environments
 ENV WORKDIR=/var/www/app.dev
-ENV NPM_CONFIG_PREFIX=${WORKDIR}/.npm-global
 ENV TZ=America/Sao_Paulo
 
 WORKDIR ${WORKDIR}

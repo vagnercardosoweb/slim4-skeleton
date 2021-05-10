@@ -1,7 +1,10 @@
 #!/bin/bash
 
-#npm install --prefix /var/www/app.dev/application/resources/assets
-composer install -o --working-dir=/var/www/app.dev/application
+npm install -g yarn
 
-php-fpm -D && nginx -g 'daemon off;'
-#npm run dev --prefix /var/www/app.dev/application/resources/assets
+yarn --cwd "$WORKDIR"/application/resources/assets install
+composer install -o --working-dir="$WORKDIR"/application
+
+#php-fpm -D && nginx -g 'daemon off;'
+php-fpm -D && nginx
+yarn --cwd "$WORKDIR"/application/resources/assets dev
