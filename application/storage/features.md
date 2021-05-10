@@ -1,6 +1,2 @@
 No twig adicionar runtime loader no carregamento das extensions.
 https://twig.symfony.com/doc/3.x/advanced.html#definition-vs-runtime
-
-Adicionar sistema de cache igual do framework antigo (file, redis, apc etc...)
-
-Adicionar docker "amazonlinux:2"

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 07/05/2021 Vagner Cardoso
+ * @copyright 10/05/2021 Vagner Cardoso
  */
 
 namespace Core\Facades;
