@@ -26,8 +26,6 @@ class IndexController extends BaseController
      */
     public function index(): ResponseInterface
     {
-        trigger_error('aksodpasd');
-
         return $this->withTwig('home', [
             'version' => Bootstrap::VERSION,
         ]);
