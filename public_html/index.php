@@ -38,7 +38,7 @@ if (
 
 define('BASE_URL', "{$schema}://{$host}");
 define('REQUEST_URI', $_SERVER['REQUEST_URI'] ?? '/');
-define('FULL_URL', BASE_URL.REQUEST_URI);
+define('FULL_URL', BASE_URL . REQUEST_URI);
 
 // Date formats
 define('DATE_BR', 'd/m/Y');
@@ -62,7 +62,9 @@ require_once "{$autoloadPath}";
 
 // Start application
 (new Bootstrap(
-    registerRoutePath: ROUTE_PATH,
-    registerMiddlewarePath: sprintf('%s/middleware.php', CONFIG_PATH),
-    registerContainerPath: sprintf('%s/providers.php', CONFIG_PATH)
+    pathRoutes: ROUTE_PATH,
+    pathMiddleware: sprintf('%s/middleware.php', CONFIG_PATH),
+    pathProviders: sprintf('%s/providers.php', CONFIG_PATH),
+    pathModules: sprintf('%s/modules.php', CONFIG_PATH),
+    immutableEnv: true
 ))->run();

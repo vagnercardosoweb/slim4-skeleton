@@ -54,33 +54,40 @@ class Bootstrap
     /**
      * App constructor.
      *
-     * @param string|null $registerRoutePath
-     * @param string|null $registerMiddlewarePath
-     * @param string|null $registerContainerPath
+     * @param string|null $pathRoutes
+     * @param string|null $pathMiddleware
+     * @param string|null $pathProviders
+     * @param string|null $pathModules
      * @param bool|null   $immutableEnv
      */
     public function __construct(
-        protected ?string $registerRoutePath = null,
-        protected ?string $registerMiddlewarePath = null,
-        protected ?string $registerContainerPath = null,
+        protected ?string $pathRoutes = null,
+        protected ?string $pathMiddleware = null,
+        protected ?string $pathProviders = null,
+        protected ?string $pathModules = null,
         protected ?bool $immutableEnv = false
     ) {
-        Env::load($immutableEnv);
+        Env::load($this->immutableEnv);
 
         $this->registerApp();
         $this->registerFacade();
+
+        $this->registerPhpSettings();
+        $this->registerErrorHandler();
 
         if ($this->runningWebserverOrTest()) {
             $this->registerMiddleware();
         }
 
-        $this->registerErrorHandler();
-        $this->registerPhpSettings();
-
-        if ($this->runningWebserverOrTest() && $registerRoutePath) {
+        if ($this->runningWebserverOrTest()) {
             Route::setRouteCollectorProxy(self::$app);
-            Route::registerPath($registerRoutePath);
+
+            if ($this->pathRoutes) {
+                Route::registerPath($this->pathRoutes);
+            }
         }
+
+        $this->registerModules();
     }
 
     /**
@@ -102,7 +109,7 @@ class Bootstrap
     private function registerContainerBuilder(): Container
     {
         $container = [];
-        $containerPath = (string)$this->registerContainerPath;
+        $containerPath = (string)$this->pathProviders;
         $containerBuilder = new ContainerBuilder();
 
         if (Env::get('CONTAINER_CACHE', false)) {
@@ -172,7 +179,7 @@ class Bootstrap
      */
     private function registerMiddleware(): void
     {
-        $path = $this->registerMiddlewarePath;
+        $path = $this->pathMiddleware;
 
         if (is_null($path)) {
             return;
@@ -235,6 +242,34 @@ class Bootstrap
 
         ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
         ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('Y-m-d')));
+    }
+
+    /**
+     * @return void
+     */
+    private function registerModules(): void
+    {
+        if (!is_null($this->pathModules) && file_exists($this->pathModules)) {
+            $modules = require_once "{$this->pathModules}";
+
+            if (!is_array($modules)) {
+                throw new \DomainException(
+                    "The [{$this->pathModules}] file must return an array."
+                );
+            }
+
+            foreach ($modules as $module) {
+                if (class_exists($module)) {
+                    if (!is_subclass_of($module, Module::class)) {
+                        throw new \DomainException(
+                            sprintf('Class %s not extends %s', $module, Module::class)
+                        );
+                    }
+
+                    new $module(self::$app);
+                }
+            }
+        }
     }
 
     /**

@@ -9,14 +9,10 @@
  * @copyright 10/05/2021 Vagner Cardoso
  */
 
-use App\Middlewares\CorsMiddleware;
-use Core\Route;
+use App\Modules\Api\ApiModule;
+use App\Modules\Web\WebModule;
 
-Route::group([
-    'pattern' => '/api',
-    'namespace' => '/Api',
-    'middlewares' => [CorsMiddleware::class],
-], function () {
-    Route::get('/docs', 'SwaggerController');
-    Route::get('/zipcode/{p}', 'ZipCodeController');
-});
+return [
+    WebModule::class,
+    ApiModule::class,
+];

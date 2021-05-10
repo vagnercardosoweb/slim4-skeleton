@@ -9,7 +9,7 @@
  * @copyright 10/05/2021 Vagner Cardoso
  */
 
-namespace App\Controllers;
+namespace Core;
 
 use Core\Support\Common;
 use Core\Twig\Twig;
@@ -25,7 +25,7 @@ use Slim\Interfaces\RouteParserInterface;
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-abstract class BaseController
+abstract class Controller
 {
     /**
      * @var \Slim\Interfaces\RouteParserInterface

@@ -9,13 +9,13 @@
  * @copyright 10/05/2021 Vagner Cardoso
  */
 
-namespace App\Controllers\Api;
+namespace App\Modules\Api\Controllers;
 
-use App\Controllers\BaseController;
+use Core\Controller;
 use Core\Curl\Curl;
 use Core\Support\Env;
 
-class ZipCodeController extends BaseController
+class ZipCodeController extends Controller
 {
     /**
      * @param string $zipCode

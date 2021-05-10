@@ -9,28 +9,23 @@
  * @copyright 10/05/2021 Vagner Cardoso
  */
 
-namespace App\Controllers\Api;
+namespace App\Modules\Web\Controllers;
 
-use App\Controllers\BaseController;
-use Core\Support\Path;
+use Core\Controller;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Class SwaggerController.
+ * Class OfflineController.
+ *
+ * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class SwaggerController extends BaseController
+class OfflineController extends Controller
 {
     /**
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function index(): ResponseInterface
     {
-        $docs = file_get_contents(Path::resources('/swagger/docs.json'));
-        $docs = json_decode($docs);
-
-        return $this->withTwig(
-            '@swagger',
-            compact('docs')
-        );
+        return $this->withTwig('offline');
     }
 }

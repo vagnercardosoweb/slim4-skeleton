@@ -9,22 +9,26 @@
  * @copyright 10/05/2021 Vagner Cardoso
  */
 
-namespace App\Controllers;
+namespace App\Modules\Web\Controllers;
 
+use Core\Bootstrap;
+use Core\Controller;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Class OfflineController.
+ * Class IndexController.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class OfflineController extends BaseController
+class IndexController extends Controller
 {
     /**
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function index(): ResponseInterface
     {
-        return $this->withTwig('offline');
+        return $this->withTwig('home', [
+            'version' => Bootstrap::VERSION,
+        ]);
     }
 }
