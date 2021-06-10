@@ -127,7 +127,7 @@ const request = (
       if (!responseToJson) {
         responseToJson = {
           error: {
-            typeClasse: 'danger',
+            typeClass: 'danger',
             message:
               'Não conseguimos identificar o erro! Favor entre em contato para que possamos verificar.',
           },

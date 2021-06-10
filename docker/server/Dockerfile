@@ -51,7 +51,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 COPY ./etc /etc
 COPY ./docker-entrypoint /usr/bin/docker-entrypoint
 
-# Configure the environment
+#RUN sed -i 's/daemon off/daemon on/g' /etc/nginx/nginx.conf
+
+# Permissions Setup
 RUN mkdir -p ${WORKDIR}
 RUN chown 1000.1000 ${WORKDIR}
 RUN usermod -u 1000 nginx

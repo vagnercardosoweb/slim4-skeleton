@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 22/05/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -37,10 +37,10 @@ class Obj
 
         foreach ($array as $key => $value) {
             if (is_array($value) && !empty($value)) {
-                $object->{$key} = self::fromArray($value);
-            } else {
-                $object->{$key} = $value ?? null;
+                $value = self::fromArray($value);
             }
+
+            $object->{$key} = $value ?? null;
         }
 
         return $object;

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 23/05/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -144,12 +144,12 @@ class Env
     }
 
     /**
-     * @param string $name
-     * @param mixed  $default
+     * @param string     $name
+     * @param mixed|null $default
      *
      * @return mixed
      */
-    public static function get(string $name, $default = null): mixed
+    public static function get(string $name, mixed $default = null): mixed
     {
         if (!$value = self::repository()->get($name)) {
             return $default;

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 28/05/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -100,7 +100,7 @@ class Route
 
         $methods = '*' == $methods ? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] : $methods;
         $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
-        $pattern = self::$groupPattern.(string)$pattern;
+        $pattern = self::$groupPattern.$pattern;
 
         $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
 

@@ -6,12 +6,11 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 10/06/2021 Vagner Cardoso
  */
 
 namespace App\Modules\Web\Controllers;
 
-use Core\Bootstrap;
 use Core\Controller;
 use Psr\Http\Message\ResponseInterface;
 
@@ -27,8 +26,6 @@ class IndexController extends Controller
      */
     public function index(): ResponseInterface
     {
-        return $this->withTwig('home', [
-            'version' => Bootstrap::VERSION,
-        ]);
+        return $this->withTwig('home/index');
     }
 }

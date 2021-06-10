@@ -1,7 +1,7 @@
 version: '3.7'
 
 networks:
-  slim4-network:
+  slim4.network:
     driver: bridge
 
 services:
@@ -19,14 +19,14 @@ services:
       - ../../:/var/www/app.dev:z
       - ../server/cache:/etc/nginx/cache:z
     networks:
-      - slim4-network
+      - slim4.network
 
   mariadb:
     image: mariadb
     tty: true
     container_name: "slim4.mariadb"
     networks:
-      - slim4-network
+      - slim4.network
     ports:
       - '3306:3306'
     volumes:
@@ -42,7 +42,7 @@ services:
   #    tty: true
   #    container_name: "slim4.mysql"
   #    networks:
-  #      - slim4-network
+  #      - slim4.network
   #    ports:
   #      - '3306:3306'
   #    volumes:
@@ -58,7 +58,7 @@ services:
   #    container_name: "slim4.phpmyadmin"
   #    tty: true
   #    networks:
-  #      - slim4-network
+  #      - slim4.network
   #    depends_on:
   #      - mysql
   #      - mariadb
@@ -76,7 +76,7 @@ services:
   #    container_name: "slim4.postgres"
   #    tty: true
   #    networks:
-  #      - slim4-network
+  #      - slim4.network
   #    ports:
   #      - '5432:5432'
   #    volumes:
@@ -93,7 +93,7 @@ services:
     volumes:
       - ../redis:/bitnami/redis/data:z
     networks:
-      - slim4-network
+      - slim4.network
     environment:
       - ALLOW_EMPTY_PASSWORD=no
       - REDIS_PASSWORD=root
