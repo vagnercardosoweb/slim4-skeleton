@@ -15,6 +15,7 @@ services:
     ports:
       - "80:80"
       - "433:433"
+      - "9003:9003"
     volumes:
       - ../../:/var/www/app.dev:z
       - ../server/cache:/etc/nginx/cache:z
