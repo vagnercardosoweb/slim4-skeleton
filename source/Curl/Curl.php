@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace Core\Curl;
@@ -21,127 +21,219 @@ use Core\Support\Common;
 class Curl
 {
     /**
-     * @var array
+     * @var string
+     */
+    protected string $url = '';
+
+    /**
+     * @var string
+     */
+    protected string $method = 'GET';
+
+    /**
+     * @var string
+     */
+    protected string $body = '';
+
+    /**
+     * @var array<string, string>
      */
     protected array $headers = [];
 
     /**
-     * @var array
+     * @var array<int, mixed>
      */
     protected array $options = [];
 
     /**
-     * @param string $endPoint
-     * @param array  $params
+     * Curl constructor.
      *
      * @throws \Exception
-     *
-     * @return \Core\Curl\Response
      */
-    public function get(string $endPoint, $params = []): Response
+    public function __construct()
     {
-        return $this->create('get', $endPoint, $params);
+        if (!extension_loaded('curl')) {
+            throw new \Exception(
+                "Please, install curl extension.\n".
+                'https://goo.gl/yTAeZh'
+            );
+        }
     }
 
     /**
-     * @param string            $method
-     * @param string            $endPoint
-     * @param array|string|null $params
+     * @param string $url
      *
+     * @return \Core\Curl\Curl
+     */
+    public static function get(string $url): Curl
+    {
+        $http = new self();
+        $http->url = $url;
+        $http->method = 'GET';
+
+        return $http;
+    }
+
+    public static function post(string $url): Curl
+    {
+        $http = new self();
+        $http->url = $url;
+        $http->method = 'POST';
+
+        return $http;
+    }
+
+    public static function put(string $url): Curl
+    {
+        $http = new self();
+        $http->url = $url;
+        $http->method = 'PUT';
+
+        return $http;
+    }
+
+    public static function delete(string $url): Curl
+    {
+        $http = new self();
+        $http->url = $url;
+        $http->method = 'DELETE';
+
+        return $http;
+    }
+
+    public static function patch(string $url): Curl
+    {
+        $http = new self();
+        $http->url = $url;
+        $http->method = 'PATCH';
+
+        return $http;
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     *
+     * @return $this
+     */
+    public function setQueryParams(array $params): Curl
+    {
+        $this->url .= '?'.Common::httpBuildQuery($params);
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return $this
+     */
+    public function setBody(array $data): Curl
+    {
+        $this->body = json_encode($data, JSON_PRETTY_PRINT);
+        $this->setHeader('Content-Type', 'application/json');
+        $this->setHeader('Content-Length', mb_strlen($this->body));
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return $this
+     */
+    public function setFormUrlencoded(array $data): Curl
+    {
+        $this->body = Common::httpBuildQuery($data);
+        $this->setHeader('Content-Type', 'application/x-www-form-urlencoded');
+        $this->setHeader('Content-Length', mb_strlen($this->body));
+
+        return $this;
+    }
+
+    /**
      * @return \Core\Curl\Response
      */
-    public function create(string $method, string $endPoint, $params = null): Response
+    public function send(): Response
     {
-        $method = mb_strtoupper($method, 'UTF-8');
-        $params = is_array($params) ? Common::httpBuildQuery($params) : $params;
+        $curl = curl_init($this->url);
+        $this->method = strtoupper($this->method);
 
-        if ('GET' === $method && !empty($params)) {
-            $separator = str_contains($endPoint, '?') ? '&' : '?';
-            $endPoint .= sprintf('%s%s', $separator, is_string($params) ? $params : '');
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $this->method);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_MAXREDIRS, 10);
+
+        if (!empty($this->headers)) {
+            curl_setopt($curl, CURLOPT_HEADER, $this->parseHeaders());
         }
 
-        // Init curl
-        $curl = curl_init($endPoint);
-
-        // Mount options
-        $defaultOptions = [
-            CURLOPT_HTTPHEADER => $this->getHeaders(),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => $method,
-        ];
-
-        if ('GET' !== $method) {
-            $defaultOptions[CURLOPT_POSTFIELDS] = $params;
+        if ('GET' !== $this->method) {
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $this->body);
         }
 
-        if ('POST' === $method) {
-            $defaultOptions[CURLOPT_POST] = true;
+        if ('POST' === $this->method) {
+            curl_setopt($curl, CURLOPT_POST, true);
         }
 
-        if ('PUT' === $method) {
-            $defaultOptions[CURLOPT_PUT] = true;
+        if ('PUT' === $this->method) {
+            curl_setopt($curl, CURLOPT_PUT, true);
         }
 
-        // Merge options
-        $newOptions = $this->getOptions();
-        curl_setopt_array($curl, (array_diff_key($defaultOptions, $newOptions) + $newOptions));
+        foreach ($this->options as $optKey => $optValue) {
+            curl_setopt($curl, $optKey, $optValue);
+        }
 
-        // Results
         $response = curl_exec($curl);
-        $info = curl_getinfo($curl);
+        $httpInfo = curl_getinfo($curl);
         $error = curl_error($curl);
         curl_close($curl);
 
-        // Reset properties
         $this->clear();
 
-        return new Response($response, $info, $error);
+        return new Response(
+            $response,
+            $httpInfo,
+            $error
+        );
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
-    public function getHeaders(): array
+    public function parseHeaders(): array
     {
         $headers = [];
 
         foreach ($this->headers as $key => $value) {
-            if (empty($key) || is_numeric($key) || !is_string($key)) {
-                $headers[] = $value;
-            } else {
-                $headers[] = "{$key}: {$value}";
-            }
+            $headers[] = "{$key}: {$value}";
         }
 
         return $headers;
     }
 
     /**
-     * @param string|array $keys
-     * @param mixed        $value
+     * @return array<string, string>
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @param string $key
+     * @param string $value
      *
      * @return Curl
      */
-    public function setHeaders(array | string $keys, $value = null): Curl
+    public function setHeader(string $key, string $value): Curl
     {
-        if (is_string($keys) && strpos($keys, ':')) {
-            $split = explode(':', $keys);
-            $keys = [$split[0] => $split[1]];
-        }
-
-        if (!is_array($keys)) {
-            $keys = [$keys => $value];
-        }
-
-        foreach ($keys as $k => $v) {
-            $this->headers[trim($k)] = trim($v);
-        }
+        $this->headers[trim($key)] = trim($value);
 
         return $this;
     }
 
     /**
-     * @return array
+     * @return array<int, mixed>
      */
     public function getOptions(): array
     {
@@ -149,20 +241,14 @@ class Curl
     }
 
     /**
-     * @param string|array $options
-     * @param mixed        $value
+     * @param int   $option
+     * @param mixed $value
      *
      * @return Curl
      */
-    public function setOptions(array | string $options, $value = null): Curl
+    public function setOption(int $option, mixed $value): Curl
     {
-        if (!is_array($options)) {
-            $options = [$options => $value];
-        }
-
-        foreach ($options as $k => $v) {
-            $this->options[$k] = $v;
-        }
+        $this->options[$option] = $value;
 
         return $this;
     }
@@ -172,48 +258,12 @@ class Curl
      */
     public function clear(): Curl
     {
+        $this->url = '';
+        $this->method = 'GET';
+        $this->body = '';
         $this->headers = [];
         $this->options = [];
 
         return $this;
-    }
-
-    /**
-     * @param string       $endPoint
-     * @param array|string $params
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Curl\Response
-     */
-    public function post(string $endPoint, $params = []): Response
-    {
-        return $this->create('post', $endPoint, $params);
-    }
-
-    /**
-     * @param string $endPoint
-     * @param array  $params
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Curl\Response
-     */
-    public function put(string $endPoint, $params = []): Response
-    {
-        return $this->create('put', $endPoint, $params);
-    }
-
-    /**
-     * @param string $endPoint
-     * @param array  $params
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Curl\Response
-     */
-    public function delete(string $endPoint, $params = []): Response
-    {
-        return $this->create('delete', $endPoint, $params);
     }
 }

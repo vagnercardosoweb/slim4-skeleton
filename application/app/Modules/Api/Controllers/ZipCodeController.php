@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace App\Modules\Api\Controllers;
@@ -32,29 +32,30 @@ class ZipCodeController extends Controller
             throw new \InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
         }
 
-        $response = $this->container->get(Curl::class)->get("https://viacep.com.br/ws/{$zipCode}/json");
-        $body = $response->toJson();
+        $response = Curl::get("https://viacep.com.br/ws/{$zipCode}/json")->send();
+        $responseJson = $response->toJson();
 
-        if (200 !== $response->getStatusCode() || !empty($body->erro)) {
+        if (200 !== $response->getStatusCode() || !empty($responseJson->erro)) {
             throw new \Exception("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
         }
 
-        $body->endereco = sprintf('%s - %s, %s - %s, %s, Brazil',
-            $body->logradouro,
-            $body->bairro,
-            $body->localidade,
-            $body->uf,
+        $responseJson->endereco = sprintf('%s - %s, %s - %s, %s, Brazil',
+            $responseJson->logradouro,
+            $responseJson->bairro,
+            $responseJson->localidade,
+            $responseJson->uf,
             $zipCode
         );
 
-        if ($googleMapsKey = Env::get('GOOGLE_GEOCODE_API_KEY', null)) {
-            $responseMap = $this->container->get(Curl::class)
-                ->setHeaders('Content-Type', 'application/json')
-                ->get('https://maps.google.com/maps/api/geocode/json', json_encode([
+        if ($googleMapsKey = Env::get('GOOGLE_GEOCODE_API_KEY')) {
+            $responseMap = Curl::get('https://maps.google.com/maps/api/geocode/json')
+                ->setHeader('Content-Type', 'application/json')
+                ->setBody([
                     'key' => $googleMapsKey,
                     'sensor' => true,
-                    'address' => urlencode($body->endereco),
-                ]))
+                    'address' => urlencode($responseJson->endereco),
+                ])
+                ->send()
             ;
 
             if (200 === $responseMap->getStatusCode()) {
@@ -62,12 +63,12 @@ class ZipCodeController extends Controller
 
                 if ('OK' === $jsonMap->status && !empty($jsonMap->results[0])) {
                     $location = $jsonMap->results[0]->geometry->location;
-                    $body->latitude = (string)$location->lat;
-                    $body->longitude = (string)$location->lng;
+                    $responseJson->latitude = (string)$location->lat;
+                    $responseJson->longitude = (string)$location->lng;
                 }
             }
         }
 
-        return $body;
+        return $responseJson;
     }
 }
