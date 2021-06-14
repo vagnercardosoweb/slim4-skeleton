@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -19,10 +19,8 @@ use Core\Database\Connection\SQLiteConnection;
 use Core\Database\Connection\SqlServerConnection;
 use Core\Database\Connection\Statement;
 use Core\EventEmitter;
-use Core\Support\Common;
 use Core\Support\Obj;
 use Exception;
-use InvalidArgumentException;
 use PDO;
 
 /**
@@ -128,7 +126,9 @@ class Database
         $driver = $driver ?? $this->getDefaultDriver();
 
         if (empty($this->connections[$driver])) {
-            throw new Exception("Database connections ({$driver}) does not exist configured.");
+            throw new Exception(
+                "Database connections ({$driver}) does not exist configured."
+            );
         }
 
         $connection = $this->connections[$driver];
@@ -231,22 +231,21 @@ class Database
     }
 
     /**
-     * @param string       $table
-     * @param array|object $data
+     * @param string $table
+     * @param array  $records
      *
      * @throws \Exception
      *
      * @return int|null
      */
-    public function create(string $table, object | array $data): ?int
+    public function create(string $table, array $records): ?int
     {
-        $data = Obj::fromArray($data);
-        $data = $bindings = ($this->event("{$table}:creating", $data) ?: $data);
-        $values = '(:'.implode(', :', array_keys(get_object_vars($data))).')';
-        $columns = implode(', ', array_keys(get_object_vars($data)));
+        $records = ($this->event("{$table}:creating", $records) ?: $records);
+        $values = '(:'.implode(', :', array_keys($records)).')';
+        $columns = implode(', ', array_keys($records));
 
         $sql = "INSERT INTO {$table} ({$columns}) VALUES {$values}";
-        $lastInsertId = $this->query($sql, $bindings)->lastInsertId();
+        $lastInsertId = $this->query($sql, $records)->lastInsertId();
 
         $this->event("{$table}:created", $lastInsertId);
 
@@ -256,11 +255,42 @@ class Database
     }
 
     /**
+     * @param string $table
+     * @param array  $records
+     * @param bool   $bindValues
+     *
+     * @throws \Exception
+     */
+    public function createMultiple(string $table, array $records, bool $bindValues = true): void
+    {
+        $values = [];
+        $bindings = [];
+        $columnsToArray = array_keys($records[0]);
+
+        foreach ($records as $index => $record) {
+            if ($bindValues) {
+                foreach ($columnsToArray as $column) {
+                    $bindings["{$column}{$index}"] = $record[$column];
+                }
+
+                array_push($values, '(:'.implode("{$index}, :", array_keys($record))."{$index})");
+            } else {
+                array_push($values, "('".implode("', '", array_values($record))."')");
+            }
+        }
+
+        $columnsToString = trim(implode(', ', $columnsToArray));
+        $valuesToString = trim(implode(', ', $values));
+
+        $this->query("INSERT INTO {$table} ({$columnsToString}) VALUES {$valuesToString}", $bindings);
+    }
+
+    /**
      * @param string|null $name
      *
-     * @return mixed
+     * @return array|null
      */
-    private function event(?string $name = null): mixed
+    private function event(?string $name = null): ?array
     {
         if (self::$event && !empty($name)) {
             return self::$event->emit($name, ...array_slice(func_get_args(), 1));
@@ -270,80 +300,68 @@ class Database
     }
 
     /**
-     * @param string       $sql
-     * @param string|array $bindings
-     * @param array        $driverOptions
+     * @param string $sql
+     * @param array  $bindings
      *
      * @throws \Exception
      *
      * @return \Core\Database\Connection\Statement
      */
-    public function query(string $sql, $bindings = null, array $driverOptions = []): Statement
+    public function query(string $sql, array $bindings = []): Statement
     {
-        if (empty($sql)) {
-            throw new InvalidArgumentException(
-                'Parameter $sql can not be empty.'
-            );
-        }
+        $stmt = $this->prepare($sql);
+        $stmt->bindValues($bindings);
+        $stmt->execute();
 
-        // Execute sql
-        $statement = $this->prepare($sql, $driverOptions);
-        $statement->bindValues($bindings);
-        $statement->execute();
-
-        return $statement;
+        return $stmt;
     }
 
     /**
-     * @param string       $table
-     * @param array|object $data
-     * @param string       $condition
-     * @param null         $bindings
+     * @param string $table
+     * @param array  $data
+     * @param string $condition
+     * @param array  $bindings
      *
      * @throws \Exception
      *
      * @return object[]|null
      */
-    public function update(string $table, object | array $data, string $condition, $bindings = null): ?array
+    public function update(string $table, array $data, string $condition, array $bindings = []): ?array
     {
         if (!$rows = $this->findAndTransformRowsObject($table, $condition, $bindings)) {
             return null;
         }
 
-        $set = [];
-        $data = Obj::fromArray($data);
         $data = ($this->event("{$table}:updating", $data, $rows) ?: $data);
-
-        Common::parseStr($bindings, $bindings);
+        $setToArray = [];
 
         foreach ($data as $key => $value) {
-            $binding = $key;
-
             foreach ($rows as $row) {
                 $row->{$key} = $value;
             }
 
-            $set[] = "{$key} = :{$binding}";
-            $bindings[$binding] = $value;
+            $setToArray[] = "{$key} = :{$key}";
+            $bindings[$key] = $value;
         }
 
-        $statement = sprintf("UPDATE {$table} SET %s {$condition}", implode(', ', $set));
-        $this->query($statement, $bindings);
+        $setsToString = implode(', ', $setToArray);
+
+        $this->query("UPDATE {$table} SET {$setsToString} {$condition}", $bindings);
         $this->event("{$table}:updated", $rows);
 
         return $rows;
     }
 
     /**
-     * @param string       $table
-     * @param string       $condition
-     * @param array|string $bindings
+     * @param string $table
+     * @param string $condition
+     * @param array  $bindings
      *
      * @throws \Exception
      *
      * @return object[]
      */
-    private function findAndTransformRowsObject(string $table, string $condition, $bindings = null): array
+    private function findAndTransformRowsObject(string $table, string $condition, array $bindings = []): array
     {
         $rows = $this->read($table, $condition, $bindings)->fetchAll();
 
@@ -357,27 +375,27 @@ class Database
     /**
      * @param string      $table
      * @param string|null $condition
-     * @param null        $bindings
+     * @param array       $bindings
      *
      * @throws \Exception
      *
      * @return \Core\Database\Connection\Statement
      */
-    public function read(string $table, ?string $condition = null, $bindings = null): Statement
+    public function read(string $table, ?string $condition = null, array $bindings = []): Statement
     {
         return $this->query("SELECT {$table}.* FROM {$table} {$condition}", $bindings);
     }
 
     /**
-     * @param string       $table
-     * @param string       $condition
-     * @param string|array $bindings
+     * @param string $table
+     * @param string $condition
+     * @param array  $bindings
      *
      * @throws \Exception
      *
      * @return object[]|null
      */
-    public function delete(string $table, string $condition, $bindings = null): ?array
+    public function delete(string $table, string $condition, array $bindings = []): ?array
     {
         if (!$rows = $this->findAndTransformRowsObject($table, $condition, $bindings)) {
             return null;
