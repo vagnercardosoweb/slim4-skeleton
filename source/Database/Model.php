@@ -448,7 +448,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function limit(int $limit, $offset = 0): self
+    public function limit(int $limit, int $offset = 0): self
     {
         if (is_numeric($limit)) {
             $this->limit = (int)$limit;
@@ -509,7 +509,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function select($select = '*'): self
+    public function select(array | string $select = '*'): self
     {
         if (is_string($select)) {
             $select = explode(',', $select);
@@ -585,36 +585,37 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param array|object $data
+     * @param object|array $data
      * @param bool         $validate
      *
      * @throws \Exception
      *
      * @return $this
      */
-    public function save($data = [], bool $validate = true): self
+    public function save(object | array $data = [], bool $validate = true): self
     {
-        $primaryValue = $this->getPrimaryValue($data);
+        $this->data($data);
+        $primaryValue = $this->getPrimaryValue($this->data);
 
         if (!$primaryValue && !empty($this->bindings[$this->getPrimaryKey()])) {
             $primaryValue = $this->bindings[$this->getPrimaryKey()];
         }
 
         if ($primaryValue && $row = $this->fetchById($primaryValue)) {
-            $row->update($data, $validate);
+            $row->update($this->data, $validate);
 
             return $row;
         }
 
-        return $this->create($data, $validate);
+        return $this->create($this->data, $validate);
     }
 
     /**
-     * @param array|object $data
+     * @param object|array $data
      *
      * @return string|null
      */
-    public function getPrimaryValue($data = []): ?string
+    public function getPrimaryValue(object | array $data = []): ?string
     {
         $data = Obj::toArray($data);
 
@@ -672,14 +673,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param array|object $data
+     * @param object|array $data
      * @param bool         $validate
      *
      * @throws \Exception
      *
      * @return $this[]|null
      */
-    public function update($data = [], bool $validate = true): ?array
+    public function update(object | array $data = [], bool $validate = true): ?array
     {
         $this->data($data, $validate);
         $this->mountWherePrimaryKey();
@@ -692,7 +693,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
         $rows = static::$database->update(
             $this->table,
-            $this->data,
+            Obj::toArray($this->data),
             "WHERE {$this->normalizeProperty($this->where)}",
             $this->bindings
         );
@@ -750,18 +751,18 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param array|object $data
+     * @param object|array $data
      * @param bool         $validate
      *
      * @throws \Exception
      *
      * @return $this
      */
-    public function create($data = [], bool $validate = true): self
+    public function create(object | array $data = [], bool $validate = true): self
     {
         $this->data($data, $validate);
 
-        $lastInsertId = static::$database->create($this->table, $this->data);
+        $lastInsertId = static::$database->create($this->table, Obj::toArray($this->data));
 
         if ($lastInsertId && $this->primaryKey) {
             $row = $this->fetchById($lastInsertId);
