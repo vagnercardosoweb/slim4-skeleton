@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 23/05/2021 Vagner Cardoso
+ * @copyright 16/06/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -73,16 +73,6 @@ class Env
     }
 
     /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public static function has(string $name): bool
-    {
-        return self::repository()->has($name);
-    }
-
-    /**
      * @return \Dotenv\Repository\RepositoryInterface
      */
     protected static function repository(): RepositoryInterface
@@ -103,6 +93,16 @@ class Env
         }
 
         return self::$repository;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public static function has(string $name): bool
+    {
+        return self::repository()->has($name);
     }
 
     /**

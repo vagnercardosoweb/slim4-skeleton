@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 16/06/2021 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -34,7 +34,7 @@ class PasswordProvider implements ServiceProvider
     {
         Facade::setAliases(['Password' => Password::class]);
 
-        $driver = Env::get('PASSWORD_DEFAULT_DRIVER', $driver ?? 'bcrypt');
+        $driver = Env::get('PASSWORD_DEFAULT_DRIVER', 'bcrypt');
         $verifyAlgorithm = Env::get('PASSWORD_VERIFY_ALGORITHM', false);
 
         return PasswordFactory::create($driver, $verifyAlgorithm);

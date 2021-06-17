@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/06/2021 Vagner Cardoso
+ * @copyright 16/06/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -45,11 +45,6 @@ use PDO;
 class Database
 {
     /**
-     * @var \Core\EventEmitter|null
-     */
-    protected static ?EventEmitter $event = null;
-
-    /**
      * @var \PDO|null
      */
     protected ?PDO $pdo = null;
@@ -63,14 +58,6 @@ class Database
      * @var string
      */
     protected string $defaultDriver = 'mysql';
-
-    /**
-     * @param \Core\EventEmitter|null $event
-     */
-    public static function setEventEmitter(?EventEmitter $event): void
-    {
-        self::$event = $event;
-    }
 
     /**
      * @param string $method
@@ -240,18 +227,38 @@ class Database
      */
     public function create(string $table, array $records): ?int
     {
-        $records = ($this->event("{$table}:creating", $records) ?: $records);
+        if (!empty($eventRecords = EventEmitter::emit("{$table}:creating", $records))) {
+            $records = $eventRecords[0];
+        }
+
         $values = '(:'.implode(', :', array_keys($records)).')';
         $columns = implode(', ', array_keys($records));
 
         $sql = "INSERT INTO {$table} ({$columns}) VALUES {$values}";
         $lastInsertId = $this->query($sql, $records)->lastInsertId();
 
-        $this->event("{$table}:created", $lastInsertId);
+        EventEmitter::emit("{$table}:created", $lastInsertId);
 
         return !empty($lastInsertId)
             ? (int)$lastInsertId
             : null;
+    }
+
+    /**
+     * @param string $sql
+     * @param array  $bindings
+     *
+     * @throws \Exception
+     *
+     * @return \Core\Database\Connection\Statement
+     */
+    public function query(string $sql, array $bindings = []): Statement
+    {
+        $stmt = $this->prepare($sql);
+        $stmt->bindValues($bindings);
+        $stmt->execute();
+
+        return $stmt;
     }
 
     /**
@@ -286,37 +293,6 @@ class Database
     }
 
     /**
-     * @param string|null $name
-     *
-     * @return array|null
-     */
-    private function event(?string $name = null): ?array
-    {
-        if (self::$event && !empty($name)) {
-            return self::$event->emit($name, ...array_slice(func_get_args(), 1));
-        }
-
-        return null;
-    }
-
-    /**
-     * @param string $sql
-     * @param array  $bindings
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Database\Connection\Statement
-     */
-    public function query(string $sql, array $bindings = []): Statement
-    {
-        $stmt = $this->prepare($sql);
-        $stmt->bindValues($bindings);
-        $stmt->execute();
-
-        return $stmt;
-    }
-
-    /**
      * @param string $table
      * @param array  $data
      * @param string $condition
@@ -332,7 +308,10 @@ class Database
             return null;
         }
 
-        $data = ($this->event("{$table}:updating", $data, $rows) ?: $data);
+        if (!empty($eventData = EventEmitter::emit("{$table}:updating", $data, $rows))) {
+            $data = $eventData[0];
+        }
+
         $setToArray = [];
 
         foreach ($data as $key => $value) {
@@ -345,9 +324,8 @@ class Database
         }
 
         $setsToString = implode(', ', $setToArray);
-
         $this->query("UPDATE {$table} SET {$setsToString} {$condition}", $bindings);
-        $this->event("{$table}:updated", $rows);
+        EventEmitter::emit("{$table}:updated", $rows);
 
         return $rows;
     }
@@ -401,9 +379,9 @@ class Database
             return null;
         }
 
-        $this->event("{$table}:deleting", $rows);
+        EventEmitter::emit("{$table}:deleting", $rows);
         $this->query("DELETE {$table} FROM {$table} {$condition}", $bindings);
-        $this->event("{$table}:deleted", $rows);
+        EventEmitter::emit("{$table}:deleted", $rows);
 
         return $rows;
     }

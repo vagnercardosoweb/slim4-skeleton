@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 17/06/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -111,13 +111,11 @@ abstract class Model implements ArrayAccess, JsonSerializable
     protected array $reset = [];
 
     /**
-     * @param \Core\Database\Database $database
+     * @return $this
      */
-    public static function setDatabase(Database $database): void
+    public static function query(): self
     {
-        if (is_null(static::$database)) {
-            static::$database = $database;
-        }
+        return new static();
     }
 
     /**
@@ -284,37 +282,37 @@ abstract class Model implements ArrayAccess, JsonSerializable
         }
 
         // Build select
-        $select = implode(', ', ($this->select ?: ["{$this->table}.*"]));
-        $sql = "SELECT {$select} FROM {$this->table} ";
+        $this->select = implode(', ', ($this->select ?: ["{$this->table}.*"]));
+        $sql = "SELECT {$this->select} FROM {$this->table} ";
 
         // Build join
         if (!empty($this->join) && is_array($this->join)) {
-            $join = implode(' ', $this->join);
-            $sql .= "{$join} ";
+            $this->join = implode(' ', $this->join);
+            $sql .= "{$this->join} ";
         }
 
         // Build where
         if (!empty($this->where) && is_array($this->where)) {
-            $where = $this->normalizeProperty(implode(' ', $this->where));
-            $sql .= "WHERE{$where} ";
+            $this->where = $this->normalizeProperty(implode(' ', $this->where));
+            $sql .= "WHERE{$this->where} ";
         }
 
         // Build group by
         if (!empty($this->group) && is_array($this->group)) {
-            $group = implode(', ', $this->group);
-            $sql .= "GROUP BY {$group} ";
+            $this->group = implode(', ', $this->group);
+            $sql .= "GROUP BY {$this->group} ";
         }
 
         // Build having
         if (!empty($this->having) && is_array($this->having)) {
-            $having = $this->normalizeProperty(implode(' ', $this->having));
-            $sql .= "HAVING{$having} ";
+            $this->having = $this->normalizeProperty(implode(' ', $this->having));
+            $sql .= "HAVING{$this->having} ";
         }
 
         // Build order by
         if (!empty($this->order) && is_array($this->order)) {
-            $order = implode(', ', $this->order);
-            $sql .= "ORDER BY {$order} ";
+            $this->order = implode(', ', $this->order);
+            $sql .= "ORDER BY {$this->order} ";
         }
 
         // Build limit && offset
@@ -628,6 +626,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * @return string|null
+     */
+    public function getPrimaryKey(): ?string
+    {
+        return $this->primaryKey;
+    }
+
+    /**
      * @param int|string $id
      *
      * @throws \Exception
@@ -707,14 +713,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param array|object $data
+     * @param object|array $data
      * @param bool         $validate
      *
      * @throws \Exception
      *
      * @return $this
      */
-    public function data($data = [], bool $validate = true): self
+    public function data(object | array $data = [], bool $validate = true): self
     {
         $data = array_merge(
             Obj::toArray($this->data),
@@ -744,14 +750,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @return string|null
-     */
-    public function getPrimaryKey(): ?string
-    {
-        return $this->primaryKey;
-    }
-
-    /**
      * @param array|object $data
      * @param bool         $validate
      *
@@ -778,52 +776,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $this->clear(['data']);
 
         return $row;
-    }
-
-    /**
-     * @param array $ids
-     *
-     * @throws \Exception
-     *
-     * @return self[]
-     */
-    public function fetchByIds(array $ids): array
-    {
-        array_unshift(
-            $this->where,
-            sprintf("AND {$this->table}.{$this->primaryKey} IN (%s)", implode(',', $ids))
-        );
-
-        return $this->fetchAll();
-    }
-
-    /**
-     * @throws \Exception
-     *
-     * @return $this[]
-     */
-    public function fetchAll(): array
-    {
-        $statement = $this->buildSqlStatement();
-        $rows = $statement->fetchAll(\PDO::FETCH_CLASS, get_called_class());
-
-        if (method_exists($this, '_row')) {
-            foreach ($rows as $index => $row) {
-                $this->_row($row);
-            }
-        }
-
-        $statement->closeCursor();
-
-        return $rows;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getForeignKey(): ?string
-    {
-        return $this->foreignKey;
     }
 
     /**
@@ -874,6 +826,52 @@ abstract class Model implements ArrayAccess, JsonSerializable
         Common::parseStr($bindings, $this->bindings);
 
         return $this;
+    }
+
+    /**
+     * @param array $ids
+     *
+     * @throws \Exception
+     *
+     * @return self[]
+     */
+    public function fetchByIds(array $ids): array
+    {
+        array_unshift(
+            $this->where,
+            sprintf("AND {$this->table}.{$this->primaryKey} IN (%s)", implode(',', $ids))
+        );
+
+        return $this->fetchAll();
+    }
+
+    /**
+     * @throws \Exception
+     *
+     * @return $this[]
+     */
+    public function fetchAll(): array
+    {
+        $statement = $this->buildSqlStatement();
+        $rows = $statement->fetchAll(\PDO::FETCH_CLASS, get_called_class());
+
+        if (method_exists($this, '_row')) {
+            foreach ($rows as $index => $row) {
+                $this->_row($row);
+            }
+        }
+
+        $statement->closeCursor();
+
+        return $rows;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getForeignKey(): ?string
+    {
+        return $this->foreignKey;
     }
 
     /**
@@ -962,11 +960,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @return $this
+     * @param \Core\Database\Database $database
      */
-    public static function query(): self
+    public static function setDatabase(Database $database): void
     {
-        return new static();
+        if (is_null(static::$database)) {
+            static::$database = $database;
+        }
     }
 
     /**
