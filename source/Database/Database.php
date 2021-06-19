@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 16/06/2021 Vagner Cardoso
+ * @copyright 19/06/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -320,7 +320,12 @@ class Database
             }
 
             $setToArray[] = "{$key} = :{$key}";
-            $bindings[$key] = $value;
+
+            if (!empty($bindings[$key])) {
+                $bindings[sprintf('%s%s', $key, bin2hex(random_bytes(8)))] = $value;
+            } else {
+                $bindings[$key] = $value;
+            }
         }
 
         $setsToString = implode(', ', $setToArray);
