@@ -320,12 +320,7 @@ class Database
             }
 
             $setToArray[] = "{$key} = :{$key}";
-
-            if (!empty($bindings[$key])) {
-                $bindings[sprintf('%s%s', $key, bin2hex(random_bytes(8)))] = $value;
-            } else {
-                $bindings[$key] = $value;
-            }
+            $bindings[$key] = $value;
         }
 
         $setsToString = implode(', ', $setToArray);
