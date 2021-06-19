@@ -295,16 +295,16 @@ class Database
     /**
      * @param string $table
      * @param array  $data
-     * @param string $condition
+     * @param string $conditions
      * @param array  $bindings
      *
      * @throws \Exception
      *
      * @return object[]|null
      */
-    public function update(string $table, array $data, string $condition, array $bindings = []): ?array
+    public function update(string $table, array $data, string $conditions, array $bindings = []): ?array
     {
-        if (!$rows = $this->findAndTransformRowsObject($table, $condition, $bindings)) {
+        if (!$rows = $this->findAndTransformRowsObject($table, $conditions, $bindings)) {
             return null;
         }
 
@@ -319,12 +319,21 @@ class Database
                 $row->{$key} = $value;
             }
 
-            $setToArray[] = "{$key} = :{$key}";
-            $bindings[$key] = $value;
+            array_push($setToArray, "{$key} = :{$key}");
+            $intersectEqualBinding = array_intersect_key($data, $bindings);
+
+            if (!empty($intersectEqualBinding[$key])) {
+                $newKey = sprintf('%s_%s', $key, bin2hex(random_bytes(3)));
+                $conditions = str_replace(":{$key}", ":{$newKey}", $conditions);
+
+                $bindings[$newKey] = $value;
+            } else {
+                $bindings[$key] = $value;
+            }
         }
 
         $setsToString = implode(', ', $setToArray);
-        $this->query("UPDATE {$table} SET {$setsToString} {$condition}", $bindings);
+        $this->query("UPDATE {$table} SET {$setsToString} {$conditions}", $bindings);
         EventEmitter::emit("{$table}:updated", $rows);
 
         return $rows;
