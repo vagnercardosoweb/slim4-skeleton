@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 10/05/2021 Vagner Cardoso
+ * @copyright 01/07/2021 Vagner Cardoso
  */
 
 use Core\Bootstrap;
@@ -38,7 +38,7 @@ if (
 
 define('BASE_URL', "{$schema}://{$host}");
 define('REQUEST_URI', $_SERVER['REQUEST_URI'] ?? '/');
-define('FULL_URL', BASE_URL . REQUEST_URI);
+define('FULL_URL', BASE_URL.REQUEST_URI);
 
 // Date formats
 define('DATE_BR', 'd/m/Y');
