@@ -4,10 +4,7 @@
     <head>
       <meta charset="UTF-8">
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
-      >
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
       <meta name="theme-color" content="#6272a4">
       {# <meta name="_csrfToken" content="{{ csrf_token(false)|raw }}"> #}
@@ -135,14 +132,22 @@
       <link rel="shortcut icon" type="image/png" href="{{ asset.path('/assets/icons/icon-32x32.png', true) }}">
 
       {# Stylesheets #}
-      {# <link rel="stylesheet" href="{{ asset.path('/assets/web/app.css') }}"> #}
-      <style>{{ asset.source(['/assets/web/bundle.css'])|raw }}</style>
+      <link rel="stylesheet" href="{{ asset.path('/assets/web/bundle.css') }}">
+      {# <style>{{ asset.source(['/assets/web/bundle.css'])|raw }}</style> #}
       {% block styles %}{% endblock %}
 
       <!--[if lt IE 9]
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
       <![endif]-->
+
+      <script>
+        window.addEventListener('load', () => {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js');
+          }
+        });
+      </script>
     </head>
     <body data-theme="light">
       {# Content #}
@@ -158,8 +163,8 @@
       {# <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
       <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script> #}
 
-      <script>{{ asset.source(['/assets/web/bundle.js'])|raw }}</script>
-      {# <script src="{{ asset.path('/assets/web/bundle.js') }}"></script> #}
+      {# <script>{{ asset.source(['/assets/web/bundle.js'])|raw }}</script> #}
+      <script src="{{ asset.path('/assets/web/bundle.js') }}"></script>
       {% block scripts %}{% endblock %}
     </body>
   </html>

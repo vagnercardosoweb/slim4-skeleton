@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#npm install -g yarn
+
+#yarn --cwd "$WORKDIR"/application/resources/assets install
+composer install -o --working-dir="$WORKDIR"/application
+
+php-fpm -D && nginx -g 'daemon off;'
+#php-fpm -D && nginx
+#yarn --cwd "$WORKDIR"/application/resources/assets dev

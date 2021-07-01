@@ -40,7 +40,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/zipcode-response"
+                }
+              }
+            }
           }
         }
       }
@@ -49,10 +56,50 @@
   "components": {
     "securitySchemes": {
       "bearerAuth": {
-        "in": "header",
         "type": "http",
         "scheme": "bearer",
         "description": "JWT ou Token de autorização."
+      }
+    },
+    "schemas": {
+      "zipcode-response": {
+        "type": "object",
+        "required": ["*"],
+        "properties": {
+          "cep": {
+            "type": "string"
+          },
+          "logradouro": {
+            "type": "string"
+          },
+          "complemento": {
+            "type": "string"
+          },
+          "bairro": {
+            "type": "string"
+          },
+          "localidade": {
+            "type": "string"
+          },
+          "uf": {
+            "type": "string"
+          },
+          "ibge": {
+            "type": "string"
+          },
+          "gia": {
+            "type": "string"
+          },
+          "ddd": {
+            "type": "string"
+          },
+          "siafi": {
+            "type": "string"
+          },
+          "endereco": {
+            "type": "string"
+          }
+        }
       }
     }
   },

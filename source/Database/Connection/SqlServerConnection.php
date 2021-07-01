@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -88,7 +88,7 @@ class SqlServerConnection extends Connection
      *
      * @return string
      */
-    protected function buildHostString(array $config, $separator): string
+    protected function buildHostString(array $config, string $separator): string
     {
         if (isset($config['port']) && !empty($config['port'])) {
             return $config['host'].$separator.$config['port'];
@@ -103,7 +103,7 @@ class SqlServerConnection extends Connection
      *
      * @return string
      */
-    protected function buildConnectString($driver, array $arguments): string
+    protected function buildConnectString(string $driver, array $arguments): string
     {
         return $driver.':'.implode(';', array_map(function ($key) use ($arguments) {
             return sprintf('%s=%s', $key, $arguments[$key]);

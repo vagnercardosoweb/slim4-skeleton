@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 10/06/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -54,33 +54,40 @@ class Bootstrap
     /**
      * App constructor.
      *
-     * @param string|null $registerRoutePath
-     * @param string|null $registerMiddlewarePath
-     * @param string|null $registerContainerPath
+     * @param string|null $pathRoutes
+     * @param string|null $pathMiddleware
+     * @param string|null $pathProviders
+     * @param string|null $pathModules
      * @param bool|null   $immutableEnv
      */
     public function __construct(
-        private ?string $registerRoutePath = null,
-        private ?string $registerMiddlewarePath = null,
-        private ?string $registerContainerPath = null,
-        private ?bool $immutableEnv = false
+        protected ?string $pathRoutes = null,
+        protected ?string $pathMiddleware = null,
+        protected ?string $pathProviders = null,
+        protected ?string $pathModules = null,
+        protected ?bool $immutableEnv = false
     ) {
-        Env::load($immutableEnv);
+        Env::load($this->immutableEnv);
 
         $this->registerApp();
         $this->registerFacade();
+        $this->registerPhpSettings();
 
         if ($this->runningWebserverOrTest()) {
             $this->registerMiddleware();
         }
 
         $this->registerErrorHandler();
-        $this->registerPhpSettings();
 
-        if ($this->runningWebserverOrTest() && $registerRoutePath) {
+        if ($this->runningWebserverOrTest()) {
             Route::setRouteCollectorProxy(self::$app);
-            Route::registerPath($registerRoutePath);
+
+            if ($this->pathRoutes) {
+                Route::registerPath($this->pathRoutes);
+            }
         }
+
+        $this->registerModules();
     }
 
     /**
@@ -102,7 +109,7 @@ class Bootstrap
     private function registerContainerBuilder(): Container
     {
         $container = [];
-        $containerPath = (string)$this->registerContainerPath;
+        $containerPath = (string)$this->pathProviders;
         $containerBuilder = new ContainerBuilder();
 
         if (Env::get('CONTAINER_CACHE', false)) {
@@ -170,9 +177,58 @@ class Bootstrap
     /**
      * @return void
      */
+    private function registerPhpSettings(): void
+    {
+        $locale = Env::get('APP_LOCALE', 'pt_BR');
+        $charset = Env::get('APP_CHARSET', 'UTF-8');
+
+        ini_set('default_charset', $charset);
+        date_default_timezone_set(Env::get('APP_TIMEZONE', 'America/Sao_Paulo'));
+        mb_internal_encoding($charset);
+        setlocale(LC_ALL, $locale, "{$locale}.{$charset}");
+
+        ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
+        ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('Y-m-d')));
+    }
+
+    /**
+     * @return bool
+     */
+    public function runningWebserverOrTest(): bool
+    {
+        return self::runningInWebserver() || self::runningInTest();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function runningInWebserver(): bool
+    {
+        return !self::runningInConsole();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function runningInConsole(): bool
+    {
+        return in_array(PHP_SAPI, ['cli', 'phpdbg']);
+    }
+
+    /**
+     * @return bool
+     */
+    public static function runningInTest(): bool
+    {
+        return Env::has('PHPUNIT_TEST_SUITE');
+    }
+
+    /**
+     * @return void
+     */
     private function registerMiddleware(): void
     {
-        $path = $this->registerMiddlewarePath;
+        $path = $this->pathMiddleware;
 
         if (is_null($path)) {
             return;
@@ -198,7 +254,7 @@ class Bootstrap
     {
         error_reporting(-1);
 
-        set_error_handler(function ($level, $message, $file = '', $line = 0, $context = []) {
+        set_error_handler(function ($level, $message, $file = '', $line = 0) {
             if (error_reporting() & $level) {
                 throw new \ErrorException($message, 0, $level, $file, $line);
             }
@@ -223,18 +279,29 @@ class Bootstrap
     /**
      * @return void
      */
-    private function registerPhpSettings(): void
+    private function registerModules(): void
     {
-        $locale = Env::get('APP_LOCALE', 'pt_BR');
-        $charset = Env::get('APP_CHARSET', 'UTF-8');
+        if (!is_null($this->pathModules) && file_exists($this->pathModules)) {
+            $modules = require_once "{$this->pathModules}";
 
-        ini_set('default_charset', $charset);
-        date_default_timezone_set(Env::get('APP_TIMEZONE', 'America/Sao_Paulo'));
-        mb_internal_encoding($charset);
-        setlocale(LC_ALL, $locale, "{$locale}.{$charset}");
+            if (!is_array($modules)) {
+                throw new \DomainException(
+                    "The [{$this->pathModules}] file must return an array."
+                );
+            }
 
-        ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
-        ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('Y-m-d')));
+            foreach ($modules as $module) {
+                if (class_exists($module)) {
+                    if (!is_subclass_of($module, Module::class)) {
+                        throw new \DomainException(
+                            sprintf('Class %s not extends %s', $module, Module::class)
+                        );
+                    }
+
+                    new $module(self::$app);
+                }
+            }
+        }
     }
 
     /**
@@ -247,38 +314,6 @@ class Bootstrap
         }
 
         return self::$app;
-    }
-
-    /**
-     * @return bool
-     */
-    public static function runningInConsole(): bool
-    {
-        return in_array(PHP_SAPI, ['cli', 'phpdbg']);
-    }
-
-    /**
-     * @return bool
-     */
-    public static function runningInTest(): bool
-    {
-        return Env::has('PHPUNIT_TEST_SUITE');
-    }
-
-    /**
-     * @return bool
-     */
-    public static function runningInWebserver(): bool
-    {
-        return !self::runningInConsole();
-    }
-
-    /**
-     * @return bool
-     */
-    public function runningWebserverOrTest(): bool
-    {
-        return self::runningInWebserver() || self::runningInTest();
     }
 
     /**

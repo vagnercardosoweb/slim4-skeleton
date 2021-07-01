@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -54,10 +54,10 @@ class Paginator
     protected int $currentPage;
 
     /**
-     * @param int $totalRows
-     * @param int $limit
+     * @param int    $totalRows
+     * @param int    $limit
      * @param string $link
-     * @param int $rangePages
+     * @param int    $rangePages
      * @param string $pageString
      */
     public function __construct(int $totalRows, string $link, int $limit = 10, int $rangePages = 4, string $pageString = 'page')
@@ -312,7 +312,7 @@ class Paginator
     }
 
     /**
-     * @param int $number
+     * @param int  $number
      * @param bool $current
      *
      * @return array

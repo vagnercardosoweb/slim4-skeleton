@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -28,7 +28,7 @@ class Jwt
      */
     public function __construct(string $key)
     {
-        $this->key = (string)$key;
+        $this->key = $key;
 
         if (empty($this->key)) {
             throw new \InvalidArgumentException('Jwt empty key.');
@@ -115,7 +115,7 @@ class Jwt
      */
     private function validate(string $value, string $signature): bool
     {
-        $hashed = hash_hmac('sha512', $value, $this->key, true);
+        $hashed = $this->signature($value);
 
         if (function_exists('hash_equals')) {
             return hash_equals($signature, $hashed);

@@ -11,21 +11,21 @@
 # Docker
 /**/docker/redis/*
 /**/docker/mysql/*
-/**/docker/apache/logs/*
 /**/docker/postgres/*
-/**/docker/nginx/logs/*
+/**/docker/server/logs/*
+/**/docker/server/cache/*
 !/**/docker/mysql/config
 !/**/docker/mysql/database/.gitkeep
 !/**/docker/postgres/.gitkeep
-!/**/docker/apache/logs/.gitkeep
-!/**/docker/nginx/logs/.gitkeep
+!/**/docker/server/logs/.gitkeep
+!/**/docker/server/cache/.gitkeep
 !/**/docker/redis/.gitkeep
 
 # Cache
-/**/storage/cache/app/*
+/**/storage/cache/server/*
 /**/storage/cache/twig/*
 /**/storage/cache/container/*
-!/**/storage/cache/app/.gitkeep
+!/**/storage/cache/server/.gitkeep
 !/**/storage/cache/twig/.gitkeep
 !/**/storage/cache/container/.gitkeep
 

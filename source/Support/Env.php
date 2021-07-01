@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 16/06/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -73,16 +73,6 @@ class Env
     }
 
     /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public static function has(string $name): bool
-    {
-        return self::repository()->has($name);
-    }
-
-    /**
      * @return \Dotenv\Repository\RepositoryInterface
      */
     protected static function repository(): RepositoryInterface
@@ -103,6 +93,16 @@ class Env
         }
 
         return self::$repository;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
+    public static function has(string $name): bool
+    {
+        return self::repository()->has($name);
     }
 
     /**
@@ -144,12 +144,12 @@ class Env
     }
 
     /**
-     * @param string $name
-     * @param mixed  $default
+     * @param string     $name
+     * @param mixed|null $default
      *
      * @return mixed
      */
-    public static function get(string $name, $default = null): mixed
+    public static function get(string $name, mixed $default = null): mixed
     {
         if (!$value = self::repository()->get($name)) {
             return $default;

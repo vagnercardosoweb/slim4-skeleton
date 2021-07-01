@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 16/06/2021 Vagner Cardoso
  */
 
 namespace Core;
@@ -39,16 +39,6 @@ class Route
      * @var \Slim\Interfaces\RouteCollectorProxyInterface
      */
     protected static RouteCollectorProxyInterface $routeCollectorProxy;
-
-    /**
-     * @param string $defaultNamespace
-     */
-    public static function setDefaultNamespace(string $defaultNamespace): void
-    {
-        $defaultNamespace = self::normalizeNamespace($defaultNamespace);
-
-        self::$defaultNamespace = $defaultNamespace;
-    }
 
     /**
      * @param string $groupPattern
@@ -100,12 +90,12 @@ class Route
 
         $methods = '*' == $methods ? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] : $methods;
         $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
-        $pattern = self::$groupPattern.(string)$pattern;
+        $pattern = self::$groupPattern.$pattern;
 
         $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
 
         if (!empty($name)) {
-            $route->setName($name);
+            $route->setName(strtolower($name));
         }
 
         foreach ($middlewares as $middleware) {
@@ -151,8 +141,7 @@ class Route
                 list($name, $originalMethod) = (explode('@', $callable) + [1 => null]);
 
                 $method = mb_strtolower($request->getMethod()).ucfirst($originalMethod);
-                $namespace = sprintf('%s/%s', $namespace, $name);
-                $namespace = str_ireplace('/', '\\', $namespace);
+                $namespace = sprintf('%s\%s', $namespace, $name);
 
                 $controller = new $namespace($request, $response, $this);
 
@@ -260,7 +249,7 @@ class Route
         $resetNamespace = false;
 
         if (is_array($pattern)) {
-            $namespace = $pattern['namespace'] ?? null;
+            $namespace = rtrim(ltrim($pattern['namespace'] ?? '', '\/'), '\/');
             $resetNamespace = $pattern['resetNamespace'] ?? false;
             $middlewares = array_merge($middlewares, $pattern['middlewares'] ?? []);
             $pattern = $pattern['pattern'] ?? '';
@@ -290,6 +279,26 @@ class Route
         self::$defaultNamespace = $currentDefaultNamespace;
 
         return $group;
+    }
+
+    /**
+     * @param string $defaultNamespace
+     */
+    public static function setDefaultNamespace(string $defaultNamespace): void
+    {
+        $defaultNamespace = self::normalizeNamespace($defaultNamespace);
+
+        self::$defaultNamespace = $defaultNamespace;
+    }
+
+    /**
+     * @param string $namespace
+     *
+     * @return string
+     */
+    protected static function normalizeNamespace(string $namespace): string
+    {
+        return str_ireplace('/', '\\', $namespace);
     }
 
     /**
@@ -347,15 +356,5 @@ class Route
         } else {
             throw new \DomainException("Path [{$path}] of routes not found.");
         }
-    }
-
-    /**
-     * @param string $namespace
-     *
-     * @return string
-     */
-    protected static function normalizeNamespace(string $namespace): string
-    {
-        return str_ireplace('/', '\\', $namespace);
     }
 }

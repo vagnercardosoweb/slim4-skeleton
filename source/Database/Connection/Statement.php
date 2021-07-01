@@ -6,13 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 14/04/2021 Vagner Cardoso
+ * @copyright 14/06/2021 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
-
-use Core\Support\Common;
-use Core\Support\Obj;
 
 /**
  * Class Statement.
@@ -21,11 +18,6 @@ use Core\Support\Obj;
  */
 class Statement extends \PDOStatement
 {
-    /**
-     * @var \PDO
-     */
-    protected \PDO $pdo;
-
     /**
      * @var array
      */
@@ -36,9 +28,8 @@ class Statement extends \PDOStatement
      *
      * @param \PDO $pdo
      */
-    protected function __construct(\PDO $pdo)
+    protected function __construct(protected \PDO $pdo)
     {
-        $this->pdo = $pdo;
     }
 
     /**
@@ -50,11 +41,11 @@ class Statement extends \PDOStatement
     }
 
     /**
-     * @param string $name
+     * @param string|null $name
      *
      * @return string
      */
-    public function lastInsertId($name = null): string
+    public function lastInsertId(?string $name = null): string
     {
         return $this->pdo->lastInsertId($name);
     }
@@ -70,7 +61,7 @@ class Statement extends \PDOStatement
             $rowCount = count($this->fetchAll());
         }
 
-        return (int)$rowCount;
+        return $rowCount;
     }
 
     /**
@@ -94,11 +85,11 @@ class Statement extends \PDOStatement
     }
 
     /**
-     * @param int $style
+     * @param int|null $style
      *
      * @return bool
      */
-    public function isFetchObject($style = null): bool
+    public function isFetchObject(int $style = null): bool
     {
         $allowed = [\PDO::FETCH_OBJ, \PDO::FETCH_CLASS];
         $fetchMode = $style ?: $this->pdo->getAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE);
@@ -127,20 +118,12 @@ class Statement extends \PDOStatement
     }
 
     /**
-     * @param array|string|object|null $bindings
+     * @param array $bindings
      */
-    public function bindValues(object | array | string | null $bindings): void
+    public function bindValues(array $bindings = []): void
     {
         if (empty($bindings)) {
             return;
-        }
-
-        if (is_object($bindings)) {
-            $bindings = Obj::toArray($bindings);
-        }
-
-        if (is_string($bindings)) {
-            Common::parseStr($bindings, $bindings);
         }
 
         foreach ($bindings as $key => $value) {
@@ -151,11 +134,17 @@ class Statement extends \PDOStatement
             $key = (is_string($key) ? ":{$key}" : ((int)$key + 1));
             $value = !empty($value) || '0' == $value ? filter_var($value, FILTER_DEFAULT) : null;
 
-            $this->bindValue($key, $value, (is_int($value)
-                ? \PDO::PARAM_INT
-                : (is_bool($value) ? \PDO::PARAM_BOOL
-                    : \PDO::PARAM_STR)));
+            $type = \PDO::PARAM_STR;
 
+            if (is_integer($value)) {
+                $type = \PDO::PARAM_INT;
+            }
+
+            if (is_bool($value)) {
+                $type = \PDO::PARAM_BOOL;
+            }
+
+            $this->bindValue($key, $value, $type);
             $this->bindings[$key] = $value;
         }
     }
