@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 09/07/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -75,11 +75,8 @@ class Bootstrap
 
         if ($this->runningWebserverOrTest()) {
             $this->registerMiddleware();
-        }
+            $this->registerErrorHandler();
 
-        $this->registerErrorHandler();
-
-        if ($this->runningWebserverOrTest()) {
             Route::setRouteCollectorProxy(self::$app);
 
             if ($this->pathRoutes) {
@@ -179,6 +176,8 @@ class Bootstrap
      */
     private function registerPhpSettings(): void
     {
+        error_reporting(-1);
+
         $locale = Env::get('APP_LOCALE', 'pt_BR');
         $charset = Env::get('APP_CHARSET', 'UTF-8');
 
@@ -189,6 +188,12 @@ class Bootstrap
 
         ini_set('log_errors', Env::get('PHP_LOG_ERRORS', 'true'));
         ini_set('error_log', sprintf(Env::get('PHP_ERROR_LOG', Path::storage('/logs/php/%s.log')), date('Y-m-d')));
+
+        set_error_handler(function ($level, $message, $file = '', $line = 0) {
+            if (error_reporting() & $level) {
+                throw new \ErrorException($message, 0, $level, $file, $line);
+            }
+        });
     }
 
     /**
@@ -252,20 +257,12 @@ class Bootstrap
      */
     private function registerErrorHandler(): void
     {
-        error_reporting(-1);
-
-        set_error_handler(function ($level, $message, $file = '', $line = 0) {
-            if (error_reporting() & $level) {
-                throw new \ErrorException($message, 0, $level, $file, $line);
-            }
-        });
-
-        $serverRequest = ServerRequest::getResolvedInstance();
         $logErrors = Env::get('SLIM_LOG_ERRORS', true);
         $logErrorDetails = Env::get('SLIM_LOG_ERROR_DETAIL', true);
         $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
+        $serverRequest = ServerRequest::getResolvedInstance();
 
-        $httpErrorHandler = new HttpErrorHandler();
+        $httpErrorHandler = new HttpErrorHandler(self::$app->getCallableResolver(), self::$app->getResponseFactory());
         $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler, $displayErrorDetails);
         register_shutdown_function($shutdownErrorHandler);
 

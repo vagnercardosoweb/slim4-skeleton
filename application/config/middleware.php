@@ -6,10 +6,11 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 09/07/2021 Vagner Cardoso
  */
 
 use App\Middlewares\CorsMiddleware;
+use App\Middlewares\ErrorResponseMiddleware;
 use App\Middlewares\GenerateEnvMiddleware;
 use App\Middlewares\MaintenanceMiddleware;
 use App\Middlewares\TokenMiddleware;
@@ -39,4 +40,5 @@ return function (App $app) {
     $app->add(TrailingSlashMiddleware::class);
     $app->add(TranslatorMiddleware::class);
     $app->add(MaintenanceMiddleware::class);
+    $app->add(ErrorResponseMiddleware::class);
 };

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 09/07/2021 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -14,12 +14,10 @@ declare(strict_types = 1);
 namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
-use Core\Handlers\ErrorHandler as MyErrorHandler;
 use Core\Support\Env;
 use Core\Support\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpInternalServerErrorException;
@@ -27,50 +25,34 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpUnauthorizedException;
-use Slim\Psr7\Response;
 
-class HttpErrorHandler
+class HttpErrorHandler extends ErrorHandler
 {
     /**
      * @var string[]
      */
     protected array $types = [
-        HttpNotFoundException::class => MyErrorHandler::RESOURCE_NOT_FOUND,
-        HttpMethodNotAllowedException::class => MyErrorHandler::NOT_ALLOWED,
-        HttpUnauthorizedException::class => MyErrorHandler::UNAUTHENTICATED,
-        HttpForbiddenException::class => MyErrorHandler::UNAUTHENTICATED,
-        HttpBadRequestException::class => MyErrorHandler::BAD_REQUEST,
-        HttpNotImplementedException::class => MyErrorHandler::NOT_IMPLEMENTED,
-        HttpUnavailableException::class => MyErrorHandler::SERVICE_UNAVAILABLE,
-        HttpInternalServerErrorException::class => MyErrorHandler::INTERNAL_SERVER_ERROR,
+        HttpNotFoundException::class => ErrorHandler::RESOURCE_NOT_FOUND,
+        HttpMethodNotAllowedException::class => ErrorHandler::NOT_ALLOWED,
+        HttpUnauthorizedException::class => ErrorHandler::UNAUTHENTICATED,
+        HttpForbiddenException::class => ErrorHandler::UNAUTHENTICATED,
+        HttpBadRequestException::class => ErrorHandler::BAD_REQUEST,
+        HttpNotImplementedException::class => ErrorHandler::NOT_IMPLEMENTED,
+        HttpUnavailableException::class => ErrorHandler::SERVICE_UNAVAILABLE,
+        HttpInternalServerErrorException::class => ErrorHandler::INTERNAL_SERVER_ERROR,
     ];
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface $request
-     * @param \Throwable                               $exception
-     * @param bool                                     $displayErrorDetails
-     * @param bool                                     $logErrors
-     * @param bool                                     $logErrorDetails
-     *
      * @return \Psr\Http\Message\ResponseInterface
      */
-    public function __invoke(
-        ServerRequestInterface $request,
-        \Throwable $exception,
-        bool $displayErrorDetails,
-        bool $logErrors,
-        bool $logErrorDetails
-    ): ResponseInterface {
-        $type = $this->types[$exception::class] ?? MyErrorHandler::BAD_REQUEST;
-        $statusCode = $exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
-        $message = $exception->getMessage();
+    public function respond(): ResponseInterface
+    {
+        $type = $this->types[$this->exception::class] ?? ErrorHandler::BAD_REQUEST;
+        $statusCode = $this->exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
+        $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
 
-        if (
-            !is_integer($statusCode)
-            || $statusCode < StatusCodeInterface::STATUS_CONTINUE
-            || $statusCode > 599
-        ) {
-            $type = MyErrorHandler::SERVER_ERROR;
+        if (!in_array($statusCode, $validStatusCodes)) {
+            $type = ErrorHandler::SERVER_ERROR;
             $statusCode = StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR;
         }
 
@@ -78,30 +60,28 @@ class HttpErrorHandler
             'statusCode' => $statusCode,
             'error' => [
                 'type' => $type,
-                'name' => basename(str_replace('\\', '/', get_class($exception))),
-                'message' => $message,
-                'typeClass' => MyErrorHandler::getHtmlClass($statusCode),
+                'name' => basename(str_replace('\\', '/', get_class($this->exception))),
+                'message' => $this->exception->getMessage(),
+                'typeClass' => ErrorHandler::getHtmlClass($statusCode),
             ],
         ];
 
-        if (($displayErrorDetails && 'development' === Env::get('APP_ENV')) || isset($_GET['showAllErrors'])) {
+        if (($this->displayErrorDetails && 'development' === Env::get('APP_ENV')) || isset($_GET['showAllErrors'])) {
             $error['error'] += [
-                'line' => $exception->getLine(),
-                'file' => str_replace(Path::app(), '', $exception->getFile()),
-                'route' => "({$request->getMethod()}) {$request->getUri()->getPath()}",
-                'trace' => explode("\n", $exception->getTraceAsString()),
-                'headers' => array_map(fn ($header) => $header[0], $request->getHeaders()),
-                'queryParams' => $request->getQueryParams(),
-                'parsedBody' => $request->getParsedBody(),
-                'cookieParams' => $request->getCookieParams(),
+                'line' => $this->exception->getLine(),
+                'file' => str_replace(Path::app(), '', $this->exception->getFile()),
+                'route' => "({$this->request->getMethod()}) {$this->request->getUri()->getPath()}",
+                'trace' => explode("\n", $this->exception->getTraceAsString()),
+                'headers' => array_map(fn ($header) => $header[0], $this->request->getHeaders()),
+                'queryParams' => $this->request->getQueryParams(),
+                'parsedBody' => $this->request->getParsedBody(),
+                'cookieParams' => $this->request->getCookieParams(),
             ];
         }
 
-        $payload = json_encode($error, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        $response = new Response($statusCode);
+        $response = $this->responseFactory->createResponse($statusCode);
         $response->withHeader('Content-Type', 'application/json');
-        $response->getBody()->write($payload);
+        $response->getBody()->write(json_encode($error, JSON_PRETTY_PRINT));
 
         return $response;
     }

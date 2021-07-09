@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 09/07/2021 Vagner Cardoso
  */
 
 namespace Core\Handlers;
@@ -14,9 +14,9 @@ namespace Core\Handlers;
 /**
  * Class ErrorHandler.
  *
- * @author  Vagner Cardoso <vagnercardosoweb@gmail.com>
+ * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class ErrorHandler
+class ErrorHandler extends \Slim\Handlers\ErrorHandler
 {
     public const BAD_REQUEST = 'BAD_REQUEST';
 
