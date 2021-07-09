@@ -6,16 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 09/07/2021 Vagner Cardoso
  */
 
 namespace App\Providers;
 
-use Core\Config;
 use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
 use Core\Logger;
-use Core\Support\Str;
 use DI\Container;
 
 /**
@@ -34,9 +32,6 @@ class LoggerProvider implements ServiceProvider
     {
         Facade::setAliases(['Logger' => Logger::class]);
 
-        $name = Config::get('app.name', 'app');
-        $name = Str::kebab(strtolower($name));
-
-        return new Logger($name);
+        return new Logger();
     }
 }
