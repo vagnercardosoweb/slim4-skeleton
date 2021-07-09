@@ -600,10 +600,8 @@ abstract class Model implements ArrayAccess, JsonSerializable
             $primaryValue = $this->bindings[$this->getPrimaryKey()];
         }
 
-        if ($primaryValue && $row = $this->fetchById($primaryValue)) {
-            $row->update($data, $validate);
-
-            return $row;
+        if ($primaryValue && $this->fetchById($primaryValue)) {
+            return $this->update($data, $validate)[0];
         }
 
         return $this->create($data, $validate);
@@ -617,13 +615,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function getPrimaryValue(object | array $data = []): ?string
     {
         $data = Obj::toArray($data);
+        $actualData = Obj::toArray($this->data);
 
         if (!empty($data[$this->primaryKey])) {
             return $data[$this->primaryKey];
         }
 
-        if (!empty($this->data[$this->primaryKey])) {
-            return $this->data[$this->primaryKey];
+        if (!empty($actualData[$this->primaryKey])) {
+            return $actualData[$this->primaryKey];
         }
 
         return $this->{$this->primaryKey} ?? null;
