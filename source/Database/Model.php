@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 09/07/2021 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -594,20 +594,19 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function save(object | array $data = [], bool $validate = true): self
     {
-        $this->data($data);
-        $primaryValue = $this->getPrimaryValue($this->data);
+        $primaryValue = $this->getPrimaryValue($data);
 
         if (!$primaryValue && !empty($this->bindings[$this->getPrimaryKey()])) {
             $primaryValue = $this->bindings[$this->getPrimaryKey()];
         }
 
         if ($primaryValue && $row = $this->fetchById($primaryValue)) {
-            $row->update($this->data, $validate);
+            $row->update($data, $validate);
 
             return $row;
         }
 
-        return $this->create($this->data, $validate);
+        return $this->create($data, $validate);
     }
 
     /**
@@ -621,6 +620,10 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
         if (!empty($data[$this->primaryKey])) {
             return $data[$this->primaryKey];
+        }
+
+        if (!empty($this->data[$this->primaryKey])) {
+            return $this->data[$this->primaryKey];
         }
 
         return $this->{$this->primaryKey} ?? null;
