@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 19/08/2021 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -296,8 +296,8 @@ class Validate
             $value = strlen($value);
         }
 
-        if (!$length && '0' == substr($value, 0, 1)) {
-            while ('0' == substr($value, 0, 1)) {
+        if (!$length && str_starts_with($value, '0')) {
+            while (str_starts_with($value, '0')) {
                 $value = substr($value, 1);
             }
         }

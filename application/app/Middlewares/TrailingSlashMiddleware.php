@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 01/07/2021 Vagner Cardoso
+ * @copyright 19/08/2021 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -45,8 +45,8 @@ class TrailingSlashMiddleware implements MiddlewareInterface
         $uri = $request->getUri();
         $path = $uri->getPath();
 
-        if ('/' != $path && '/' == substr($path, -1)) {
-            while ('/' == substr($path, -1)) {
+        if ('/' != $path && str_ends_with($path, '/')) {
+            while (str_ends_with($path, '/')) {
                 $path = substr($path, 0, -1);
             }
 
