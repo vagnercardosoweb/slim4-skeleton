@@ -9,23 +9,21 @@
  * @copyright 09/01/2022 Vagner Cardoso
  */
 
-namespace App\Modules\Web\Controllers;
+namespace Tests\Traits;
 
-use Core\Controller;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * Class IndexController.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
-class IndexController extends Controller
+trait AssertTestTrait
 {
     /**
-     * @return \Psr\Http\Message\ResponseInterface
+     * Verify HTML response.
+     *
+     * @param ResponseInterface $response The response
+     *
+     * @return void
      */
-    public function index(): ResponseInterface
+    protected function assertHtmlContentType(ResponseInterface $response): void
     {
-        return $this->withTwig('home/index');
+        $this->assertStringContainsString('text/html', $response->getHeaderLine('Content-Type'));
     }
 }

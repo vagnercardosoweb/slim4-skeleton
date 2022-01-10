@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -65,19 +65,19 @@ class Statement extends \PDOStatement
     }
 
     /**
-     * @param mixed $mode
-     * @param int   $cursorOrientation
-     * @param int   $cursorOffset
+     * @param int|string|null $mode
+     * @param int             $cursorOrientation
+     * @param int             $cursorOffset
      *
      * @return mixed
      */
-    public function fetch($mode = null, $cursorOrientation = \PDO::FETCH_ORI_NEXT, $cursorOffset = 0): mixed
+    public function fetch(int | string $mode = null, int $cursorOrientation = \PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
     {
-        if ($this->isFetchObject($mode) || class_exists($mode)) {
-            if (!class_exists($mode)) {
-                $mode = 'stdClass';
-            }
+        if (!class_exists($mode) && (is_int($mode) && $this->isFetchObject($mode))) {
+            $mode = 'stdClass';
+        }
 
+        if (is_string($mode) && class_exists($mode)) {
             return parent::fetchObject($mode);
         }
 
@@ -85,16 +85,15 @@ class Statement extends \PDOStatement
     }
 
     /**
-     * @param int|null $style
+     * @param int $style
      *
      * @return bool
      */
-    public function isFetchObject(int $style = null): bool
+    public function isFetchObject(int $style = \PDO::ATTR_DEFAULT_FETCH_MODE): bool
     {
         $allowed = [\PDO::FETCH_OBJ, \PDO::FETCH_CLASS];
-        $fetchMode = $style ?: $this->pdo->getAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE);
 
-        if (in_array($fetchMode, $allowed)) {
+        if (in_array($style, $allowed)) {
             return true;
         }
 

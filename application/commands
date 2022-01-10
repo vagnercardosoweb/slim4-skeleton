@@ -4,13 +4,13 @@
 use Core\Bootstrap;
 use Symfony\Component\Console\Application;
 
-require_once __DIR__.'/../public_html/index.php';
-
-$container = Bootstrap::getApp()->getContainer();
-$application = $container?->get(Application::class);
+require_once __DIR__ . '/../public_html/index.php';
 
 try {
-    $application->run();
+  $container = Bootstrap::getApp()->getContainer();
+  $application = $container?->get(Application::class);
+
+  exit($application->run());
 } catch (Exception $e) {
-    dd($e);
+  dd($e);
 }

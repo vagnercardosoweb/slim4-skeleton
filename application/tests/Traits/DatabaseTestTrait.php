@@ -6,16 +6,19 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Tests\Traits;
 
-use DomainException;
+use Core\Support\Path;
 use InvalidArgumentException;
 use PDO;
 use PDOStatement;
-use Tests\Fixture\FixtureInterface;
+use Phinx\Console\PhinxApplication;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Tests\Fixture\Fixture;
 use UnexpectedValueException;
 
 /**
@@ -36,7 +39,7 @@ trait DatabaseTestTrait
     protected bool $runPhinx = false;
 
     /**
-     * @var FixtureInterface[]
+     * @var Fixture[]
      */
     protected array $fixtures = [];
 
@@ -55,14 +58,8 @@ trait DatabaseTestTrait
 
         $this->getConnection();
 
-        if ($runPhinx && empty($schemaFile)) {
-            $this->phinxMigrate();
-        }
-
-        if (!empty($schemaFile)) {
-            $this->unsetStatsExpiry();
-            $this->importSchema();
-        }
+        $this->createTables();
+        $this->truncateTables();
 
         if (!empty($this->fixtures)) {
             $this->insertFixtures($this->fixtures);
@@ -75,7 +72,14 @@ trait DatabaseTestTrait
     protected function tearDownDatabase(): void
     {
         $this->unsetStatsExpiry();
-        $this->dropTables();
+
+        if ($this->runPhinx) {
+            $this->phinxRollback();
+        }
+
+        if (!empty($this->schemaFile)) {
+            $this->dropTables();
+        }
     }
 
     /**
@@ -85,7 +89,15 @@ trait DatabaseTestTrait
      */
     protected function phinxRollback(): void
     {
-        shell_exec('./phinx rollback -t 0');
+        $phinxApplication = new PhinxApplication();
+        $phinxApplication->doRun(new ArgvInput([
+            'phinx',
+            'rollback',
+            '-c',
+            Path::config('phinx.php'),
+            '-t',
+            '0',
+        ]), new ConsoleOutput());
     }
 
     /**
@@ -95,7 +107,13 @@ trait DatabaseTestTrait
      */
     protected function phinxMigrate(): void
     {
-        shell_exec('./phinx migrate');
+        $phinxApplication = new PhinxApplication();
+        $phinxApplication->doRun(new ArgvInput([
+            'phinx',
+            'migrate',
+            '-c',
+            Path::config('phinx.php'),
+        ]), new ConsoleOutput());
     }
 
     /**
@@ -192,7 +210,7 @@ trait DatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    private function createQueryStatement(string $sql): PDOStatement
+    protected function createQueryStatement(string $sql): PDOStatement
     {
         $statement = $this->getConnection()->query($sql, PDO::FETCH_ASSOC);
 
@@ -263,20 +281,20 @@ trait DatabaseTestTrait
     /**
      * Iterate over all fixtures and insert them into their tables.
      *
-     * @param array<mixed> $fixtures The fixtures
+     * @param array $fixtures The fixtures
      *
      * @return void
      */
     protected function insertFixtures(array $fixtures): void
     {
         foreach ($fixtures as $fixture) {
-            if (!is_a($fixture, FixtureInterface::class)) {
+            $object = new $fixture();
+
+            if (!is_a($object, Fixture::class)) {
                 throw new InvalidArgumentException(
                     "Fixture {$fixture} must be an instance of: Tests\\Fixture\\FixtureInterface."
                 );
             }
-
-            $object = new $fixture();
 
             foreach ($object->getRecords() as $row) {
                 $this->insertFixture($object->getTable(), $row);
@@ -287,8 +305,8 @@ trait DatabaseTestTrait
     /**
      * Insert row into table.
      *
-     * @param string       $table The table name
-     * @param array<mixed> $row   The row data
+     * @param string $table The table name
+     * @param array  $row   The row data
      *
      * @return void
      */
@@ -304,6 +322,7 @@ trait DatabaseTestTrait
         );
 
         $sql = sprintf('INSERT INTO `%s` SET %s', $table, implode(',', $fields));
+
         $statement = $this->createPreparedStatement($sql);
         $statement->execute($row);
     }
@@ -317,7 +336,7 @@ trait DatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    private function createPreparedStatement(string $sql): PDOStatement
+    protected function createPreparedStatement(string $sql): PDOStatement
     {
         $statement = $this->getConnection()->prepare($sql);
 
@@ -326,108 +345,6 @@ trait DatabaseTestTrait
         }
 
         return $statement;
-    }
-
-    /**
-     * Asserts that a given table is the same as the given row.
-     *
-     * @param array<mixed>      $expectedRow Row expected to find
-     * @param string            $table       Table to look into
-     * @param int               $id          The primary key
-     * @param array<mixed>|null $fields      The columns
-     * @param string            $message     Optional message
-     *
-     * @return void
-     */
-    protected function assertTableRow(
-        array $expectedRow,
-        string $table,
-        int $id,
-        array $fields = null,
-        string $message = ''
-    ): void {
-        $this->assertSame(
-            $expectedRow,
-            $this->getTableRowById($table, $id, $fields ?: array_keys($expectedRow)),
-            $message
-        );
-    }
-
-    /**
-     * Fetch row by ID.
-     *
-     * @param string            $table  Table name
-     * @param int               $id     The primary key value
-     * @param array<mixed>|null $fields The array of fields
-     *
-     * @throws \DomainException
-     *
-     * @return array<mixed> Row
-     */
-    protected function getTableRowById(string $table, int $id, array $fields = null): array
-    {
-        $sql = sprintf('SELECT * FROM `%s` WHERE `id` = :id', $table);
-        $statement = $this->createPreparedStatement($sql);
-        $statement->execute(['id' => $id]);
-
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($row)) {
-            throw new DomainException(sprintf('Row not found: %s', $id));
-        }
-
-        if ($fields) {
-            $row = array_intersect_key($row, array_flip($fields));
-        }
-
-        return $row;
-    }
-
-    /**
-     * Asserts that a given table equals the given row.
-     *
-     * @param array<mixed>      $expectedRow Row expected to find
-     * @param string            $table       Table to look into
-     * @param int               $id          The primary key
-     * @param array<mixed>|null $fields      The columns
-     * @param string            $message     Optional message
-     *
-     * @return void
-     */
-    protected function assertTableRowEquals(
-        array $expectedRow,
-        string $table,
-        int $id,
-        array $fields = null,
-        string $message = ''
-    ): void {
-        $this->assertEquals(
-            $expectedRow,
-            $this->getTableRowById($table, $id, $fields ?: array_keys($expectedRow)),
-            $message
-        );
-    }
-
-    /**
-     * Asserts that a given table contains a given row value.
-     *
-     * @param mixed  $expected The expected value
-     * @param string $table    Table to look into
-     * @param int    $id       The primary key
-     * @param string $field    The column name
-     * @param string $message  Optional message
-     *
-     * @return void
-     */
-    protected function assertTableRowValue(
-        mixed $expected,
-        string $table,
-        int $id,
-        string $field,
-        string $message = ''
-    ): void {
-        $actual = $this->getTableRowById($table, $id, [$field])[$field];
-        $this->assertSame($expected, $actual, $message);
     }
 
     /**
@@ -461,47 +378,24 @@ trait DatabaseTestTrait
     }
 
     /**
-     * Asserts that a given table contains a given number of rows.
-     *
-     * @param string $table   Table to look into
-     * @param int    $id      The id
-     * @param string $message Optional message
-     *
      * @return void
      */
-    protected function assertTableRowExists(string $table, int $id, string $message = ''): void
+    protected function createTables(): void
     {
-        $this->assertTrue((bool)$this->findTableRowById($table, $id), $message);
-    }
+        if (!defined('DB_TEST_TRAIT_INIT')) {
+            return;
+        }
 
-    /**
-     * Fetch row by ID.
-     *
-     * @param string $table Table name
-     * @param int    $id    The primary key value
-     *
-     * @return array<mixed> Row
-     */
-    protected function findTableRowById(string $table, int $id): array
-    {
-        $sql = sprintf('SELECT * FROM `%s` WHERE `id` = :id', $table);
-        $statement = $this->createPreparedStatement($sql);
-        $statement->execute(['id' => $id]);
+        if ($this->runPhinx && empty($this->schemaFile)) {
+            $this->phinxMigrate();
+        }
 
-        return $statement->fetch(PDO::FETCH_ASSOC) ?: [];
-    }
+        if (!$this->runPhinx && !empty($this->schemaFile)) {
+            $this->unsetStatsExpiry();
+            $this->dropTables();
+            $this->importSchema();
+        }
 
-    /**
-     * Asserts that a given table contains a given number of rows.
-     *
-     * @param string $table   Table to look into
-     * @param int    $id      The id
-     * @param string $message Optional message
-     *
-     * @return void
-     */
-    protected function assertTableRowNotExists(string $table, int $id, string $message = ''): void
-    {
-        $this->assertFalse((bool)$this->findTableRowById($table, $id), $message);
+        define('DB_TEST_TRAIT_INIT', true);
     }
 }

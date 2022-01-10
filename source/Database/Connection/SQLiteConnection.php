@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -43,7 +43,7 @@ class SQLiteConnection extends Connection
             );
         }
 
-        if ('memory' !== $config['database'] && !realpath($config['database'])) {
+        if ('memory' !== $config['database'] && !file_exists($config['database'])) {
             throw new \InvalidArgumentException(
                 "'sqlite' database not exists in path {$config['database']}"
             );

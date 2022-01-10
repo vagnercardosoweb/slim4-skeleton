@@ -6,12 +6,11 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Tests\App\Controllers;
 
-use Core\Bootstrap;
 use Fig\Http\Message\StatusCodeInterface;
 use Tests\TestCase;
 
@@ -30,16 +29,16 @@ class IndexControllerTest extends TestCase
         $request = $this->createRequest('GET', '/');
         $response = $this->app->handle($request);
 
-        $this->assertJsonContentType($response);
+        $this->assertHtmlContentType($response);
         $this->assertSame(StatusCodeInterface::STATUS_OK, $response->getStatusCode());
-        $this->assertJsonValue(Bootstrap::VERSION, 'version', $response);
+        $this->assertStringContainsString('Você é capaz e sempre de o melhor de sí em tudo oque fizer.', $response->getBody());
     }
 
-    public function testTemplate()
+    public function testPageNotFound()
     {
-        $request = $this->createRequest('GET', '/template');
+        $request = $this->createRequest('GET', '/not-found');
         $response = $this->app->handle($request);
 
-        $this->assertSame(StatusCodeInterface::STATUS_OK, $response->getStatusCode());
+        $this->assertSame(StatusCodeInterface::STATUS_NOT_FOUND, $response->getStatusCode());
     }
 }

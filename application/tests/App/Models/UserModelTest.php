@@ -6,12 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Tests\App\Models;
 
 use App\Models\UserModel;
+use Tests\Fixture\UserFixture;
 use Tests\TestCase;
 use Tests\Traits\DatabaseTestTrait;
 
@@ -27,20 +28,20 @@ class UserModelTest extends TestCase
 {
     use DatabaseTestTrait;
 
-    /**
-     * @throws \Exception
-     */
     public function testShouldCreateNewUserCorrectly(): void
     {
-        $user = UserModel::query()->create([
-            'name' => 'any_name',
-            'email' => 'any_email@mail.com',
-            'password' => 'any_password',
-        ]);
+        $this->insertFixtures([UserFixture::class]);
 
-        $this->assertIsString($user->id);
-        $this->assertEquals('any_name', $user->name);
-        $this->assertEquals('any_email@mail.com', $user->email);
-        $this->assertEquals('any_password', $user->password);
+        $rowData = UserModel::query()->order('created_at DESC')->fetch();
+
+        $this->assertEquals('any_name', $rowData->name);
+        $this->assertEquals('any_mail@mail.com', $rowData->email);
+        $this->assertEquals('any_password', $rowData->password);
+    }
+
+    public function testChecksIfThereIsOnlyOneResult(): void
+    {
+        $this->insertFixtures([UserFixture::class]);
+        $this->assertSame(1, UserModel::query()->count());
     }
 }

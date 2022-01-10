@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Core\Curl;
@@ -115,7 +115,7 @@ class Curl
      *
      * @return $this
      */
-    public function setQueryParams(array $params): Curl
+    public function addQueryParams(array $params): Curl
     {
         $this->url .= '?'.Common::httpBuildQuery($params);
 
@@ -127,11 +127,11 @@ class Curl
      *
      * @return $this
      */
-    public function setBody(array $data): Curl
+    public function addBody(array $data): Curl
     {
         $this->body = json_encode($data, JSON_PRETTY_PRINT);
-        $this->setHeader('Content-Type', 'application/json');
-        $this->setHeader('Content-Length', mb_strlen($this->body));
+        $this->addHeader('Content-Type', 'application/json');
+        $this->addHeader('Content-Length', mb_strlen($this->body));
 
         return $this;
     }
@@ -141,11 +141,11 @@ class Curl
      *
      * @return $this
      */
-    public function setFormUrlencoded(array $data): Curl
+    public function addFormUrlencoded(array $data): Curl
     {
         $this->body = Common::httpBuildQuery($data);
-        $this->setHeader('Content-Type', 'application/x-www-form-urlencoded');
-        $this->setHeader('Content-Length', mb_strlen($this->body));
+        $this->addHeader('Content-Type', 'application/x-www-form-urlencoded');
+        $this->addHeader('Content-Length', mb_strlen($this->body));
 
         return $this;
     }
@@ -200,7 +200,7 @@ class Curl
     /**
      * @return array<string>
      */
-    public function parseHeaders(): array
+    private function parseHeaders(): array
     {
         $headers = [];
 
@@ -212,32 +212,16 @@ class Curl
     }
 
     /**
-     * @return array<string, string>
-     */
-    public function getHeaders(): array
-    {
-        return $this->headers;
-    }
-
-    /**
      * @param string $key
      * @param string $value
      *
      * @return Curl
      */
-    public function setHeader(string $key, string $value): Curl
+    public function addHeader(string $key, string $value): Curl
     {
         $this->headers[trim($key)] = trim($value);
 
         return $this;
-    }
-
-    /**
-     * @return array<int, mixed>
-     */
-    public function getOptions(): array
-    {
-        return $this->options;
     }
 
     /**
@@ -246,7 +230,7 @@ class Curl
      *
      * @return Curl
      */
-    public function setOption(int $option, mixed $value): Curl
+    public function addOption(int $option, mixed $value): Curl
     {
         $this->options[$option] = $value;
 
@@ -254,16 +238,14 @@ class Curl
     }
 
     /**
-     * @return Curl
+     * @return void
      */
-    public function clear(): Curl
+    private function clear(): void
     {
         $this->url = '';
         $this->method = 'GET';
         $this->body = '';
         $this->headers = [];
         $this->options = [];
-
-        return $this;
     }
 }

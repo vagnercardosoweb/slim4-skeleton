@@ -1,7 +1,7 @@
 #!/bin/bash
 
 npm install -g yarn
-yarn --cwd "$WORKDIR"/application/resources/assets install
+yarn --cwd "$WORKDIR"/application/resources/assets install --silent
 
 composer install -o --working-dir="$WORKDIR"/application
 

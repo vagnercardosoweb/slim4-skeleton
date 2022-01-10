@@ -9,23 +9,26 @@
  * @copyright 09/01/2022 Vagner Cardoso
  */
 
-namespace App\Modules\Web\Controllers;
-
-use Core\Controller;
-use Psr\Http\Message\ResponseInterface;
+namespace Tests\Fixture;
 
 /**
- * Class IndexController.
+ * Class FixtureInterface.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class IndexController extends Controller
+interface Fixture
 {
     /**
-     * @return \Psr\Http\Message\ResponseInterface
+     * Returns the name of the table.
+     *
+     * @return string
      */
-    public function index(): ResponseInterface
-    {
-        return $this->withTwig('home/index');
-    }
+    public function getTable(): string;
+
+    /**
+     * Returns collection with data for insertion into the bank.
+     *
+     * @return array<string, mixed>
+     */
+    public function getRecords(): array;
 }

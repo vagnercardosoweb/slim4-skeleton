@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 use Core\Support\Env;
@@ -25,6 +25,12 @@ return [
     'environments' => [
         'default_migration_table' => 'migrations',
         'default_environment' => Env::get('DB_DRIVER', 'mysql'),
+
+        'sqlite' => [
+            'suffix' => '',
+            'memory' => 'memory' === Env::get('DB_DATABASE'),
+            'name' => Env::get('DB_DATABASE'),
+        ],
 
         'mysql' => [
             'adapter' => 'mysql',

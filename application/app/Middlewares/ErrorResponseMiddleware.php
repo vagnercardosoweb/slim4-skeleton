@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -41,33 +41,33 @@ class ErrorResponseMiddleware implements MiddlewareInterface
         try {
             return $handler->handle($request);
         } catch (\Exception $exception) {
-            if (Container::has(Twig::class) && !Env::get('APP_RESPONSE_ERROR_JSON', false)) {
-                $statusCode = StatusCodeInterface::STATUS_BAD_REQUEST;
-                $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
-
-                if (in_array($exception->getCode(), $validStatusCodes)) {
-                    $statusCode = $exception->getCode();
-                }
-
-                /** @var Twig $twig */
-                $twig = Container::get(Twig::class);
-                $template = 'index';
-
-                if ($twig->exists("@errors.{$statusCode}")) {
-                    $template = "{$statusCode}.twig";
-                }
-
-                return $twig
-                    ->render(
-                        new Response(),
-                        "@errors.{$template}",
-                        ['exception' => $exception],
-                        $statusCode
-                    )
-                ;
+            if (Env::get('APP_RESPONSE_ERROR_JSON', false) || !Container::has(Twig::class)) {
+                throw $exception;
             }
 
-            throw $exception;
+            $statusCode = StatusCodeInterface::STATUS_BAD_REQUEST;
+            $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
+
+            if (in_array($exception->getCode(), $validStatusCodes)) {
+                $statusCode = $exception->getCode();
+            }
+
+            /** @var Twig $twig */
+            $twig = Container::get(Twig::class);
+            $template = 'index';
+
+            if ($twig->exists("@errors.{$statusCode}")) {
+                $template = "{$statusCode}.twig";
+            }
+
+            return $twig
+                ->render(
+                    new Response(),
+                    "@errors.{$template}",
+                    ['exception' => $exception],
+                    $statusCode
+                )
+            ;
         }
     }
 }

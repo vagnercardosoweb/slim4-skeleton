@@ -6,12 +6,11 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 19/08/2021 Vagner Cardoso
+ * @copyright 09/01/2022 Vagner Cardoso
  */
 
 namespace Core\Database;
 
-use BadMethodCallException;
 use Closure;
 use Core\Database\Connection\MySqlConnection;
 use Core\Database\Connection\PostgreSqlConnection;
@@ -26,20 +25,6 @@ use PDO;
 /**
  * Class Database.
  *
- * @method PDO beginTransaction()
- * @method PDO commit()
- * @method PDO errorCode()
- * @method PDO errorInfo()
- * @method PDO exec(string $statement)
- * @method PDO getAttribute(int $attribute)
- * @method PDO getAvailableDrivers()
- * @method PDO inTransaction()
- * @method PDO lastInsertId(string $name = null)
- * @method Statement prepare(string $statement, array $driver_options = array())
- * @method PDO quote(string $string, int $parameter_type = PDO::PARAM_STR)
- * @method PDO rollBack()
- * @method PDO setAttribute(int $attribute, mixed $value)
- *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
 class Database
@@ -47,7 +32,7 @@ class Database
     /**
      * @var \PDO|null
      */
-    protected ?PDO $pdo = null;
+    protected PDO | null $pdo = null;
 
     /**
      * @var array
@@ -60,23 +45,6 @@ class Database
     protected string $defaultDriver = 'mysql';
 
     /**
-     * @param string $method
-     * @param mixed  $arguments
-     *
-     * @return mixed
-     */
-    public function __call(string $method, mixed $arguments): mixed
-    {
-        if ($this->pdo instanceof PDO && method_exists($this->pdo, $method)) {
-            return $this->pdo->{$method}(...$arguments);
-        }
-
-        throw new BadMethodCallException(
-            sprintf('Call to undefined method %s::%s()', get_class(), $method)
-        );
-    }
-
-    /**
      * @param string $driver
      * @param array  $connection
      *
@@ -87,18 +55,6 @@ class Database
         $this->connections[$driver] = $connection;
 
         return $this;
-    }
-
-    /**
-     * @param string|null $driver
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Database\Database
-     */
-    public function driver(?string $driver = null): Database
-    {
-        return $this->connection($driver);
     }
 
     /**
@@ -170,6 +126,10 @@ class Database
      */
     public function getPdo(): PDO
     {
+        if (!$this->pdo instanceof PDO) {
+            throw new \Exception('Database connection is not established.');
+        }
+
         return $this->pdo;
     }
 
@@ -200,18 +160,18 @@ class Database
             return call_user_func_array($callback, [$injectThis, $this]);
         };
 
-        if ($this->inTransaction()) {
+        if ($this->getPdo()->inTransaction()) {
             return $invokeCallback();
         }
 
         try {
-            $this->beginTransaction();
+            $this->getPdo()->beginTransaction();
             $result = $invokeCallback();
-            $this->commit();
+            $this->getPdo()->commit();
 
             return $result;
         } catch (Exception $e) {
-            $this->rollBack();
+            $this->getPdo()->rollBack();
 
             throw $e;
         }
@@ -250,11 +210,11 @@ class Database
      *
      * @throws \Exception
      *
-     * @return \Core\Database\Connection\Statement
+     * @return Statement
      */
     public function query(string $sql, array $bindings = []): Statement
     {
-        $stmt = $this->prepare($sql);
+        $stmt = $this->getPdo()->prepare($sql);
         $stmt->bindValues($bindings);
         $stmt->execute();
 
@@ -280,9 +240,9 @@ class Database
                     $bindings["{$column}{$index}"] = $record[$column];
                 }
 
-                array_push($values, '(:'.implode("{$index}, :", array_keys($record))."{$index})");
+                $values[] = '(:'.implode("{$index}, :", array_keys($record))."{$index})";
             } else {
-                array_push($values, "('".implode("', '", array_values($record))."')");
+                $values[] = "('".implode("', '", array_values($record))."')";
             }
         }
 
@@ -319,7 +279,7 @@ class Database
                 $row->{$key} = $value;
             }
 
-            array_push($setToArray, "{$key} = :{$key}");
+            $setToArray[] = "{$key} = :{$key}";
             $intersectEqualBinding = array_intersect_key($data, $bindings);
 
             if (!empty($intersectEqualBinding[$key])) {
