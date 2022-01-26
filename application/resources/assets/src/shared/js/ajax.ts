@@ -1,4 +1,4 @@
-import { parseJSON } from './utils';
+import { parseJson } from './utils';
 
 function checkFormRequired(form: JQuery<HTMLFormElement>) {
   let totalErrors = 0;
@@ -122,7 +122,7 @@ const request = (
     },
 
     error: xhr => {
-      let responseToJson = parseJSON(xhr.responseText);
+      let responseToJson = parseJson(xhr.responseText);
 
       if (!responseToJson) {
         responseToJson = {

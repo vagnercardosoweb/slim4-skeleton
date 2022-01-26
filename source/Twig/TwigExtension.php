@@ -23,10 +23,10 @@ class TwigExtension extends AbstractExtension
      * TwigExtension constructor.
      *
      * @param \Slim\Interfaces\RouteParserInterface $routeParser
-     * @param \Psr\Http\Message\UriInterface        $uri
-     * @param array<string, callable>               $filters
-     * @param array<string, callable>               $functions
-     * @param string|null                           $basePath
+     * @param \Psr\Http\Message\UriInterface $uri
+     * @param array<string, callable> $filters
+     * @param array<string, callable> $functions
+     * @param string|null $basePath
      */
     public function __construct(
         protected RouteParserInterface $routeParser,
@@ -34,7 +34,8 @@ class TwigExtension extends AbstractExtension
         protected array $filters = [],
         protected array $functions = [],
         protected ?string $basePath = '',
-    ) {
+    )
+    {
         $this->functions['url_for'] = [$this, 'getUrlFor'];
         $this->functions['full_url_for'] = [$this, 'getFullUrlFor'];
         $this->functions['relative_url_for'] = [$this, 'getRelativeUrlFor'];
@@ -60,7 +61,7 @@ class TwigExtension extends AbstractExtension
         $twigFunctions = [];
 
         foreach ($this->functions as $name => $callable) {
-            array_push($twigFunctions, new TwigFunction($name, $callable, ['is_safe' => ['all']]));
+            $twigFunctions[] = new TwigFunction($name, $callable, ['is_safe' => ['all']]);
         }
 
         return $twigFunctions;
@@ -74,14 +75,14 @@ class TwigExtension extends AbstractExtension
         $twigFilters = [];
 
         foreach ($this->filters as $name => $callable) {
-            array_push($twigFilters, new TwigFilter($name, $callable, ['is_safe' => ['all']]));
+            $twigFilters[] = new TwigFilter($name, $callable, ['is_safe' => ['all']]);
         }
 
         return $twigFilters;
     }
 
     /**
-     * @param string               $routeName
+     * @param string $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -93,7 +94,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string               $routeName
+     * @param string $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -105,7 +106,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string               $routeName
+     * @param string $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -117,9 +118,9 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string               $routeName
+     * @param string $routeName
      * @param array<string, mixed> $data
-     * @param bool                 $withQueryString
+     * @param bool $withQueryString
      *
      * @return bool
      */
@@ -138,11 +139,11 @@ class TwigExtension extends AbstractExtension
      */
     public function getCurrentUrl(bool $withQueryString = false): string
     {
-        $currentUrl = $this->basePath.$this->uri->getPath();
+        $currentUrl = $this->basePath . $this->uri->getPath();
         $query = $this->uri->getQuery();
 
         if ($withQueryString && !empty($query)) {
-            $currentUrl .= '?'.$query;
+            $currentUrl .= '?' . $query;
         }
 
         return $currentUrl;
