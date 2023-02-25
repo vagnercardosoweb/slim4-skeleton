@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -64,7 +64,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function get(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function get(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('get', $pattern, $callable, $name, $middlewares);
     }
@@ -79,15 +79,13 @@ class Route
      * @return \Slim\Interfaces\RouteInterface
      */
     public static function route(
-        array | string $methods,
+        array|string $methods,
         string $pattern,
-        string | \Closure $callable,
+        string|\Closure $callable,
         ?string $name = null,
         array $middlewares = []
     ): RouteInterface {
-        $name = mb_strtolower($name);
-        self::validateRouteName($name);
-
+        $name = self::validateRouteName($name);
         $methods = '*' == $methods ? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] : $methods;
         $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
         $pattern = self::$groupPattern.$pattern;
@@ -107,13 +105,16 @@ class Route
 
     /**
      * @param string|null $name
+     *
+     * @return string
      */
-    private static function validateRouteName(?string $name): void
+    private static function validateRouteName(?string $name): string
     {
         if (empty($name)) {
-            return;
+            return '';
         }
 
+        $name = mb_strtolower($name);
         $routes = self::$routeCollectorProxy->getRouteCollector()->getRoutes();
 
         foreach ($routes as $route) {
@@ -123,6 +124,8 @@ class Route
                 );
             }
         }
+
+        return $name;
     }
 
     /**
@@ -130,7 +133,7 @@ class Route
      *
      * @return \Closure
      */
-    private static function handleCallableRouter(callable | string $callable): \Closure
+    private static function handleCallableRouter(callable|string $callable): \Closure
     {
         $namespace = self::$defaultNamespace;
 
@@ -138,7 +141,7 @@ class Route
             if (is_callable($callable)) {
                 $result = $callable($request, $response, ...array_values($params));
             } else {
-                list($name, $originalMethod) = (explode('@', $callable) + [1 => null]);
+                list($name, $originalMethod) = (explode('@', $callable) + [1 => '']);
 
                 $method = mb_strtolower($request->getMethod()).ucfirst($originalMethod);
                 $namespace = sprintf('%s\%s', $namespace, $name);
@@ -146,7 +149,7 @@ class Route
                 $controller = new $namespace($request, $response, $this);
 
                 if (!method_exists($controller, $method)) {
-                    $method = $originalMethod ?? 'index';
+                    $method = $originalMethod ?: 'index';
 
                     if (!method_exists($controller, $method)) {
                         throw new \BadMethodCallException(
@@ -182,7 +185,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function post(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function post(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('post', $pattern, $callable, $name, $middlewares);
     }
@@ -195,7 +198,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function put(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function put(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('put', $pattern, $callable, $name, $middlewares);
     }
@@ -208,7 +211,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function delete(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function delete(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('delete', $pattern, $callable, $name, $middlewares);
     }
@@ -221,7 +224,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function patch(string $pattern, string | \Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function patch(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('patch', $pattern, $callable, $name, $middlewares);
     }
@@ -243,7 +246,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteGroupInterface
      */
-    public static function group(string | array $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
+    public static function group(string|array $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
     {
         $namespace = null;
         $resetNamespace = false;
@@ -351,7 +354,11 @@ class Route
     {
         if (file_exists($path) && !is_dir($path)) {
             require "{$path}";
-        } elseif (is_dir($path)) {
+
+            return;
+        }
+
+        if (is_dir($path)) {
             self::registerFolder($path);
         } else {
             throw new \DomainException("Path [{$path}] of routes not found.");

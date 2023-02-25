@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -68,12 +68,12 @@ class Str extends \Illuminate\Support\Str
             substr($hexBytes, 8, 4),
             // 16 bits for "time_hi_and_version",
             // four most significant bits holds version number 4
-            hexdec(substr($hexBytes, 12, 3)) & 0x0fff | 0x4000,
+            hexdec(substr($hexBytes, 12, 3)) & 0x0FFF | 0x4000,
             // 16 bits:
             // * 8 bits for "clk_seq_hi_res",
             // * 8 bits for "clk_seq_low",
             // two most significant bits holds zero and one for variant DCE1.1
-            hexdec(substr($hexBytes, 16, 4)) & 0x3fff | 0x8000,
+            hexdec(substr($hexBytes, 16, 4)) & 0x3FFF | 0x8000,
             // 48 bits for "node"
             substr($hexBytes, 20, 12)
         );

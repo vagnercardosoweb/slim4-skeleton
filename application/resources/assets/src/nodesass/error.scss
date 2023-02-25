@@ -29,7 +29,7 @@
     margin: auto;
     word-break: break-all;
     border-radius: 4px;
-    box-shadow: 0 10px 20px darken(#FFFFFF, 5), 0 -5px 20px darken(#FFFFFF, 5);
+    box-shadow: 0 10px 20px darken(#ffffff, 5), 0 -5px 20px darken(#ffffff, 5);
 
     .header {
       padding: 15px;
@@ -37,7 +37,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid darken(#FFFFFF, 10);
+      border-bottom: 1px solid darken(#ffffff, 10);
 
       > p {
         font-size: 1.5em;
@@ -51,14 +51,14 @@
         font-size: 0.875em;
         font-weight: 400;
         color: #333333;
-        background: darken(#FFFFFF, 2);
+        background: darken(#ffffff, 2);
         transition: all ease-in-out 0.1s;
-        box-shadow: 0 1px 8px darken(#FFFFFF, 10);
+        box-shadow: 0 1px 8px darken(#ffffff, 10);
         text-decoration: none;
         text-transform: uppercase;
 
         &:hover {
-          box-shadow: 0 1px 12px darken(#FFFFFF, 20);
+          box-shadow: 0 1px 12px darken(#ffffff, 20);
         }
       }
     }
@@ -77,7 +77,7 @@
           display: block;
           width: 80%;
           margin: 20px auto 10px;
-          border-bottom: 1px solid darken(#FFFFFF, 5);
+          border-bottom: 1px solid darken(#ffffff, 5);
         }
       }
 
@@ -97,7 +97,7 @@
 
     .footer {
       padding: 7.5px;
-      border-top: 1px solid darken(#FFFFFF, 10);
+      border-top: 1px solid darken(#ffffff, 10);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -128,8 +128,8 @@
   .content {
     padding: 50px 0;
     text-align: center;
-    background: darken(#FFFFFF, 2);
-    box-shadow: 0 10px 20px darken(#FFFFFF, 5);
+    background: darken(#ffffff, 2);
+    box-shadow: 0 10px 20px darken(#ffffff, 5);
     width: 100%;
 
     h1 {
@@ -148,8 +148,8 @@
       display: inline-flex;
       text-decoration: none;
       padding: 10px 40px;
-      background: darken(#FFFFFF, 4);
-      box-shadow: 0 0 15px darken(#FFFFFF, 20);
+      background: darken(#ffffff, 4);
+      box-shadow: 0 0 15px darken(#ffffff, 20);
     }
   }
 }

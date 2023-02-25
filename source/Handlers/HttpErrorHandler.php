@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -79,8 +79,7 @@ class HttpErrorHandler extends ErrorHandler
             ];
         }
 
-        $response = $this->responseFactory->createResponse($statusCode);
-        $response->withHeader('Content-Type', 'application/json');
+        $response = $this->responseFactory->createResponse($statusCode)->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode($error, JSON_PRETTY_PRINT));
 
         return $response;

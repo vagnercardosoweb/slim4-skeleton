@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -18,13 +18,13 @@ namespace Core\Support;
  */
 class Mask
 {
-    const MASK_CPF = '###.###.###-##';
+    public const MASK_CPF = '###.###.###-##';
 
-    const MASK_CNPJ = '##.###.###/####-##';
+    public const MASK_CNPJ = '##.###.###/####-##';
 
-    const MASK_PHONE = ['(##)####-####', '(##)#####-####'];
+    public const MASK_PHONE = ['(##)####-####', '(##)#####-####'];
 
-    const MASK_CEP = '##.###-###';
+    public const MASK_CEP = '##.###-###';
 
     /**
      * @param string $value

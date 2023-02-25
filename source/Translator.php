@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -75,7 +75,7 @@ abstract class Translator
      *
      * @return string|array
      */
-    public static function get(string $message): array | string
+    public static function get(string $message): array|string
     {
         if (count(func_get_args()) > 2) {
             throw new \UnexpectedValueException('You can only pass two parameters.');
@@ -99,7 +99,7 @@ abstract class Translator
      *
      * @return array|string
      */
-    public static function byFile(string $file, string $message): array | string
+    public static function byFile(string $file, string $message): array|string
     {
         return self::get("{$file}.{$message}", ...array_slice(func_get_args(), 2));
     }

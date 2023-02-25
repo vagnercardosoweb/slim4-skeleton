@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3'
 
 networks:
   slim4.network:
@@ -9,9 +9,10 @@ services:
     build: .
     container_name: "slim4.server"
     tty: true
+    user: root
     depends_on:
       - redis
-      - mariadb
+      - postgres
     ports:
       - "80:80"
       - "433:433"
@@ -22,21 +23,21 @@ services:
     networks:
       - slim4.network
 
-  mariadb:
-    image: mariadb
-    tty: true
-    container_name: "slim4.mariadb"
-    networks:
-      - slim4.network
-    ports:
-      - '3306:3306'
-    volumes:
-      - ../mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:z
-      - ../mysql/database:/var/lib/mysql:z
-    environment:
-      - MYSQL_PASSWORD=root
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=development
+  #  mariadb:
+  #    image: mariadb
+  #    tty: true
+  #    container_name: "slim4.mariadb"
+  #    networks:
+  #      - slim4.network
+  #    ports:
+  #      - '3306:3306'
+  #    volumes:
+  #      - ../mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:z
+  #      - ../mysql/database:/var/lib/mysql:z
+  #    environment:
+  #      - MYSQL_PASSWORD=root
+  #      - MYSQL_ROOT_PASSWORD=root
+  #      - MYSQL_DATABASE=development
 
   #  mysql:
   #    image: mysql:8
@@ -72,20 +73,20 @@ services:
   #    ports:
   #      - '8080:80'
 
-  #  postgres:
-  #    image: library/postgres:13-alpine
-  #    container_name: "slim4.postgres"
-  #    tty: true
-  #    networks:
-  #      - slim4.network
-  #    ports:
-  #      - '5432:5432'
-  #    volumes:
-  #      - ../postgres:/var/lib/postgresql/data:z
-  #    environment:
-  #      - POSTGRES_USER=root
-  #      - POSTGRES_PASSWORD=root
-  #      - POSTGRES_DB=development
+  postgres:
+    image: bitnami/postgresql:15
+    container_name: slim4.postgres
+    tty: true
+    volumes:
+      - ../postgres:/bitnami/postgresql
+    networks:
+      - slim4.network
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRESQL_USERNAME=${DB_USERNAME:-root}
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD:-root}
+      - POSTGRESQL_DATABASE=${DB_NAME:-development}
 
   redis:
     image: bitnami/redis:latest

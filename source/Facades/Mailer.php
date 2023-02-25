@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Facades;
@@ -23,7 +23,7 @@ namespace Core\Facades;
  * @method static \Core\Mailer\Mailer addFile(string $path, ?string $name = null)
  * @method static \Core\Mailer\Mailer body(string $message)
  * @method static \Core\Mailer\Mailer altBody(string $message)
- * @method static mixed send()
+ * @method static mixed               send()
  */
 class Mailer extends Facade
 {

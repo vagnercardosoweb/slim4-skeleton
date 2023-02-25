@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Tests\Traits;
@@ -27,7 +27,7 @@ trait HttpJsonTestTrait
      *
      * @return ServerRequestInterface
      */
-    protected function createJsonRequest(string $method, UriInterface | string $uri, array $data = null): ServerRequestInterface
+    protected function createJsonRequest(string $method, UriInterface|string $uri, array $data = null): ServerRequestInterface
     {
         $request = $this->createRequest($method, $uri);
 
@@ -87,7 +87,7 @@ trait HttpJsonTestTrait
      *
      * @return void
      */
-    protected function assertJsonValue(mixed $expected, string $path, ResponseInterface $response)
+    protected function assertJsonValue(mixed $expected, string $path, ResponseInterface $response): void
     {
         $this->assertSame($expected, Arr::get($this->getJsonData($response), $path));
     }

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Cache;
@@ -57,7 +57,7 @@ class FileCache implements Cache
     /**
      * @return int|null
      */
-    public function getPermission(): int | null
+    public function getPermission(): int|null
     {
         return $this->permission;
     }
@@ -185,7 +185,7 @@ class FileCache implements Cache
      *
      * @return bool
      */
-    public function delete(array | string $key): bool
+    public function delete(array|string $key): bool
     {
         return $this->deleteDirectory(
             dirname($this->getPath($key), 2)

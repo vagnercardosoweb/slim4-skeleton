@@ -6,14 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Tests\Traits;
 
 use Core\Bootstrap;
 use Core\Support\Path;
-use DI\Container;
+use Psr\Container\ContainerInterface;
 use Slim\App;
 
 trait AppTestTrait
@@ -26,27 +26,26 @@ trait AppTestTrait
 
     protected App $app;
 
-    protected ?Container $container;
+    protected ContainerInterface $container;
 
     protected function setUp(): void
     {
         require_once __DIR__.'/../../../public_html/index.php';
 
         $this->app = Bootstrap::getApp();
-        $this->container = $this->app->getContainer();
+        $container = $this->app->getContainer();
 
-        if (is_null($this->container)) {
+        if (!$container instanceof ContainerInterface) {
             throw new \UnexpectedValueException(
-                'Container is not an instance DI\\Container.'
+                'Container is not an instance Psr\Container\ContainerInterface.'
             );
         }
 
+        $this->container = $container;
+
         if (method_exists($this, 'setUpDatabase')) {
-            if (file_exists($path = Path::resources('/database/schema.sql'))) {
-                $this->setUpDatabase($path, false);
-            } else {
-                $this->setUpDatabase(null, true);
-            }
+            $path = Path::resources('/database/schema.sql');
+            $this->setUpDatabase($path, true);
         }
     }
 }

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -53,9 +53,7 @@ class TrailingSlashMiddleware implements MiddlewareInterface
             $uri = $uri->withPath($path);
 
             if ('GET' == $request->getMethod()) {
-                $response = $this->container->get(ResponseInterface::class);
-
-                return $response
+                return $this->container->get(ResponseInterface::class)
                     ->withStatus(StatusCodeInterface::STATUS_MOVED_PERMANENTLY)
                     ->withHeader('Location', (string)$uri)
                 ;

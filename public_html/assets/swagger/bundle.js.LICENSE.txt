@@ -1,1 +1,25 @@
 /*! For license information please see swagger-ui-es-bundle.js.LICENSE.txt */
+
+/*! For license information please see swagger-ui-standalone-preset.js.LICENSE.txt */
+
+/*! swagger-ui */
+
+/*! swagger-ui/dist/swagger-ui-standalone-preset */
+
+/*! swagger-ui/dist/swagger-ui.css */
+
+/*!******************************!*\
+  !*** ./src/swagger/index.ts ***!
+  \******************************/
+
+/*!*****************************************************!*\
+  !*** ./node_modules/swagger-ui/dist/swagger-ui.css ***!
+  \*****************************************************/
+
+/*!**************************************************************!*\
+  !*** ./node_modules/swagger-ui/dist/swagger-ui-es-bundle.js ***!
+  \**************************************************************/
+
+/*!**********************************************************************!*\
+  !*** ./node_modules/swagger-ui/dist/swagger-ui-standalone-preset.js ***!
+  \**********************************************************************/

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { parseDatasetToObject } from '../../../shared/js/utils';
+import { parseDatasetToObject } from '../../../web/javascripts/utils';
 
 const Example: React.FC = () => {
   return <h1>React Example Component</h1>;

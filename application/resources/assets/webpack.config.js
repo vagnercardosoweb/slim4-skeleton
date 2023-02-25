@@ -5,7 +5,6 @@ const TerserWebPackPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const WorkboxPlugin = require('workbox-webpack-plugin');
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const DEV_TOOL = NODE_ENV === 'development' ? 'source-map' : false;
@@ -22,14 +21,13 @@ const outputFilename = ({ chunk: { name } }) => {
   return 'assets/[name]/bundle.js';
 };
 
-let optimization = {};
-
 const plugins = [
   new webpack.ProgressPlugin(),
   new MiniCssExtractPlugin({
     filename: 'assets/[name]/bundle.css',
     chunkFilename: 'assets/[name]/bundle.css',
   }),
+  new CleanWebpackPlugin({ cleanOnceBeforeBuildPatterns: ['static/*'] }),
   new webpack.ProvidePlugin({
     $: 'jquery',
     jQuery: 'jquery',
@@ -39,33 +37,6 @@ const plugins = [
     'window.jQuery': 'jquery',
   }),
 ];
-
-if (NODE_ENV === 'production') {
-  plugins.push(
-    new CleanWebpackPlugin({
-      cleanOnceBeforeBuildPatterns: ['static/*'],
-    }),
-    new WorkboxPlugin.GenerateSW({
-      swDest: 'static/service-worker',
-      cacheId: 'slim4',
-      additionalManifestEntries: [{ url: '/offline', revision: null }],
-      skipWaiting: true,
-      clientsClaim: true,
-    }),
-  );
-
-  optimization = {
-    ...optimization,
-    minimize: true,
-    minimizer: [
-      new CssMinimizerPlugin(),
-      new TerserWebPackPlugin({
-        parallel: true,
-        extractComments: false,
-      }),
-    ],
-  };
-}
 
 module.exports = {
   mode: NODE_ENV,
@@ -78,7 +49,6 @@ module.exports = {
   output: {
     path: PUBLIC_FOLDER,
     filename: outputFilename,
-    publicPath: '/',
   },
   // devServer: {
   //   hot: true,
@@ -91,41 +61,30 @@ module.exports = {
   //   historyApiFallback: true,
   // },
   plugins,
-  optimization,
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserWebPackPlugin(), new CssMinimizerPlugin()],
+  },
   module: {
     rules: [
       {
         test: /\.s?[ac]ss$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader',
-          'postcss-loader',
-        ],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader', 'postcss-loader'],
       },
       {
-        test: /\.(png|jpe?g|gif)$/,
+        test: /\.(png|jpeg|jpg|svg|gif|webp)$/,
         use: {
           loader: 'file-loader',
           options: {
-            name: 'static/images/[name]-[hash:8].[ext]',
+            name: 'static/images/[contenthash].[ext]',
           },
         },
       },
       {
-        test: /\.svg$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: 'static/svg/[name]-[hash:8].[ext]',
-          },
-        },
-      },
-      {
-        test: /\.(ttf|eot|svg|gif|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        test: /\.(ttf|eot|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: 'file-loader',
         options: {
-          name: 'static/fonts/[name]-[hash:8].[ext]',
+          name: 'static/fonts/[contenthash].[ext]',
         },
       },
       {
@@ -152,5 +111,12 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.css', '.scss', '.sass'],
+    fallback: {
+      fs: false,
+      path: false,
+      browser: false,
+      buffer: false,
+      stream: false,
+    },
   },
 };

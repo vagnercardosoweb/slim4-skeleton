@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -71,7 +71,7 @@ class Statement extends \PDOStatement
      *
      * @return mixed
      */
-    public function fetch(int | string $mode = null, int $cursorOrientation = \PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
+    public function fetch(int|string $mode = null, int $cursorOrientation = \PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
     {
         if (!class_exists($mode) && (is_int($mode) && $this->isFetchObject($mode))) {
             $mode = 'stdClass';
@@ -126,12 +126,8 @@ class Statement extends \PDOStatement
         }
 
         foreach ($bindings as $key => $value) {
-            if (is_string($key) && in_array($key, ['limit', 'offset', 'l', 'o'])) {
-                $value = (int)$value;
-            }
-
-            $key = (is_string($key) ? ":{$key}" : ((int)$key + 1));
-            $value = !empty($value) || '0' == $value ? filter_var($value, FILTER_DEFAULT) : null;
+            $key = (is_string($key) ? ":{$key}" : $key + 1);
+            $value = !empty($value) || '0' == $value ? filter_var($value) : null;
 
             $type = \PDO::PARAM_STR;
 

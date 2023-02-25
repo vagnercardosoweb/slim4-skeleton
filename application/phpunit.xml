@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  bootstrap="./tests/bootstrap.php"
-  colors="true"
-  backupGlobals="false"
-  backupStaticAttributes="false"
-  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
-  cacheResult="false"
->
-  <coverage processUncoveredFiles="true">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="./tests/bootstrap.php" colors="true" backupGlobals="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd" cacheResult="false" cacheDirectory=".phpunit.cache" backupStaticProperties="false">
+  <coverage>
     <include>
       <directory suffix=".php">./app/</directory>
       <directory suffix=".php">./source/</directory>

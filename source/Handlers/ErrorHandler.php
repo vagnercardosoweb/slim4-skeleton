@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Handlers;
@@ -39,7 +39,7 @@ class ErrorHandler extends \Slim\Handlers\ErrorHandler
      *
      * @return string
      */
-    public static function getHtmlClass(int | string $code): string
+    public static function getHtmlClass(int|string $code): string
     {
         if (is_string($code) && 200 != $code) {
             $code = E_USER_ERROR;

@@ -1,0 +1,13 @@
+{% extends '@error/app.twig' %}
+
+{% set title = 'Error 405 (Method not Allowed)' %}
+
+{% block content %}
+  <div class="error-404 error-405">
+    <div class="content">
+      <h1>Método HTTP ({{ method|raw }}) não aceito.</h1>
+      <p>São aceito apenas os métodos <b>({{ methods|raw }})</b> nessa requisição.</p>
+      <a href="{{ constant('BASE_URL') }}">Voltar</a>
+    </div>
+  </div>
+{% endblock %}

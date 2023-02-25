@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Password;
@@ -21,7 +21,7 @@ class Argon2Id extends Argon2i
     /**
      * @return int|string
      */
-    public function algorithm(): int | string
+    public function algorithm(): int|string
     {
         return PASSWORD_ARGON2ID;
     }

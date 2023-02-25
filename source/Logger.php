@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -16,6 +16,7 @@ use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\SlackWebhookHandler;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Monolog\Logger as MonoLogger;
 use Monolog\Processor\MemoryUsageProcessor;
 use Monolog\Processor\ProcessorInterface;
@@ -32,12 +33,12 @@ final class Logger
     /**
      * Logger constructor.
      *
-     * @param int                                          $level
+     * @param Level                                        $level
      * @param array<\Monolog\Handler\HandlerInterface>     $handlers
      * @param array<\Monolog\Processor\ProcessorInterface> $processors
      */
     public function __construct(
-        protected int $level = MonoLogger::DEBUG,
+        protected Level $level = Level::Debug,
         protected array $handlers = [],
         protected array $processors = []
     ) {
@@ -48,7 +49,7 @@ final class Logger
      *
      * @return \Monolog\Logger
      */
-    public function createLogger(string | null $name = null): MonoLogger
+    public function createLogger(string|null $name = null): MonoLogger
     {
         $logger = new MonoLogger($name ?? 'app');
 

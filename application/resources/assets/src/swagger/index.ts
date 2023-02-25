@@ -11,9 +11,7 @@ declare global {
 }
 
 window.onload = function () {
-  const BASE_URL = document
-    .querySelector('link[rel="base"]')!
-    .getAttribute('href');
+  const BASE_URL = document.querySelector('link[rel="base"]')!.getAttribute('href');
 
   window.ui = SwaggerUI({
     spec: window.SWAGGER_JSON,

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -651,7 +651,7 @@ class Validate
      *
      * @return bool
      */
-    protected static function invokeCallable(callable | string $callable, array $params): bool
+    protected static function invokeCallable(callable|string $callable, array $params): bool
     {
         if (is_callable($callable)) {
             $method = null;
@@ -713,7 +713,7 @@ class Validate
      *
      * @return mixed
      */
-    protected static function callCallable(callable | string $callable, ?string $method, array $params): mixed
+    protected static function callCallable(callable|string $callable, ?string $method, array $params): mixed
     {
         try {
             return forward_static_call_array([$callable, $method], $params);

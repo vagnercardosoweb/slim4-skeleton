@@ -6,14 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 use Core\Support\Env;
 
 return [
     // Default connection driver
-    'default' => Env::get('DB_DRIVER', 'mysql'),
+    'default' => Env::get('DB_DRIVER', 'postgres'),
 
     // Defines the types of connections that will be accepted
     'connections' => [
@@ -38,7 +38,7 @@ return [
             'database' => Env::get('DB_DATABASE'),
             'charset' => Env::get('DB_CHARSET', 'utf8mb4'),
             'collation' => Env::get('DB_COLLATE', 'utf8mb4_unicode_ci'),
-            'timezone' => Env::get('DB_TIMEZONE', '+3:00'),
+            'timezone' => Env::get('DB_TIMEZONE', 'UTC'),
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)
@@ -55,7 +55,7 @@ return [
             'database' => Env::get('DB_DATABASE'),
             'schema' => ['public'],
             'charset' => Env::get('DB_CHARSET', 'utf8'),
-            'timezone' => Env::get('DB_TIMEZONE', '+3:00'),
+            'timezone' => Env::get('DB_TIMEZONE', 'UTC'),
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)

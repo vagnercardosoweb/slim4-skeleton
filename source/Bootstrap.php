@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -26,40 +26,24 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Interfaces\RouteCollectorInterface;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Psr7\Factory\StreamFactory;
+use Slim\Psr7\Factory\UploadedFileFactory;
+use Slim\Psr7\Factory\UriFactory;
 use Slim\ResponseEmitter;
 
-/**
- * Class Bootstrap.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class Bootstrap
 {
-    /**
-     * @var string
-     */
     public const VERSION = '1.0.0';
 
-    /**
-     * @var \Slim\App|null
-     */
     private static ?App $app = null;
 
-    /**
-     * App constructor.
-     *
-     * @param string|null $pathRoutes
-     * @param string|null $pathMiddleware
-     * @param string|null $pathProviders
-     * @param string|null $pathModules
-     * @param bool|null   $immutableEnv
-     */
     public function __construct(
         protected ?string $pathRoutes = null,
         protected ?string $pathMiddleware = null,
@@ -87,9 +71,6 @@ class Bootstrap
         }
     }
 
-    /**
-     * @return App
-     */
     private function registerApp(): App
     {
         if (is_null(self::$app)) {
@@ -100,9 +81,6 @@ class Bootstrap
         return self::$app;
     }
 
-    /**
-     * @return \DI\Container
-     */
     private function registerContainerBuilder(): Container
     {
         $container = [];
@@ -131,6 +109,9 @@ class Bootstrap
 
                 return AppFactory::create();
             },
+
+            UploadedFileFactoryInterface::class => fn () => new UploadedFileFactory(),
+            UriFactoryInterface::class => fn () => new UriFactory(),
 
             ServerRequestInterface::class => function () {
                 $serverRequestCreator = ServerRequestCreatorFactory::create();
@@ -162,18 +143,12 @@ class Bootstrap
         return $containerBuilder->build();
     }
 
-    /**
-     * @return void
-     */
     private function registerFacade(): void
     {
         Facade::setApp(self::$app);
         Facade::registerAliases();
     }
 
-    /**
-     * @return void
-     */
     private function registerPhpSettings(): void
     {
         error_reporting(-1);
@@ -196,41 +171,26 @@ class Bootstrap
         });
     }
 
-    /**
-     * @return bool
-     */
     public function runningWebserverOrTest(): bool
     {
         return self::runningInWebserver() || self::runningInTest();
     }
 
-    /**
-     * @return bool
-     */
     public static function runningInWebserver(): bool
     {
         return !self::runningInConsole();
     }
 
-    /**
-     * @return bool
-     */
     public static function runningInConsole(): bool
     {
         return in_array(PHP_SAPI, ['cli', 'phpdbg']);
     }
 
-    /**
-     * @return bool
-     */
     public static function runningInTest(): bool
     {
         return Env::has('PHPUNIT_TEST_SUITE');
     }
 
-    /**
-     * @return void
-     */
     private function registerMiddleware(): void
     {
         $path = $this->pathMiddleware;
@@ -252,9 +212,6 @@ class Bootstrap
         call_user_func($callable, self::$app);
     }
 
-    /**
-     * @return void
-     */
     private function registerErrorHandler(): void
     {
         $logErrors = Env::get('SLIM_LOG_ERRORS', true);
@@ -273,9 +230,6 @@ class Bootstrap
         ini_set('display_startup_errors', 'Off');
     }
 
-    /**
-     * @return void
-     */
     private function registerModules(): void
     {
         if (!is_null($this->pathModules) && file_exists($this->pathModules)) {
@@ -301,9 +255,6 @@ class Bootstrap
         }
     }
 
-    /**
-     * @return \Slim\App
-     */
     public static function getApp(): App
     {
         if (is_null(self::$app)) {
@@ -313,9 +264,6 @@ class Bootstrap
         return self::$app;
     }
 
-    /**
-     * @return void
-     */
     public function run(): void
     {
         if (!self::runningInWebserver()) {

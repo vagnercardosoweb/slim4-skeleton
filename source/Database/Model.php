@@ -6,32 +6,27 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
 
-use ArrayAccess;
-use Closure;
 use Core\Config;
 use Core\Database\Connection\Statement;
 use Core\Support\Common;
 use Core\Support\Obj;
-use InvalidArgumentException;
-use JsonSerializable;
-use PDO;
 
 /**
  * Class Model.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-abstract class Model implements ArrayAccess, JsonSerializable
+abstract class Model implements \ArrayAccess, \JsonSerializable
 {
     /**
      * @var \Core\Database\Database|null
      */
-    protected static Database | null $database = null;
+    protected static Database|null $database = null;
 
     /**
      * @var string
@@ -41,12 +36,12 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * @var string|null
      */
-    protected string | null $primaryKey = 'id';
+    protected string|null $primaryKey = 'id';
 
     /**
      * @var string|null
      */
-    protected string | null $foreignKey = null;
+    protected string|null $foreignKey = null;
 
     /**
      * @var array
@@ -86,17 +81,17 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * @var int|null
      */
-    protected int | null $limit = null;
+    protected int|null $limit = null;
 
     /**
      * @var int|null
      */
-    protected int | null $offset = null;
+    protected int|null $offset = null;
 
     /**
      * @var object|null
      */
-    protected object | null $data = null;
+    protected object|null $data = null;
 
     /**
      * @return $this
@@ -254,7 +249,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function getQuery(): string
     {
         if (empty($this->table)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('[getQuery] `%s::table` is empty.', get_called_class())
             );
         }
@@ -264,7 +259,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         }
 
         // Build select
-        $select = implode(', ', ($this->select ?: ["{$this->table}.*"]));
+        $select = implode(', ', $this->select ?: ["{$this->table}.*"]);
         $sql = "SELECT {$select} FROM {$this->table} ";
 
         // Build join
@@ -311,7 +306,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return string
      */
-    protected function normalizeProperty(array | string $string): string
+    protected function normalizeProperty(array|string $string): string
     {
         if (is_array($string)) {
             $string = implode(' ', $string);
@@ -334,7 +329,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $row = $this->select("COUNT({$column}) AS count")
             ->order('count DESC')->limit(1)
             ->getStatement()
-            ->fetch(PDO::FETCH_OBJ)
+            ->fetch(\PDO::FETCH_OBJ)
         ;
 
         return (int)$row?->count;
@@ -374,7 +369,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function order(array | string $order): self
+    public function order(array|string $order): self
     {
         $this->mountProperty($order, 'order');
 
@@ -387,7 +382,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return void
      */
-    protected function mountProperty(array | string | null $conditions, string $property): void
+    protected function mountProperty(array|string|null $conditions, string $property): void
     {
         if (!is_array($this->{$property})) {
             $this->{$property} = [];
@@ -405,7 +400,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function select(array | string $select = '*'): self
+    public function select(array|string $select = '*'): self
     {
         if (is_string($select)) {
             $select = explode(',', $select);
@@ -421,7 +416,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this|string
      */
-    public function table(string | null $table = null): string | self
+    public function table(string|null $table = null): string|self
     {
         if (!empty($table)) {
             $this->table = $table;
@@ -437,7 +432,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function join(array | string $join): self
+    public function join(array|string $join): self
     {
         $this->mountProperty($join, 'join');
 
@@ -449,7 +444,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function group(array | string $group): self
+    public function group(array|string $group): self
     {
         $this->mountProperty($group, 'group');
 
@@ -461,7 +456,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function having(array | string $having): self
+    public function having(array|string $having): self
     {
         $this->mountProperty($having, 'having');
 
@@ -475,7 +470,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return mixed
      */
-    public function transaction(Closure $callback): mixed
+    public function transaction(\Closure $callback): mixed
     {
         return self::$database->transaction($callback, $this);
     }
@@ -488,7 +483,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function save(object | array $data = [], bool $validate = true): self
+    public function save(object|array $data = [], bool $validate = true): self
     {
         $primaryValue = $this->getPrimaryValue($data);
 
@@ -508,7 +503,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return string|null
      */
-    public function getPrimaryValue(object | array $data = []): string | null
+    public function getPrimaryValue(object|array $data = []): string|null
     {
         $data = Obj::toArray($data);
         $actualData = Obj::toArray($this->data);
@@ -527,7 +522,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * @return string|null
      */
-    public function getPrimaryKey(): string | null
+    public function getPrimaryKey(): string|null
     {
         return $this->primaryKey;
     }
@@ -539,7 +534,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this|null
      */
-    public function fetchById(int | string $id): ?self
+    public function fetchById(int|string $id): ?self
     {
         if (empty($this->primaryKey)) {
             throw new \Exception(sprintf('Primary key is not configured in the model (%s).', static::class));
@@ -556,7 +551,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this|array|null
      */
-    public function fetch(): array | self | null
+    public function fetch(): array|self|null
     {
         $statement = $this->getStatement();
         $row = $statement->fetch(get_called_class()) ?: null;
@@ -578,13 +573,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this[]|null
      */
-    public function update(object | array $data = [], bool $validate = true): ?array
+    public function update(object|array $data = [], bool $validate = true): ?array
     {
         $this->data($data, $validate);
         $this->mountWherePrimaryKey();
 
         if (empty($this->where)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('[update] `%s::where()` is empty.', get_called_class())
             );
         }
@@ -619,7 +614,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function data(object | array $data = [], bool $validate = true): self
+    public function data(object|array $data = [], bool $validate = true): self
     {
         $data = array_merge(
             Obj::toArray($this->data),
@@ -656,7 +651,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function create(object | array $data = [], bool $validate = true): self
+    public function create(object|array $data = [], bool $validate = true): self
     {
         $this->data($data, $validate);
 
@@ -707,7 +702,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function where(array | string $where, $bindings = null): self
+    public function where(array|string $where, $bindings = null): self
     {
         $this->mountProperty($where, 'where');
         $this->bindings($bindings);
@@ -720,7 +715,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this
      */
-    public function bindings(array | string | null $bindings): self
+    public function bindings(array|string|null $bindings): self
     {
         Common::parseStr($bindings, $this->bindings);
 
@@ -768,7 +763,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * @return string|null
      */
-    public function getForeignKey(): string | null
+    public function getForeignKey(): string|null
     {
         return $this->foreignKey;
     }
@@ -788,7 +783,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return $this[]|null
      */
-    public function delete(int | null $id = null): ?array
+    public function delete(int|null $id = null): ?array
     {
         if (!is_array($id) && !empty($id) && $this->primaryKey) {
             $this->data([$this->primaryKey => $id]);
@@ -797,7 +792,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $this->mountWherePrimaryKey();
 
         if (empty($this->where)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('[delete] `%s::where()` is empty.', get_called_class())
             );
         }

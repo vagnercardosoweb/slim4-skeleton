@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -31,25 +31,25 @@ final class CreateUsersResetPasswords extends AbstractMigration
 
         $table
             ->addColumn('id', 'uuid', [
-                'limit' => 16,
-                'default' => Literal::from('(UUID())'),
+                'null' => false,
+                'default' => Literal::from('uuid_generate_v4()'),
             ])
-            ->addIndex('id')
-        ;
+            ->changePrimaryKey('id')
+            ->addIndex('id');
 
         $table
-            ->addColumn('user_id', 'uuid', ['limit' => 16])
+            ->addColumn('user_id', 'uuid', ['null' => false])
             ->addIndex('user_id')
-            ->addForeignKey('user_id', 'users', 'id', [
-                'update' => 'CASCADE',
-                'delete' => 'CASCADE',
-            ])
-        ;
+            ->addForeignKey(
+                'user_id',
+                'users',
+                'id',
+                ['update' => 'CASCADE', 'delete' => 'CASCADE']
+            );
 
         $table
-            ->addColumn('expired_at', 'datetime')
-            ->addIndex('expired_at')
-        ;
+            ->addColumn('expired_at', 'timestamp', ['timezone' => true])
+            ->addIndex('expired_at');
 
         $table->save();
     }

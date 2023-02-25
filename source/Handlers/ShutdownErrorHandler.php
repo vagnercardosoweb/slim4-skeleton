@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -19,28 +19,12 @@ use Slim\ResponseEmitter;
 
 class ShutdownErrorHandler
 {
-    /**
-     * @var ServerRequestInterface
-     */
     private ServerRequestInterface $request;
 
-    /**
-     * @var HttpErrorHandler
-     */
     private HttpErrorHandler $errorHandler;
 
-    /**
-     * @var bool
-     */
     private bool $displayErrorDetails;
 
-    /**
-     * ShutdownErrorHandler constructor.
-     *
-     * @param ServerRequestInterface $request
-     * @param HttpErrorHandler       $errorHandler
-     * @param bool                   $displayErrorDetails
-     */
     public function __construct(
         ServerRequestInterface $request,
         HttpErrorHandler $errorHandler,
@@ -51,10 +35,7 @@ class ShutdownErrorHandler
         $this->displayErrorDetails = $displayErrorDetails;
     }
 
-    /**
-     * @return void
-     */
-    public function __invoke()
+    public function __invoke(): void
     {
         $error = error_get_last();
 

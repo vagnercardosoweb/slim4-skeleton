@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Session;
@@ -48,47 +48,6 @@ class Session
         }
 
         $this->storage = Obj::fromArray($this->storage);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return mixed|null
-     */
-    public function __get(string $name)
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @return void
-     */
-    public function __set(string $name, mixed $value): void
-    {
-        $this->set($name, $value);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return bool
-     */
-    public function __isset(string $name): bool
-    {
-        return $this->has($name);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return void
-     */
-    public function __unset(string $name): void
-    {
-        $this->remove($name);
     }
 
     /**
@@ -138,13 +97,34 @@ class Session
      *
      * @return mixed
      */
-    public function get(string $name, $default = null): mixed
+    public function get(string $name, mixed $default = null): mixed
     {
         if (isset($this->storage->{$name})) {
             return $this->storage->{$name};
         }
 
         return $default;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return mixed|null
+     */
+    public function __get(string $name)
+    {
+        return $this->get($name);
+    }
+
+    /**
+     * @param string $name
+     * @param mixed  $value
+     *
+     * @return void
+     */
+    public function __set(string $name, mixed $value): void
+    {
+        $this->set($name, $value);
     }
 
     /**
@@ -167,9 +147,29 @@ class Session
      *
      * @return bool
      */
+    public function __isset(string $name): bool
+    {
+        return $this->has($name);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
     public function has(string $name): bool
     {
         return isset($this->storage->{$name});
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return void
+     */
+    public function __unset(string $name): void
+    {
+        $this->remove($name);
     }
 
     /**
@@ -213,7 +213,7 @@ class Session
             setcookie(
                 $this->name(),
                 '',
-                (time() - 42000),
+                time() - 42000,
                 $params['path'],
                 $params['domain'],
                 $params['secure'],

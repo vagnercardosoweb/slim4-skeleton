@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -35,14 +35,13 @@ class DatabaseProvider implements ServiceProvider
         Facade::setAliases(['Database' => Database::class]);
 
         $database = new Database();
-        $database->setDefaultDriver(Config::get('database.default', 'mysql'));
+        $database->setDefaultDriver(Config::get('database.default', 'postgres'));
 
         foreach (Config::get('database.connections') as $driver => $config) {
             $database->addConnection($driver, $config);
         }
 
         $connection = $database->connection();
-
         Model::setDatabase($connection);
 
         return $connection;

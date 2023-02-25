@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Mailer;
@@ -254,7 +254,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return string
      */
-    protected function buildHost(array | string $host): string
+    protected function buildHost(array|string $host): string
     {
         if (is_array($host)) {
             $host = implode(';', $host);

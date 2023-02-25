@@ -1,0 +1,13 @@
+{% extends '@errors/index.twig' %}
+
+{% set title = 'Error 404 (Not Found)' %}
+
+{% block content %}
+  <div class="error-404">
+    <div class="content">
+      <h1>Página não encontrada.</h1>
+      <p>{{ route|raw }}</p>
+      <a href="{{ constant('BASE_URL') }}">Voltar</a>
+    </div>
+  </div>
+{% endblock %}

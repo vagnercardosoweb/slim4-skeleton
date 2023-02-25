@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -38,7 +38,7 @@ class Base64
      *
      * @return bool|string
      */
-    public static function decode(string $data, $strict = null): bool | string
+    public static function decode(string $data, $strict = null): bool|string
     {
         $remainder = strlen($data) % 4;
 

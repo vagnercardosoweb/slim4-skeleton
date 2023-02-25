@@ -1,2 +1,2 @@
-import '../shared/js';
+import './javascripts';
 import './styles/index.scss';

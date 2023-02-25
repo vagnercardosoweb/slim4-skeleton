@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -97,6 +97,11 @@ abstract class Controller
         return $response;
     }
 
+    public function isXhr(): bool
+    {
+        return 'XMLHttpRequest' === $this->request->getHeaderLine('X-Requested-With');
+    }
+
     /**
      * @param string               $template
      * @param array<string, mixed> $context
@@ -179,6 +184,27 @@ abstract class Controller
     }
 
     /**
+     * @param string               $destination
+     * @param array<string, mixed> $queryParams
+     * @param bool                 $permanent
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function withRedirect(
+        string $destination,
+        array $queryParams = [],
+        bool $permanent = false
+    ): ResponseInterface {
+        if ($queryParams) {
+            $destination = sprintf('%s?%s', $destination, http_build_query($queryParams));
+        }
+
+        $statusCode = $permanent ? StatusCodeInterface::STATUS_MOVED_PERMANENTLY : StatusCodeInterface::STATUS_FOUND;
+
+        return $this->response->withStatus($statusCode)->withHeader('Location', $destination);
+    }
+
+    /**
      * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
@@ -205,27 +231,6 @@ abstract class Controller
     }
 
     /**
-     * @param string               $destination
-     * @param array<string, mixed> $queryParams
-     * @param bool                 $permanent
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function withRedirect(
-        string $destination,
-        array $queryParams = [],
-        bool $permanent = false
-    ): ResponseInterface {
-        if ($queryParams) {
-            $destination = sprintf('%s?%s', $destination, http_build_query($queryParams));
-        }
-
-        $statusCode = $permanent ? StatusCodeInterface::STATUS_MOVED_PERMANENTLY : StatusCodeInterface::STATUS_FOUND;
-
-        return $this->response->withStatus($statusCode)->withHeader('Location', $destination);
-    }
-
-    /**
      * @param array<string, mixed> $only
      *
      * @return array<string, mixed>
@@ -235,6 +240,25 @@ abstract class Controller
         $queryParams = $this->request->getQueryParams() ?? [];
 
         return $this->getRequestParams($queryParams, $only);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @param array<string, mixed> $only
+     *
+     * @return array<string, mixed>
+     */
+    private function getRequestParams(array $params, array $only): array
+    {
+        if (!empty($only) && !empty($params)) {
+            $params = array_intersect_key($params, array_flip($only));
+
+            foreach ($only as $key) {
+                $params[$key] = $params[$key] ?? null;
+            }
+        }
+
+        return Common::filterRequestValues($params);
     }
 
     /**
@@ -259,25 +283,6 @@ abstract class Controller
         $parsedBody = $this->request->getParsedBody() ?? [];
 
         return $this->getRequestParams($parsedBody, $only);
-    }
-
-    /**
-     * @param array<string, mixed> $params
-     * @param array<string, mixed> $only
-     *
-     * @return array<string, mixed>
-     */
-    private function getRequestParams(array $params, array $only): array
-    {
-        if (!empty($only) && !empty($params)) {
-            $params = array_intersect_key($params, array_flip($only));
-
-            foreach ($only as $key) {
-                $params[$key] = $params[$key] ?? null;
-            }
-        }
-
-        return Common::filterRequestValues($params);
     }
 
     /**

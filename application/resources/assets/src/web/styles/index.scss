@@ -1,8 +1,7 @@
-/*@tailwind base;
-@tailwind components;
-@tailwind utilities;*/
-
-@import '../../shared/styles/index';
+@import 'reset';
+@import 'fonts';
+@import 'global';
+@import 'helpers';
 
 // Welcome
 .vc-welcome {
@@ -10,8 +9,14 @@
   background: url('../images/background.jpeg') fixed no-repeat;
   background-size: cover;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   header {
+    width: 100%;
     background: rgba(#000000, 0.6);
     padding: 50px 0;
+    text-align: center;
   }
 }

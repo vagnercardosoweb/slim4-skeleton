@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Session;
@@ -52,7 +52,7 @@ class Flash
 
         $this->storage = Obj::fromArray($this->storage);
 
-        if (isset($this->storage) && is_object($this->storage)) {
+        if (isset($this->storage)) {
             $this->data = $this->storage;
         }
 

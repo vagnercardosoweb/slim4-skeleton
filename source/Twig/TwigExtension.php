@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Twig;
@@ -23,10 +23,10 @@ class TwigExtension extends AbstractExtension
      * TwigExtension constructor.
      *
      * @param \Slim\Interfaces\RouteParserInterface $routeParser
-     * @param \Psr\Http\Message\UriInterface $uri
-     * @param array<string, callable> $filters
-     * @param array<string, callable> $functions
-     * @param string|null $basePath
+     * @param \Psr\Http\Message\UriInterface        $uri
+     * @param array<string, callable>               $filters
+     * @param array<string, callable>               $functions
+     * @param string|null                           $basePath
      */
     public function __construct(
         protected RouteParserInterface $routeParser,
@@ -34,8 +34,7 @@ class TwigExtension extends AbstractExtension
         protected array $filters = [],
         protected array $functions = [],
         protected ?string $basePath = '',
-    )
-    {
+    ) {
         $this->functions['url_for'] = [$this, 'getUrlFor'];
         $this->functions['full_url_for'] = [$this, 'getFullUrlFor'];
         $this->functions['relative_url_for'] = [$this, 'getRelativeUrlFor'];
@@ -82,7 +81,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -94,7 +93,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -106,7 +105,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -118,9 +117,9 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
-     * @param bool $withQueryString
+     * @param bool                 $withQueryString
      *
      * @return bool
      */
@@ -139,11 +138,11 @@ class TwigExtension extends AbstractExtension
      */
     public function getCurrentUrl(bool $withQueryString = false): string
     {
-        $currentUrl = $this->basePath . $this->uri->getPath();
+        $currentUrl = $this->basePath.$this->uri->getPath();
         $query = $this->uri->getQuery();
 
         if ($withQueryString && !empty($query)) {
-            $currentUrl .= '?' . $query;
+            $currentUrl .= '?'.$query;
         }
 
         return $currentUrl;

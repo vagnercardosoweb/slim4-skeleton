@@ -6,19 +6,16 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace App\Commands;
 
 use Core\Config;
 use Core\Support\Path;
-use PDO;
-use PDOStatement;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use UnexpectedValueException;
 
 /**
  * Class SchemaDumpCommand.
@@ -28,17 +25,17 @@ use UnexpectedValueException;
 final class SchemaDumpCommand extends Command
 {
     /**
-     * @var PDO
+     * @var \PDO
      */
-    private PDO $pdo;
+    private \PDO $pdo;
 
     /**
      * The constructor.
      *
-     * @param PDO         $pdo  The database connection
+     * @param \PDO        $pdo  The database connection
      * @param string|null $name The name
      */
-    public function __construct(PDO $pdo, ?string $name = null)
+    public function __construct(\PDO $pdo, ?string $name = null)
     {
         parent::__construct($name);
         $this->pdo = $pdo;
@@ -76,9 +73,9 @@ final class SchemaDumpCommand extends Command
                 AND TABLE_NAME != '{$migrationName}'");
 
         $sql = [];
-        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $statement2 = $this->query(sprintf('SHOW CREATE TABLE `%s`;', (string)$row['TABLE_NAME']));
-            $createTableSql = $statement2->fetch(PDO::FETCH_ASSOC)['Create Table'];
+            $createTableSql = $statement2->fetch(\PDO::FETCH_ASSOC)['Create Table'];
             $sql[] = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableSql).';';
         }
 
@@ -97,16 +94,16 @@ final class SchemaDumpCommand extends Command
      *
      * @param string $sql The sql
      *
-     * @throws UnexpectedValueException
+     * @throws \UnexpectedValueException
      *
-     * @return PDOStatement The statement
+     * @return \PDOStatement The statement
      */
-    private function query(string $sql): PDOStatement
+    private function query(string $sql): \PDOStatement
     {
         $statement = $this->pdo->query($sql);
 
         if (!$statement) {
-            throw new UnexpectedValueException('Query failed');
+            throw new \UnexpectedValueException('Query failed');
         }
 
         return $statement;

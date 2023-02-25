@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Twig;
@@ -43,7 +43,7 @@ class Twig
      *
      * @throws \Exception
      */
-    public function __construct(array | string $path, array $options = [])
+    public function __construct(array|string $path, array $options = [])
     {
         $this->loader = $this->createLoader($path);
         $this->environment = new Environment($this->loader, $options);
@@ -129,7 +129,7 @@ class Twig
      *
      * @return $this
      */
-    public function addFunction(string $name, callable | string $callable, array $options = ['is_safe' => ['all']]): Twig
+    public function addFunction(string $name, callable|string $callable, array $options = ['is_safe' => ['all']]): Twig
     {
         $this->environment->addFunction(new TwigFunction($name, $callable, $options));
 
@@ -143,7 +143,7 @@ class Twig
      *
      * @return $this
      */
-    public function addFilter(string $name, callable | string $callable, array $options = ['is_safe' => ['all']]): Twig
+    public function addFilter(string $name, callable|string $callable, array $options = ['is_safe' => ['all']]): Twig
     {
         $this->environment->addFilter(new TwigFilter($name, $callable, $options));
 
@@ -226,7 +226,7 @@ class Twig
      *
      * @return \Twig\Loader\FilesystemLoader
      */
-    private function createLoader(array | string $path): FilesystemLoader
+    private function createLoader(array|string $path): FilesystemLoader
     {
         $paths = is_string($path) ? [$path] : $path;
         $loader = new FilesystemLoader();

@@ -6,12 +6,11 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
 
-use Closure;
 use Core\Database\Connection\MySqlConnection;
 use Core\Database\Connection\PostgreSqlConnection;
 use Core\Database\Connection\SQLiteConnection;
@@ -19,8 +18,6 @@ use Core\Database\Connection\SqlServerConnection;
 use Core\Database\Connection\Statement;
 use Core\EventEmitter;
 use Core\Support\Obj;
-use Exception;
-use PDO;
 
 /**
  * Class Database.
@@ -32,7 +29,7 @@ class Database
     /**
      * @var \PDO|null
      */
-    protected PDO | null $pdo = null;
+    protected \PDO|null $pdo = null;
 
     /**
      * @var array
@@ -69,14 +66,14 @@ class Database
         $driver = $driver ?? $this->getDefaultDriver();
 
         if (empty($this->connections[$driver])) {
-            throw new Exception(
+            throw new \Exception(
                 "Database connections ({$driver}) does not exist configured."
             );
         }
 
         $connection = $this->connections[$driver];
 
-        if ($connection instanceof PDO) {
+        if ($connection instanceof \PDO) {
             $this->pdo = $connection;
 
             return $this;
@@ -84,7 +81,7 @@ class Database
 
         $connection['driver'] = $connection['driver'] ?? $driver;
 
-        if (!$this->connections[$driver] instanceof PDO) {
+        if (!$this->connections[$driver] instanceof \PDO) {
             if ('pgsql' == $connection['driver']) {
                 $this->connections[$driver] = (new PostgreSqlConnection($connection));
             } elseif ('sqlsrv' == $connection['driver']) {
@@ -124,9 +121,9 @@ class Database
     /**
      * @return \PDO
      */
-    public function getPdo(): PDO
+    public function getPdo(): \PDO
     {
-        if (!$this->pdo instanceof PDO) {
+        if (!$this->pdo instanceof \PDO) {
             throw new \Exception('Database connection is not established.');
         }
 
@@ -148,7 +145,7 @@ class Database
      *
      * @return mixed
      */
-    public function transaction(Closure $callback): mixed
+    public function transaction(\Closure $callback): mixed
     {
         $injectThis = $this;
 
@@ -170,7 +167,7 @@ class Database
             $this->getPdo()->commit();
 
             return $result;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->getPdo()->rollBack();
 
             throw $e;
@@ -187,6 +184,10 @@ class Database
      */
     public function create(string $table, array $records): ?int
     {
+        if (!empty($records[0]) && is_array($records[0])) {
+            throw new \InvalidArgumentException('Use method (createMultiple).');
+        }
+
         if (!empty($eventRecords = EventEmitter::emit("{$table}:creating", $records))) {
             $records = $eventRecords[0];
         }

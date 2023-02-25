@@ -13,7 +13,9 @@
       {% block style %}{% endblock %}
     </head>
     <body>
-      <p style="text-align: center;">Ocorreu um erro no sistema.</p>
+      {% block content %}
+        <p style="text-align: center;">Ocorreu um erro no sistema.</p>
+      {% endblock %}
     </body>
   </html>
 {% endapply %}

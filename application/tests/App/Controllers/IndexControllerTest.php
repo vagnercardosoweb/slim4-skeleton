@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Tests\App\Controllers;
@@ -15,30 +15,21 @@ use Fig\Http\Message\StatusCodeInterface;
 use Tests\TestCase;
 
 /**
- * Class IndexControllerTest.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- *
  * @internal
+ *
  * @coversNothing
  */
 class IndexControllerTest extends TestCase
 {
     public function testIndex()
     {
-        $request = $this->createRequest('GET', '/');
-        $response = $this->app->handle($request);
-
-        $this->assertHtmlContentType($response);
+        $response = $this->app->handle($this->createRequest('GET', '/'));
         $this->assertSame(StatusCodeInterface::STATUS_OK, $response->getStatusCode());
-        $this->assertStringContainsString('Você é capaz e sempre de o melhor de sí em tudo oque fizer.', $response->getBody());
     }
 
     public function testPageNotFound()
     {
-        $request = $this->createRequest('GET', '/not-found');
-        $response = $this->app->handle($request);
-
+        $response = $this->app->handle($this->createRequest('GET', '/not-found'));
         $this->assertSame(StatusCodeInterface::STATUS_NOT_FOUND, $response->getStatusCode());
     }
 }

@@ -1,11 +1,13 @@
 #!/bin/bash
 
-npm install -g yarn
-yarn --cwd "$WORKDIR"/application/resources/assets install --silent
+#ASSET_PREFIX="$WORKDIR"/application/resources/assets
+
+#npm install --prefix "$ASSET_PREFIX"
+#npm rebuild node-sass
 
 composer install -o --working-dir="$WORKDIR"/application
 
-php-fpm -D && nginx -g 'daemon off;'
-#php-fpm -D && nginx
+#php-fpm -D && nginx -g 'daemon off;'
+php-fpm -D && nginx
 
-#yarn --cwd "$WORKDIR"/application/resources/assets dev
+#npm run dev --prefix "$ASSET_PREFIX"

@@ -9,22 +9,24 @@
  * @copyright 01/07/2021 Vagner Cardoso
  */
 
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+
 $header = sprintf("Vagner Cardoso <https://github.com/vagnercardosoweb>\n
 @author Vagner Cardoso <vagnercardosoweb@gmail.com>
 @link https://github.com/vagnercardosoweb
 @license http://www.opensource.org/licenses/mit-license.html MIT License
 @copyright %s Vagner Cardoso", date('d/m/Y'));
 
-$finder = PhpCsFixer\Finder::create()
-    ->exclude([__DIR__.'/vendor'])
+$finder = Finder::create()
+    ->exclude([__DIR__ . '/vendor'])
     ->in(dirname(__DIR__))
     ->name('*.php')
     ->ignoreDotFiles(true)
-    ->ignoreVCS(true)
-;
+    ->ignoreVCS(true);
 
-return PhpCsFixer\Config::create()
-    ->setFinder($finder)
+$config = new Config();
+$config->setFinder($finder)
     ->setUsingCache(false)
     ->setRiskyAllowed(true)
     ->setRules([
@@ -44,7 +46,7 @@ return PhpCsFixer\Config::create()
         // 'general_phpdoc_annotation_remove' => ['annotations' => ['author']],
         'increment_style' => ['style' => 'post'],
         'list_syntax' => ['syntax' => 'long'],
-        'no_short_echo_tag' => true,
+        'echo_tag_syntax' => ['format' => 'long'],
         'phpdoc_trim' => true,
         'phpdoc_summary' => true,
         'phpdoc_separation' => true,
@@ -63,8 +65,9 @@ return PhpCsFixer\Config::create()
         ],
         'header_comment' => [
             'header' => $header,
-            'commentType' => 'comment',
+            'comment_type' => 'comment',
             'location' => 'after_open',
         ],
-    ])
-;
+    ]);
+
+return $config;

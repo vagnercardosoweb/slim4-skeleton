@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -14,9 +14,6 @@ namespace Core;
 use Core\Support\Arr;
 use Core\Support\Common;
 use Core\Support\Path;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 
 /**
  * Class Config.
@@ -50,7 +47,7 @@ class Config
      *
      * @return mixed
      */
-    public static function get(array | string $key, mixed $default = null): mixed
+    public static function get(array|string $key, mixed $default = null): mixed
     {
         if (empty(self::$items)) {
             self::loadItems();
@@ -70,12 +67,12 @@ class Config
      */
     public static function loadItems(string $path = null): array
     {
-        if (!is_dir($path)) {
+        if (empty($path) || !is_dir($path)) {
             $path = Path::config();
         }
 
         /** @var \DirectoryIterator $iterator */
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS));
         $iterator->rewind();
 
         $config = [];
@@ -154,7 +151,7 @@ class Config
      *
      * @return void
      */
-    public static function set(array | string $key, mixed $value = null)
+    public static function set(array|string $key, mixed $value = null)
     {
         if (empty(self::$items)) {
             self::loadItems();

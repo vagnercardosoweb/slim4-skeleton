@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Password;
@@ -67,7 +67,7 @@ abstract class Password
      *
      * @return string
      */
-    public function make(int | string $password, array $options = []): string
+    public function make(int|string $password, array $options = []): string
     {
         $options = $this->getOptions($options);
         $hashed = password_hash($password, $this->algorithm(), $options);
@@ -97,7 +97,7 @@ abstract class Password
     /**
      * @return int|string
      */
-    abstract protected function algorithm(): int | string;
+    abstract protected function algorithm(): int|string;
 
     /**
      * @param array $options

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -41,7 +41,11 @@ class ErrorResponseMiddleware implements MiddlewareInterface
         try {
             return $handler->handle($request);
         } catch (\Exception $exception) {
-            if (Env::get('APP_RESPONSE_ERROR_JSON', false) || !Container::has(Twig::class)) {
+            if (
+                Env::get('APP_RESPONSE_ERROR_JSON', false)
+                || 'XMLHttpRequest' === $request->getHeaderLine('X-Requested-With')
+                || !Container::has(Twig::class)
+            ) {
                 throw $exception;
             }
 

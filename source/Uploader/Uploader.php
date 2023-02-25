@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Uploader;
@@ -256,7 +256,7 @@ class Uploader
     /**
      * @return float|int
      */
-    public static function getMaxFilesize(): float | int
+    public static function getMaxFilesize(): float|int
     {
         $config = ini_get('upload_max_filesize');
         $newSize = 0;

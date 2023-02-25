@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -43,18 +43,28 @@ class Common
     {
         if (getenv('HTTP_CLIENT_IP')) {
             $realIp = getenv('HTTP_CLIENT_IP');
-        } elseif (getenv('HTTP_X_FORWARDED_FOR')) {
-            $realIp = getenv('HTTP_X_FORWARDED_FOR');
-        } elseif (getenv('HTTP_X_FORWARDED')) {
-            $realIp = getenv('HTTP_X_FORWARDED');
-        } elseif (getenv('HTTP_FORWARDED_FOR')) {
-            $realIp = getenv('HTTP_FORWARDED_FOR');
-        } elseif (getenv('HTTP_FORWARDED')) {
-            $realIp = getenv('HTTP_FORWARDED');
-        } elseif (getenv('REMOTE_ADDR')) {
-            $realIp = getenv('REMOTE_ADDR');
         } else {
-            $realIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            if (getenv('HTTP_X_FORWARDED_FOR')) {
+                $realIp = getenv('HTTP_X_FORWARDED_FOR');
+            } else {
+                if (getenv('HTTP_X_FORWARDED')) {
+                    $realIp = getenv('HTTP_X_FORWARDED');
+                } else {
+                    if (getenv('HTTP_FORWARDED_FOR')) {
+                        $realIp = getenv('HTTP_FORWARDED_FOR');
+                    } else {
+                        if (getenv('HTTP_FORWARDED')) {
+                            $realIp = getenv('HTTP_FORWARDED');
+                        } else {
+                            if (getenv('REMOTE_ADDR')) {
+                                $realIp = getenv('REMOTE_ADDR');
+                            } else {
+                                $realIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (false !== mb_strpos($realIp, ',')) {
@@ -85,31 +95,43 @@ class Common
         if (preg_match('|MSIE ([0-9].[0-9]{1,2})|', $userAgent, $matched)) {
             $browser = 'IE';
             $browserVersion = $matched[1];
-        } elseif (preg_match('|Opera/([0-9].[0-9]{1,2})|', $userAgent, $matched)) {
-            $browser = 'Opera';
-            $browserVersion = $matched[1];
-        } elseif (preg_match('|Firefox/([0-9\.]+)|', $userAgent, $matched)) {
-            $browser = 'Firefox';
-            $browserVersion = $matched[1];
-        } elseif (preg_match('|Chrome/([0-9\.]+)|', $userAgent, $matched)) {
-            $browser = 'Chrome';
-            $browserVersion = $matched[1];
-        } elseif (preg_match('|Safari/([0-9\.]+)|', $userAgent, $matched)) {
-            $browser = 'Safari';
-            $browserVersion = $matched[1];
         } else {
-            $browser = 'Outro';
-            $browserVersion = 0;
+            if (preg_match('|Opera/([0-9].[0-9]{1,2})|', $userAgent, $matched)) {
+                $browser = 'Opera';
+                $browserVersion = $matched[1];
+            } else {
+                if (preg_match('|Firefox/([0-9\.]+)|', $userAgent, $matched)) {
+                    $browser = 'Firefox';
+                    $browserVersion = $matched[1];
+                } else {
+                    if (preg_match('|Chrome/([0-9\.]+)|', $userAgent, $matched)) {
+                        $browser = 'Chrome';
+                        $browserVersion = $matched[1];
+                    } else {
+                        if (preg_match('|Safari/([0-9\.]+)|', $userAgent, $matched)) {
+                            $browser = 'Safari';
+                            $browserVersion = $matched[1];
+                        } else {
+                            $browser = 'Outro';
+                            $browserVersion = 0;
+                        }
+                    }
+                }
+            }
         }
 
         if (preg_match('|Mac|', $userAgent, $matched)) {
             $so = 'MAC';
-        } elseif (preg_match('|Windows|', $userAgent, $matched) || preg_match('|WinNT|', $userAgent, $matched) || preg_match('|Win95|', $userAgent, $matched)) {
-            $so = 'Windows';
-        } elseif (preg_match('|Linux|', $userAgent, $matched)) {
-            $so = 'Linux';
         } else {
-            $so = 'Outro';
+            if (preg_match('|Windows|', $userAgent, $matched) || preg_match('|WinNT|', $userAgent, $matched) || preg_match('|Win95|', $userAgent, $matched)) {
+                $so = 'Windows';
+            } else {
+                if (preg_match('|Linux|', $userAgent, $matched)) {
+                    $so = 'Linux';
+                } else {
+                    $so = 'Outro';
+                }
+            }
         }
 
         return [
@@ -137,8 +159,10 @@ class Common
 
             if ($prefix && $key && !is_int($key)) {
                 $key = "{$prefix}[{$key}]";
-            } elseif ($prefix) {
-                $key = "{$prefix}[]";
+            } else {
+                if ($prefix) {
+                    $key = "{$prefix}[]";
+                }
             }
 
             if (is_array($value)) {
@@ -155,7 +179,7 @@ class Common
      * @param mixed        $encoded
      * @param array|string $result
      */
-    public static function parseStr(mixed $encoded, array | string &$result)
+    public static function parseStr(mixed $encoded, array|string &$result)
     {
         if (empty($encoded)) {
             return;
@@ -189,11 +213,39 @@ class Common
         $bytes = $bytes / pow(1000, $base);
 
         return number_format(
-                round($bytes, $precision),
-                2,
-                ',',
-                ''
-            ).' '.$units[$base];
+            round($bytes, $precision),
+            2,
+            ',',
+            ''
+        ).' '.$units[$base];
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public static function normalizeValue(mixed $value): mixed
+    {
+        if (is_array($value) || is_object($value)) {
+            return $value;
+        }
+
+        if (is_integer($value)) {
+            return (int)$value;
+        }
+
+        if (is_float($value)) {
+            return self::normalizeFloat($value);
+        }
+
+        return match (strtolower((string)$value)) {
+            'true', '(true)' => true,
+            'false', '(false)' => false,
+            'empty', '(empty)' => '',
+            'null', '(null)' => null,
+            default => $value
+        };
     }
 
     /**
@@ -212,34 +264,6 @@ class Common
     }
 
     /**
-     * @param $value
-     *
-     * @return mixed
-     */
-    public static function normalizeValue($value): mixed
-    {
-        if (is_array($value) || is_object($value)) {
-            return $value;
-        }
-
-        if (is_integer($value)) {
-            return (int)$value;
-        }
-
-        if (is_float($value)) {
-            return self::normalizeFloat($value);
-        }
-
-        return match (strtolower($value)) {
-            'true', '(true)' => true,
-            'false', '(false)' => false,
-            'empty', '(empty)' => '',
-            'null', '(null)' => null,
-            default => $value
-        };
-    }
-
-    /**
      * @param string $format
      *
      * @return string
@@ -254,7 +278,7 @@ class Common
      *
      * @return array
      */
-    public static function filterRequestValues(array | string $values): array
+    public static function filterRequestValues(array|string $values): array
     {
         $result = [];
 
@@ -278,7 +302,7 @@ class Common
      *
      * @return string|null
      */
-    public static function onlyNumber(int | string $value): ?string
+    public static function onlyNumber(int|string $value): ?string
     {
         if (empty($value)) {
             return null;
@@ -339,7 +363,7 @@ class Common
         bool $assoc = false,
         int $depth = 512,
         int $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
-    ): object | array | null {
+    ): object|array|null {
         if (!is_string($json)) {
             $json = json_encode($json);
         }
@@ -358,7 +382,7 @@ class Common
      *
      * @return int|string
      */
-    public static function serialize(mixed $value): int | string
+    public static function serialize(mixed $value): int|string
     {
         if (
             is_numeric($value)
@@ -398,7 +422,7 @@ class Common
      *
      * @return bool
      */
-    public static function emptyArrayRecursive(object | array $data): bool
+    public static function emptyArrayRecursive(object|array $data): bool
     {
         if (empty($data)) {
             return true;

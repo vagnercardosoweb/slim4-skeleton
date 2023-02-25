@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Core\Facades;
@@ -15,12 +15,12 @@ namespace Core\Facades;
  * Class Cache.
  *
  * @method static mixed get(string $key, mixed $default = null, int $seconds = 0)
- * @method static bool has(string $key)
- * @method static bool set(string $key, mixed $value, int $seconds = 0)
- * @method static bool delete(string $key)
- * @method static void flush()
- * @method static bool increment(string $key, int $value = 1)
- * @method static bool decrement(string $key, int $value = 1)
+ * @method static bool  has(string $key)
+ * @method static bool  set(string $key, mixed $value, int $seconds = 0)
+ * @method static bool  delete(string $key)
+ * @method static void  flush()
+ * @method static bool  increment(string $key, int $value = 1)
+ * @method static bool  decrement(string $key, int $value = 1)
  */
 class Cache extends Facade
 {

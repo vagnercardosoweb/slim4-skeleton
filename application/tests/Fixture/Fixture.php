@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 09/01/2022 Vagner Cardoso
+ * @copyright 25/02/2023 Vagner Cardoso
  */
 
 namespace Tests\Fixture;
@@ -28,7 +28,7 @@ interface Fixture
     /**
      * Returns collection with data for insertion into the bank.
      *
-     * @return array<string, mixed>
+     * @return array<int, array<string, mixed>>
      */
     public function getRecords(): array;
 }
