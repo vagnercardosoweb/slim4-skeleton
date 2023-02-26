@@ -18,6 +18,7 @@ use Core\Support\Env;
 use Core\Support\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpInternalServerErrorException;
@@ -49,7 +50,7 @@ class HttpErrorHandler extends ErrorHandler
     {
         $type = $this->types[$this->exception::class] ?? ErrorHandler::BAD_REQUEST;
         $statusCode = $this->exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
-        $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
+        $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
 
         if (!in_array($statusCode, $validStatusCodes)) {
             $type = ErrorHandler::SERVER_ERROR;

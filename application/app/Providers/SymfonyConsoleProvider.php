@@ -16,6 +16,7 @@ use Core\Config;
 use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
 use DI\Container;
+use Exception;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -47,7 +48,7 @@ class SymfonyConsoleProvider implements ServiceProvider
         foreach ($commands as $command) {
             try {
                 $application->add($container->get($command));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $output = new ConsoleOutput();
                 $output->writeln("Add command error: <error>{$command}</error>");
                 $output->writeln($e->getMessage());

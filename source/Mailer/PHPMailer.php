@@ -12,8 +12,10 @@
 namespace Core\Mailer;
 
 use Core\Contracts\Mailer as MailerContract;
+use InvalidArgumentException;
 use PHPMailer\PHPMailer\PHPMailer as LIBPHPMailer;
 use PHPMailer\PHPMailer\SMTP;
+use RuntimeException;
 
 /**
  * Class PHPMailer.
@@ -169,7 +171,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
     public function send(): LIBPHPMailer
     {
         if (!parent::send()) {
-            throw new \RuntimeException($this->ErrorInfo);
+            throw new RuntimeException($this->ErrorInfo);
         }
 
         $this->clear();
@@ -197,13 +199,13 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
     protected function validateConfig(array &$options): void
     {
         if (empty($options['host'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'Host not configured.'
             );
         }
 
         if (empty($options['username']) || empty($options['password'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'User and password not configured.'
             );
         }

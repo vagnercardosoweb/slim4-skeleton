@@ -12,6 +12,7 @@
 namespace Core\Cache;
 
 use Core\Contracts\Cache as ContractCache;
+use InvalidArgumentException;
 use Predis\Client;
 
 /**
@@ -56,7 +57,7 @@ class Cache
         $config = $this->getConfigDriver($driver);
 
         if (!method_exists($this, $method)) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Driver [%s] not supported in cache.',
                 $driver
             ));
@@ -79,7 +80,7 @@ class Cache
     protected function getConfigDriver(string $driver): array
     {
         if (!isset($this->config['drivers'][$driver])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Driver [%s] does not have the settings defined.',
                 $driver
             ));

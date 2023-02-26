@@ -12,11 +12,12 @@
 namespace Core\Exception;
 
 use Fig\Http\Message\StatusCodeInterface;
+use InvalidArgumentException;
 
 /**
  * Class MissingParamException.
  */
-class MissingParamException extends \InvalidArgumentException
+class MissingParamException extends InvalidArgumentException
 {
     /**
      * MissingParamException constructor.

@@ -11,12 +11,16 @@
 
 namespace Tests\Traits;
 
+use Closure;
 use Core\Support\Path;
+use DomainException;
 use PDO;
+use PDOStatement;
 use Phinx\Console\PhinxApplication;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Tests\Fixture\Fixture;
+use UnexpectedValueException;
 
 /**
  * Trait DatabaseTestTrait.
@@ -125,10 +129,10 @@ trait DatabaseTestTrait
         $statement = $this->getConnection()->prepare("SHOW VARIABLES LIKE '{$variable}'");
 
         if (!$statement || false === $statement->execute()) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (false === $row) {
             return null;
@@ -142,9 +146,9 @@ trait DatabaseTestTrait
      *
      * @return \PDO The PDO instance
      */
-    protected function getConnection(): \PDO
+    protected function getConnection(): PDO
     {
-        return $this->container->get(\PDO::class);
+        return $this->container->get(PDO::class);
     }
 
     /**
@@ -154,7 +158,7 @@ trait DatabaseTestTrait
      */
     protected function dropTables(): void
     {
-        $this->disableForeignAndUniqueCheck(function (\PDO $pdo) {
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
             $sql = [];
 
             foreach ($this->getSchemaTables() as $row) {
@@ -174,7 +178,7 @@ trait DatabaseTestTrait
      *
      * @return void
      */
-    protected function disableForeignAndUniqueCheck(\Closure $callable): void
+    protected function disableForeignAndUniqueCheck(Closure $callable): void
     {
         $pdo = $this->getConnection();
         // $pdo->exec('SET unique_checks=0; SET foreign_key_checks=0;');
@@ -195,7 +199,7 @@ trait DatabaseTestTrait
 
         $statement = $this->createQueryStatement($query);
 
-        return $statement->fetchAll(\PDO::FETCH_ASSOC);
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -207,12 +211,12 @@ trait DatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    protected function createQueryStatement(string $sql): \PDOStatement
+    protected function createQueryStatement(string $sql): PDOStatement
     {
-        $statement = $this->getConnection()->query($sql, \PDO::FETCH_ASSOC);
+        $statement = $this->getConnection()->query($sql, PDO::FETCH_ASSOC);
 
-        if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+        if (!$statement instanceof PDOStatement) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
         return $statement;
@@ -238,10 +242,10 @@ trait DatabaseTestTrait
         }
 
         if (!$this->runMigration && !file_exists($this->schemaFile)) {
-            throw new \UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
+            throw new UnexpectedValueException(sprintf('File not found: %s', $this->schemaFile));
         }
 
-        $this->disableForeignAndUniqueCheck(function (\PDO $pdo) {
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
             $pdo->exec((string)file_get_contents($this->schemaFile));
         });
     }
@@ -253,7 +257,7 @@ trait DatabaseTestTrait
      */
     protected function truncateTables(): void
     {
-        $this->disableForeignAndUniqueCheck(function (\PDO $pdo) {
+        $this->disableForeignAndUniqueCheck(function (PDO $pdo) {
             $sql = [];
 
             foreach ($this->getSchemaTables() as $row) {
@@ -327,12 +331,12 @@ trait DatabaseTestTrait
      *
      * @return \PDOStatement The statement
      */
-    protected function createPreparedStatement(string $sql): \PDOStatement
+    protected function createPreparedStatement(string $sql): PDOStatement
     {
         $statement = $this->getConnection()->prepare($sql);
 
-        if (!$statement instanceof \PDOStatement) {
-            throw new \UnexpectedValueException('Invalid SQL statement');
+        if (!$statement instanceof PDOStatement) {
+            throw new UnexpectedValueException('Invalid SQL statement');
         }
 
         return $statement;
@@ -414,10 +418,10 @@ trait DatabaseTestTrait
         $statement = $this->createPreparedStatement($sql);
         $statement->execute(['id' => $id]);
 
-        $row = $statement->fetch(\PDO::FETCH_ASSOC);
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
 
         if (empty($row)) {
-            throw new \DomainException(sprintf('Row not found: %s', $id));
+            throw new DomainException(sprintf('Row not found: %s', $id));
         }
 
         if ($fields) {
@@ -499,7 +503,7 @@ trait DatabaseTestTrait
     {
         $sql = sprintf('SELECT COUNT(*) AS counter FROM %s;', $table);
         $statement = $this->createQueryStatement($sql);
-        $row = $statement->fetch(\PDO::FETCH_ASSOC) ?: [];
+        $row = $statement->fetch(PDO::FETCH_ASSOC) ?: [];
 
         return (int)($row['counter'] ?? 0);
     }
@@ -532,7 +536,7 @@ trait DatabaseTestTrait
         $statement = $this->createPreparedStatement($sql);
         $statement->execute(['id' => $id]);
 
-        return $statement->fetch(\PDO::FETCH_ASSOC) ?: [];
+        return $statement->fetch(PDO::FETCH_ASSOC) ?: [];
     }
 
     /**

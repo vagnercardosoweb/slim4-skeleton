@@ -11,6 +11,8 @@
 
 namespace Core\Database\Connection;
 
+use InvalidArgumentException;
+
 /**
  * Class SQLiteConnection.
  *
@@ -38,13 +40,13 @@ class SQLiteConnection extends Connection
     protected function validateConfig(array $config): void
     {
         if (empty($config['database'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "'sqlite' database not configured."
             );
         }
 
         if ('memory' !== $config['database'] && !file_exists($config['database'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "'sqlite' database not exists in path {$config['database']}"
             );
         }

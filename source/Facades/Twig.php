@@ -13,6 +13,7 @@ namespace Core\Facades;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
+use Twig\Environment;
 use Twig\Extension\ExtensionInterface;
 use Twig\RuntimeLoader\RuntimeLoaderInterface;
 
@@ -28,8 +29,8 @@ use Twig\RuntimeLoader\RuntimeLoaderInterface;
  * @method static \Core\Twig\Twig   addFunction(string $name, callable | string $callable, array $options = ['is_safe' => ['all']])
  * @method static \Core\Twig\Twig   addFilter(string $name, callable | string $callable, array $options = ['is_safe' => ['all']])
  * @method static \Core\Twig\Twig   addGlobal(string $name, mixed $value)
- * @method static \Twig\Environment getEnvironment()
- * @method static \Twig\Environment getLoader()
+ * @method static Environment getEnvironment()
+ * @method static Environment getLoader()
  */
 class Twig extends Facade
 {

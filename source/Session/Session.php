@@ -14,6 +14,7 @@ namespace Core\Session;
 use Core\Support\Env;
 use Core\Support\Obj;
 use Core\Support\Path;
+use stdClass;
 
 /**
  * Class Session.
@@ -205,7 +206,7 @@ class Session
      */
     public function clear(): void
     {
-        $this->storage = new \stdClass();
+        $this->storage = new stdClass();
 
         if (ini_get('session.use_cookies')) {
             $params = $this->cookieParams();

@@ -11,10 +11,12 @@
 
 namespace Core\Exception;
 
+use Exception;
+
 /**
  * Class UploaderException.
  */
-class UploaderException extends \Exception
+class UploaderException extends Exception
 {
     /**
      * UploaderException constructor.

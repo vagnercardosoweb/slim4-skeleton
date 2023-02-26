@@ -11,6 +11,10 @@
 
 namespace Core\Support;
 
+use JsonSerializable;
+use SimpleXMLElement;
+use stdClass;
+
 /**
  * Class Obj.
  *
@@ -29,7 +33,7 @@ class Obj
             return $array;
         }
 
-        $object = new \stdClass();
+        $object = new stdClass();
 
         if (!is_array($array)) {
             return $object;
@@ -115,12 +119,12 @@ class Obj
         }
 
         foreach ($object as $key => $value) {
-            if ($value instanceof \SimpleXMLElement) {
+            if ($value instanceof SimpleXMLElement) {
                 $value = strval($value);
             }
 
             if (is_object($value) || is_array($value)) {
-                if ($value instanceof \JsonSerializable) {
+                if ($value instanceof JsonSerializable) {
                     $array[$key] = $value->jsonSerialize();
                 } else {
                     $array[$key] = self::toArray($value);

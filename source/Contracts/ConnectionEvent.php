@@ -11,7 +11,9 @@
 
 namespace Core\Contracts;
 
+use PDO;
+
 interface ConnectionEvent
 {
-    public function run(\PDO $pdo): mixed;
+    public function run(PDO $pdo): mixed;
 }

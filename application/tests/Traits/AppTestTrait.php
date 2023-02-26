@@ -15,6 +15,7 @@ use Core\Bootstrap;
 use Core\Support\Path;
 use Psr\Container\ContainerInterface;
 use Slim\App;
+use UnexpectedValueException;
 
 trait AppTestTrait
 {
@@ -36,7 +37,7 @@ trait AppTestTrait
         $container = $this->app->getContainer();
 
         if (!$container instanceof ContainerInterface) {
-            throw new \UnexpectedValueException(
+            throw new UnexpectedValueException(
                 'Container is not an instance Psr\Container\ContainerInterface.'
             );
         }

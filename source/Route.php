@@ -11,9 +11,15 @@
 
 namespace Core;
 
+use Closure;
+use DomainException;
 use Fig\Http\Message\StatusCodeInterface;
+use FilesystemIterator;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Slim\Interfaces\RouteCollectorProxyInterface;
 use Slim\Interfaces\RouteGroupInterface;
 use Slim\Interfaces\RouteInterface;
@@ -64,7 +70,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function get(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function get(string $pattern, string|Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('get', $pattern, $callable, $name, $middlewares);
     }
@@ -81,7 +87,7 @@ class Route
     public static function route(
         array|string $methods,
         string $pattern,
-        string|\Closure $callable,
+        string|Closure $callable,
         ?string $name = null,
         array $middlewares = []
     ): RouteInterface
@@ -120,7 +126,7 @@ class Route
 
         foreach ($routes as $route) {
             if ($route->getName() === $name) {
-                throw new \LogicException(
+                throw new LogicException(
                     "There are registered routes with the same name [{$name}]."
                 );
             }
@@ -134,7 +140,7 @@ class Route
      *
      * @return \Closure
      */
-    private static function handleCallableRouter(callable|string $callable): \Closure
+    private static function handleCallableRouter(callable|string $callable): Closure
     {
         $namespace = self::$defaultNamespace;
 
@@ -179,7 +185,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function post(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function post(string $pattern, string|Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('post', $pattern, $callable, $name, $middlewares);
     }
@@ -192,7 +198,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function put(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function put(string $pattern, string|Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('put', $pattern, $callable, $name, $middlewares);
     }
@@ -205,7 +211,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function delete(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function delete(string $pattern, string|Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('delete', $pattern, $callable, $name, $middlewares);
     }
@@ -218,7 +224,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function patch(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function patch(string $pattern, string|Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route('patch', $pattern, $callable, $name, $middlewares);
     }
@@ -240,7 +246,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteGroupInterface
      */
-    public static function group(string|array $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
+    public static function group(string|array $pattern, Closure $callable, array $middlewares = []): RouteGroupInterface
     {
         $namespace = null;
         $resetNamespace = false;
@@ -324,9 +330,9 @@ va     * @param int $status
     public static function registerFolder(string $folder): void
     {
         /** @var \DirectoryIterator $iterator */
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
-                $folder, \FilesystemIterator::SKIP_DOTS
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(
+                $folder, FilesystemIterator::SKIP_DOTS
             )
         );
 
@@ -355,7 +361,7 @@ va     * @param int $status
         if (is_dir($path)) {
             self::registerFolder($path);
         } else {
-            throw new \DomainException("Path [{$path}] of routes not found.");
+            throw new DomainException("Path [{$path}] of routes not found.");
         }
     }
 }

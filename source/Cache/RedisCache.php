@@ -11,6 +11,7 @@
 
 namespace Core\Cache;
 
+use Closure;
 use Core\Contracts\Cache;
 use Predis\Client;
 
@@ -26,11 +27,11 @@ readonly class RedisCache implements Cache
         return null !== $this->client->get($key);
     }
 
-    public function get(string $key, array|null|\Closure $default = null, int $seconds = 0): array|null
+    public function get(string $key, array|null|Closure $default = null, int $seconds = 0): array|null
     {
         $value = $this->client->get($key);
 
-        if (empty($value) && $default instanceof \Closure) {
+        if (empty($value) && $default instanceof Closure) {
             if (!empty($value = $default())) {
                 $this->set($key, $value, $seconds);
             }

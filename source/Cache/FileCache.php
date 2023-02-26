@@ -11,8 +11,15 @@
 
 namespace Core\Cache;
 
+use Closure;
 use Core\Contracts\Cache;
+use DateInterval;
+use DateTime;
+use DomainException;
 use Exception;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 readonly class FileCache implements Cache
 {
@@ -22,11 +29,11 @@ readonly class FileCache implements Cache
     ) {
     }
 
-    public function get(string $key, array|null|\Closure $default = null, int $seconds = 0): array|null
+    public function get(string $key, array|null|Closure $default = null, int $seconds = 0): array|null
     {
         $value = $this->getPayload($key)['payload'];
 
-        if (empty($value) && $default instanceof \Closure) {
+        if (empty($value) && $default instanceof Closure) {
             if (!empty($value = $default())) {
                 $this->set($key, $value, $seconds);
             }
@@ -51,10 +58,10 @@ readonly class FileCache implements Cache
 
         try {
             $cache = json_decode(file_get_contents($path), true);
-            $currentTimestamp = (new \DateTime())->getTimestamp();
+            $currentTimestamp = (new DateTime())->getTimestamp();
 
             if ($cache['expire_time'] > 0 && $currentTimestamp >= $cache['expire_time']) {
-                throw new \DomainException('Cache is expired.');
+                throw new DomainException('Cache is expired.');
             }
         } catch (Exception) {
             $this->delete($key);
@@ -95,7 +102,7 @@ readonly class FileCache implements Cache
         $result = file_put_contents($path, json_encode([
             'key' => $key,
             'full_path' => $path,
-            'created_time' => (new \DateTime())->getTimestamp(),
+            'created_time' => (new DateTime())->getTimestamp(),
             'expire_time' => $this->getExpireTime($seconds),
             'payload' => $value,
         ]));
@@ -115,8 +122,8 @@ readonly class FileCache implements Cache
             return $seconds;
         }
 
-        $date = new \DateTime();
-        $interval = $date->add(new \DateInterval("PT{$seconds}S"));
+        $date = new DateTime();
+        $interval = $date->add(new DateInterval("PT{$seconds}S"));
 
         return $interval->getTimestamp();
     }
@@ -124,7 +131,7 @@ readonly class FileCache implements Cache
     public function flush(): void
     {
         /** @var \DirectoryIterator $iterator */
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->directory), \FilesystemIterator::SKIP_DOTS);
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->directory), FilesystemIterator::SKIP_DOTS);
         $iterator->rewind();
 
         while ($iterator->valid()) {

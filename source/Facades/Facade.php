@@ -11,6 +11,8 @@
 
 namespace Core\Facades;
 
+use Exception;
+use RuntimeException;
 use Slim\App;
 
 /**
@@ -80,8 +82,8 @@ abstract class Facade
 
         try {
             return static::$resolvedInstance[$name] = $container->get($name);
-        } catch (\Exception $e) {
-            throw new \RuntimeException(
+        } catch (Exception $e) {
+            throw new RuntimeException(
                 "A facade {$name} root has not been set.".
                 " {$e->getMessage()}"
             );

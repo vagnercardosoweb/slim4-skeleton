@@ -11,6 +11,10 @@
 
 namespace Core\Support;
 
+use Exception;
+use JsonException;
+use SimpleXMLElement;
+
 /**
  * Class Helper.
  *
@@ -327,7 +331,7 @@ class Common
         int $option = 0,
         string $ns = '',
         bool $isPrefix = false
-    ): ?\SimpleXMLElement {
+    ): ?SimpleXMLElement {
         if (empty($xml)) {
             return null;
         }
@@ -370,7 +374,7 @@ class Common
         $value = json_decode($value, $assoc, $depth, $options);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new \JsonException(sprintf('Invalid JSON decode: %s', json_last_error_msg()));
+            throw new JsonException(sprintf('Invalid JSON decode: %s', json_last_error_msg()));
         }
 
         return $value;
@@ -411,7 +415,7 @@ class Common
 
         try {
             return unserialize($value);
-        } catch (\Exception) {
+        } catch (Exception) {
             return $value;
         }
     }

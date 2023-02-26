@@ -11,6 +11,10 @@
 
 namespace Core\Support;
 
+use Exception;
+use InvalidArgumentException;
+use UnexpectedValueException;
+
 /**
  * Class Jwt.
  *
@@ -31,7 +35,7 @@ class Jwt
         $this->key = $key;
 
         if (empty($this->key)) {
-            throw new \InvalidArgumentException('Jwt empty key.');
+            throw new InvalidArgumentException('Jwt empty key.');
         }
     }
 
@@ -65,33 +69,33 @@ class Jwt
         $split = explode('.', $token);
 
         if (3 != count($split)) {
-            throw new \InvalidArgumentException('The token does not contain a valid format.');
+            throw new InvalidArgumentException('The token does not contain a valid format.');
         }
 
         list($header64, $payload64, $signature) = $split;
 
         if (!$header = json_decode(base64_decode($header64), true, 512, JSON_BIGINT_AS_STRING)) {
-            throw new \UnexpectedValueException('Invalid header encoding.');
+            throw new UnexpectedValueException('Invalid header encoding.');
         }
 
         if (!$payload = json_decode(base64_decode($payload64), true, 512, JSON_BIGINT_AS_STRING)) {
-            throw new \UnexpectedValueException('Invalid payload encoding.');
+            throw new UnexpectedValueException('Invalid payload encoding.');
         }
 
         if (!$signature = base64_decode($signature)) {
-            throw new \UnexpectedValueException('Invalid signature encoding.');
+            throw new UnexpectedValueException('Invalid signature encoding.');
         }
 
         if (empty($header['alg'])) {
-            throw new \UnexpectedValueException('Empty algorithm.');
+            throw new UnexpectedValueException('Empty algorithm.');
         }
 
         if ('HS512' !== $header['alg']) {
-            throw new \UnexpectedValueException("Algorithm {$header['alg']} is not supported.");
+            throw new UnexpectedValueException("Algorithm {$header['alg']} is not supported.");
         }
 
         if (!$this->validate("{$header64}.{$payload64}", $signature)) {
-            throw new \Exception('Signature verification failed.');
+            throw new Exception('Signature verification failed.');
         }
 
         return array_merge($header, $payload);

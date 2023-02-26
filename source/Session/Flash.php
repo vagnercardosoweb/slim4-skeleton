@@ -12,6 +12,7 @@
 namespace Core\Session;
 
 use Core\Support\Obj;
+use stdClass;
 
 /**
  * Class Flash.
@@ -56,7 +57,7 @@ class Flash
             $this->data = $this->storage;
         }
 
-        $this->storage = new \stdClass();
+        $this->storage = new stdClass();
     }
 
     /**
@@ -165,7 +166,7 @@ class Flash
      */
     public function clear(): void
     {
-        $this->data = new \stdClass();
+        $this->data = new stdClass();
         $this->storage = $this->data;
     }
 }

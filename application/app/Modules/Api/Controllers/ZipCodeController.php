@@ -15,6 +15,8 @@ use Core\Controller;
 use Core\Curl\Curl;
 use Core\Facades\Cache;
 use Core\Support\Env;
+use Exception;
+use InvalidArgumentException;
 
 class ZipCodeController extends Controller
 {
@@ -23,7 +25,7 @@ class ZipCodeController extends Controller
         $zipCode = preg_replace('/[^0-9]/', '', $zipCode);
 
         if (strlen($zipCode) < 8) {
-            throw new \InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
+            throw new InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
         }
 
         return Cache::get("zip-code:{$zipCode}:results", function () use ($zipCode) {
@@ -31,7 +33,7 @@ class ZipCodeController extends Controller
             $responseJson = $response->toArray();
 
             if (200 !== $response->getStatusCode() || !empty($responseJson->erro)) {
-                throw new \Exception("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
+                throw new Exception("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
             }
 
             $responseJson['endereco'] = sprintf('%s - %s, %s - %s, %s, Brazil',
