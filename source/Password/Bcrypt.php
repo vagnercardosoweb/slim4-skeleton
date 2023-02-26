@@ -33,8 +33,6 @@ class Bcrypt extends Password
      */
     protected function getOptions(array $options): array
     {
-        return [
-            'cost' => $options['cost'] ?? PASSWORD_BCRYPT_DEFAULT_COST,
-        ];
+        return ['cost' => $options['cost'] ?? PASSWORD_BCRYPT_DEFAULT_COST];
     }
 }

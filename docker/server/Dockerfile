@@ -51,6 +51,7 @@ RUN yum install -y \
     php-zip \
     php-mysqli \
     php-xml \
+    php-sodium \
     php-gd && \
     rm -rf /var/cache/apk/*
 

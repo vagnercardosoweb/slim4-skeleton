@@ -18,18 +18,8 @@ use Core\Password\PasswordFactory;
 use Core\Support\Env;
 use DI\Container;
 
-/**
- * Class PasswordProvider.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class PasswordProvider implements ServiceProvider
 {
-    /**
-     * @param \DI\Container $container
-     *
-     * @return \Core\Password\Password
-     */
     public function __invoke(Container $container): Password
     {
         Facade::setAliases(['Password' => Password::class]);

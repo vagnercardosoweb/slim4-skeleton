@@ -34,9 +34,9 @@ class Argon2i extends Password
     protected function getOptions(array $options = []): array
     {
         return [
-            'memory_cost' => $options['memory_cost'] ?? 1024,
-            'time_cost' => $options['time_cost'] ?? 2,
-            'threads' => $options['threads'] ?? 2,
+            'threads' => $options['threads'] ?? PASSWORD_ARGON2_DEFAULT_THREADS,
+            'memory_cost' => $options['memory_cost'] ?? PASSWORD_ARGON2_DEFAULT_MEMORY_COST,
+            'time_cost' => $options['time_cost'] ?? PASSWORD_ARGON2_DEFAULT_TIME_COST,
         ];
     }
 }

@@ -25,11 +25,6 @@ use Twig\Extension\DebugExtension;
 
 class TwigProvider implements ServiceProvider
 {
-    /**
-     * @param \Psr\Container\ContainerInterface $container
-     *
-     * @return \Core\Twig\Twig
-     */
     public function __invoke(ContainerInterface $container): Twig
     {
         Facade::setAliases(['Twig' => Twig::class]);

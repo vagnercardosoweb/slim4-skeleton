@@ -57,10 +57,10 @@ class Route
     }
 
     /**
-     * @param string          $pattern
+     * @param string $pattern
      * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
+     * @param string|null $name
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteInterface
      */
@@ -70,11 +70,11 @@ class Route
     }
 
     /**
-     * @param string|array    $methods
-     * @param string          $pattern
+     * @param string|array $methods
+     * @param string $pattern
      * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
+     * @param string|null $name
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteInterface
      */
@@ -84,11 +84,12 @@ class Route
         string|\Closure $callable,
         ?string $name = null,
         array $middlewares = []
-    ): RouteInterface {
+    ): RouteInterface
+    {
         $name = self::validateRouteName($name);
         $methods = '*' == $methods ? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] : $methods;
         $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
-        $pattern = self::$groupPattern.$pattern;
+        $pattern = self::$groupPattern . $pattern;
 
         $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
 
@@ -143,19 +144,12 @@ class Route
             } else {
                 list($name, $originalMethod) = (explode('@', $callable) + [1 => '']);
 
-                $method = mb_strtolower($request->getMethod()).ucfirst($originalMethod);
+                $method = mb_strtolower($request->getMethod()) . ucfirst($originalMethod);
                 $namespace = sprintf('%s\%s', $namespace, $name);
-
-                $controller = new $namespace($request, $response, $this);
+                $controller = new $namespace($this);
 
                 if (!method_exists($controller, $method)) {
                     $method = $originalMethod ?: 'index';
-
-                    if (!method_exists($controller, $method)) {
-                        throw new \BadMethodCallException(
-                            sprintf('Call to undefined method %s::%s()', get_class($controller), $method)
-                        );
-                    }
                 }
 
                 $result = call_user_func_array([$controller, $method], array_values($params));
@@ -178,10 +172,10 @@ class Route
     }
 
     /**
-     * @param string          $pattern
+     * @param string $pattern
      * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
+     * @param string|null $name
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteInterface
      */
@@ -191,10 +185,10 @@ class Route
     }
 
     /**
-     * @param string          $pattern
+     * @param string $pattern
      * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
+     * @param string|null $name
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteInterface
      */
@@ -204,10 +198,10 @@ class Route
     }
 
     /**
-     * @param string          $pattern
+     * @param string $pattern
      * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
+     * @param string|null $name
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteInterface
      */
@@ -217,10 +211,10 @@ class Route
     }
 
     /**
-     * @param string          $pattern
+     * @param string $pattern
      * @param string|\Closure $callable
-     * @param string|null     $name
-     * @param array           $middlewares
+     * @param string|null $name
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteInterface
      */
@@ -241,8 +235,8 @@ class Route
 
     /**
      * @param string|array $pattern
-     * @param \Closure     $callable
-     * @param array        $middlewares
+     * @param \Closure $callable
+     * @param array $middlewares
      *
      * @return \Slim\Interfaces\RouteGroupInterface
      */
@@ -262,14 +256,14 @@ class Route
 
         if (!empty($namespace)) {
             if (!$resetNamespace) {
-                $namespace = $currentDefaultNamespace.$namespace;
+                $namespace = $currentDefaultNamespace . $namespace;
             }
 
             self::setDefaultNamespace($namespace);
         }
 
         $currentGroupPattern = self::$groupPattern;
-        $pattern = $currentGroupPattern.$pattern;
+        $pattern = $currentGroupPattern . $pattern;
         self::$groupPattern = $pattern;
 
         $group = self::$routeCollectorProxy->group($pattern, $callable);
@@ -315,7 +309,7 @@ class Route
     /**
      * @param string $from
      * @param        $to
-     * @param int    $status
+va     * @param int $status
      *
      * @return \Slim\Interfaces\RouteInterface
      */
