@@ -13,16 +13,8 @@ namespace Core\Facades;
 
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * Class Response.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class Response extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return ResponseInterface::class;

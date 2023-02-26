@@ -25,13 +25,11 @@ namespace App\Middlewares;
 use Core\Facades\Container;
 use Core\Support\Env;
 use Core\Twig\Twig;
-use Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
 use Slim\Psr7\Response;
 
 class ErrorResponseMiddleware implements MiddlewareInterface
@@ -40,7 +38,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
     {
         try {
             return $handler->handle($request);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             if (
                 Env::get('APP_ONLY_API', false)
                 || 'XMLHttpRequest' === $request->getHeaderLine('X-Requested-With')
@@ -50,7 +48,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
             }
 
             $statusCode = StatusCodeInterface::STATUS_BAD_REQUEST;
-            $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
+            $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
 
             if (in_array($exception->getCode(), $validStatusCodes)) {
                 $statusCode = $exception->getCode();

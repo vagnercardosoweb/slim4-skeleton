@@ -14,11 +14,8 @@ declare(strict_types = 1);
 namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
-use Core\Support\Env;
-use Core\Support\Path;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
-use ReflectionClass;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpInternalServerErrorException;
@@ -29,9 +26,6 @@ use Slim\Exception\HttpUnauthorizedException;
 
 class HttpErrorHandler extends ErrorHandler
 {
-    /**
-     * @var string[]
-     */
     protected array $types = [
         HttpNotFoundException::class => ErrorHandler::RESOURCE_NOT_FOUND,
         HttpMethodNotAllowedException::class => ErrorHandler::NOT_ALLOWED,
@@ -43,14 +37,11 @@ class HttpErrorHandler extends ErrorHandler
         HttpInternalServerErrorException::class => ErrorHandler::INTERNAL_SERVER_ERROR,
     ];
 
-    /**
-     * @return \Psr\Http\Message\ResponseInterface
-     */
     public function respond(): ResponseInterface
     {
         $type = $this->types[$this->exception::class] ?? ErrorHandler::BAD_REQUEST;
         $statusCode = $this->exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
-        $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
+        $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
 
         if (!in_array($statusCode, $validStatusCodes)) {
             $type = ErrorHandler::SERVER_ERROR;
@@ -58,31 +49,39 @@ class HttpErrorHandler extends ErrorHandler
         }
 
         $error = [
+            'name' => basename(str_replace('\\', '/', get_class($this->exception))),
+            'code' => $type,
             'statusCode' => $statusCode,
-            'error' => [
-                'type' => $type,
-                'name' => basename(str_replace('\\', '/', get_class($this->exception))),
-                'message' => $this->exception->getMessage(),
-                'typeClass' => ErrorHandler::getHtmlClass($statusCode),
-            ],
+            'errorId' => mb_strtoupper(bin2hex(random_bytes(8))),
+            'message' => $this->exception->getMessage(),
+            'colorName' => ErrorHandler::toHtmlClass($statusCode),
         ];
 
-        if (($this->displayErrorDetails && 'development' === Env::get('APP_ENV')) || isset($_GET['showAllErrors'])) {
-            $error['error'] += [
-                'line' => $this->exception->getLine(),
-                'file' => str_replace(Path::app(), '', $this->exception->getFile()),
-                'route' => "({$this->request->getMethod()}) {$this->request->getUri()->getPath()}",
-                'trace' => explode("\n", $this->exception->getTraceAsString()),
+        if ($this->displayErrorDetails) {
+            $this->logger->error('error', [
+                'path' => $this->request->getUri()->getPath(),
+                'method' => $this->request->getMethod(),
+                'context' => [],
+                'body' => $this->request->getParsedBody(),
                 'headers' => array_map(fn ($header) => $header[0], $this->request->getHeaders()),
-                'queryParams' => $this->request->getQueryParams(),
-                'parsedBody' => $this->request->getParsedBody(),
-                'cookieParams' => $this->request->getCookieParams(),
-            ];
+                'query' => $this->request->getQueryParams(),
+                'cookies' => $this->request->getCookieParams(),
+                'error' => [
+                    ...$error,
+                    'line' => $this->exception->getLine(),
+                    'file' => $this->exception->getFile(),
+                    'stack' => explode("\n", $this->exception->getTraceAsString()),
+                ],
+            ]);
         }
 
         $response = $this->responseFactory->createResponse($statusCode)->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode($error, JSON_PRETTY_PRINT));
 
         return $response;
+    }
+
+    protected function logError(string $error): void
+    {
     }
 }

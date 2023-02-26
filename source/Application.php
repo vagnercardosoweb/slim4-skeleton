@@ -14,6 +14,7 @@ declare(strict_types = 1);
 namespace Core;
 
 use Core\Facades\Facade;
+use Core\Facades\Logger as LoggerFacade;
 use Core\Facades\ServerRequest;
 use Core\Handlers\HttpErrorHandler;
 use Core\Handlers\ShutdownErrorHandler;
@@ -21,8 +22,6 @@ use Core\Support\Env;
 use Core\Support\Path;
 use DI\Container;
 use DI\ContainerBuilder;
-use DomainException;
-use ErrorException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -30,7 +29,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use RuntimeException;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
@@ -99,7 +97,7 @@ class Application
             $container = require_once "{$containerPath}";
 
             if (!is_array($container)) {
-                throw new DomainException(
+                throw new \DomainException(
                     "The [{$containerPath}] file must return an array."
                 );
             }
@@ -168,7 +166,7 @@ class Application
 
         set_error_handler(function ($level, $message, $file = '', $line = 0) {
             if (error_reporting() & $level) {
-                throw new ErrorException($message, 0, $level, $file, $line);
+                throw new \ErrorException($message, 0, $level, $file, $line);
             }
         });
     }
@@ -202,13 +200,13 @@ class Application
         }
 
         if (!file_exists($path)) {
-            throw new DomainException("File does not exist in the path [{$path}].");
+            throw new \DomainException("File does not exist in the path [{$path}].");
         }
 
         $callable = require_once "{$path}";
 
         if (!is_callable($callable)) {
-            throw new DomainException("The [{$path}] file must return a closure.");
+            throw new \DomainException("The [{$path}] file must return a closure.");
         }
 
         call_user_func($callable, self::$app);
@@ -219,9 +217,11 @@ class Application
         $logErrors = Env::get('SLIM_LOG_ERRORS', true);
         $logErrorDetails = Env::get('SLIM_LOG_ERROR_DETAIL', true);
         $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
-        $serverRequest = ServerRequest::getResolvedInstance();
 
-        $httpErrorHandler = new HttpErrorHandler(self::$app->getCallableResolver(), self::$app->getResponseFactory());
+        $serverRequest = ServerRequest::getResolvedInstance();
+        $logger = LoggerFacade::getResolvedInstance();
+
+        $httpErrorHandler = new HttpErrorHandler(self::$app->getCallableResolver(), self::$app->getResponseFactory(), $logger);
         $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler, $displayErrorDetails);
         register_shutdown_function($shutdownErrorHandler);
 
@@ -238,7 +238,7 @@ class Application
             $modules = require_once "{$this->pathModules}";
 
             if (!is_array($modules)) {
-                throw new DomainException(
+                throw new \DomainException(
                     "The [{$this->pathModules}] file must return an array."
                 );
             }
@@ -246,7 +246,7 @@ class Application
             foreach ($modules as $module) {
                 if (class_exists($module)) {
                     if (!is_subclass_of($module, Module::class)) {
-                        throw new DomainException(
+                        throw new \DomainException(
                             sprintf('Class %s not extends %s', $module, Module::class)
                         );
                     }
@@ -260,7 +260,7 @@ class Application
     public static function getApp(): App
     {
         if (is_null(self::$app)) {
-            throw new RuntimeException(sprintf('Class %s has not been initialized.', __CLASS__));
+            throw new \RuntimeException(sprintf('Class %s has not been initialized.', __CLASS__));
         }
 
         return self::$app;

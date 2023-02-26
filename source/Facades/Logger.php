@@ -15,9 +15,6 @@ use Psr\Log\LoggerInterface;
 
 class Logger extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return LoggerInterface::class;

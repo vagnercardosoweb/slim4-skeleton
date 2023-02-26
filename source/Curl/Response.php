@@ -47,9 +47,6 @@ readonly class Response
         return $this->body;
     }
 
-    /**
-     * @throws \JsonException
-     */
     public function toArray(): array
     {
         $body = $this->body;

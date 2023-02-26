@@ -11,11 +11,6 @@
 
 namespace Core\Support;
 
-use RuntimeException;
-use UnexpectedValueException;
-use function openssl_decrypt;
-use function openssl_encrypt;
-
 /**
  * Class Encryption.
  *
@@ -32,7 +27,7 @@ class Encryption
         protected string $cipher = 'AES-256-CBC'
     ) {
         if (!static::supported($key, $cipher)) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 'The only supported ciphers are AES-128-CBC and AES-256-CBC with the correct key lengths.'
             );
         }
@@ -116,20 +111,20 @@ class Encryption
     {
         $iv = random_bytes(openssl_cipher_iv_length($this->cipher));
 
-        $payload = openssl_encrypt(
+        $payload = \openssl_encrypt(
             $serialize ? serialize($payload) : $payload,
             $this->cipher, $this->key, 0, $iv
         );
 
         if (false === $payload) {
-            throw new RuntimeException('Could not encrypt the data.');
+            throw new \RuntimeException('Could not encrypt the data.');
         }
 
         $mac = $this->hash($iv = base64_encode($iv), $payload);
         $json = json_encode(compact('iv', 'payload', 'mac'), JSON_UNESCAPED_SLASHES);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new RuntimeException('Could not encrypt the data.');
+            throw new \RuntimeException('Could not encrypt the data.');
         }
 
         return base64_encode($json);
@@ -148,7 +143,7 @@ class Encryption
         $encrypted = $this->getJsonPayload($encrypted);
         $iv = base64_decode($encrypted['iv']);
 
-        $decrypted = openssl_decrypt(
+        $decrypted = \openssl_decrypt(
             $encrypted['payload'],
             $this->cipher,
             $this->key,
@@ -157,7 +152,7 @@ class Encryption
         );
 
         if (false === $decrypted) {
-            throw new RuntimeException('Could not decrypt the data.');
+            throw new \RuntimeException('Could not decrypt the data.');
         }
 
         return $unserialize ? unserialize($decrypted) : $decrypted;
@@ -184,11 +179,11 @@ class Encryption
         $payload = json_decode(base64_decode($payload), true);
 
         if (!$this->validPayload($payload)) {
-            throw new UnexpectedValueException('The payload is invalid.');
+            throw new \UnexpectedValueException('The payload is invalid.');
         }
 
         if (!$this->validMac($payload)) {
-            throw new UnexpectedValueException('The MAC is invalid.');
+            throw new \UnexpectedValueException('The MAC is invalid.');
         }
 
         return $payload;

@@ -11,93 +11,65 @@
 
 namespace Core\Facades;
 
-use Exception;
-use RuntimeException;
 use Slim\App;
 
-/**
- * Class Facade.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 abstract class Facade
 {
-    /**
-     * @var \Slim\App
-     */
     protected static App $app;
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     protected static array $resolvedInstance = [];
 
     /**
-     * @var array
+     * @var array<string, string>
      */
     protected static array $aliases = [
         'App' => App::class,
         'Response' => Response::class,
-        'Container' => Container::class,
         'ServerRequest' => ServerRequest::class,
+        'Container' => Container::class,
     ];
 
-    /**
-     * @param string $method
-     * @param array  $arguments
-     *
-     * @return mixed
-     */
     public static function __callStatic(string $method, array $arguments): mixed
     {
-        $resolvedInstance = static::getResolvedInstance();
+        $resolvedInstance = self::getResolvedInstance();
 
         return $resolvedInstance->{$method}(...$arguments);
     }
 
-    /**
-     * @return mixed
-     */
     public static function getResolvedInstance(): mixed
     {
-        return static::resolveInstance(static::getAccessor());
+        return self::resolveInstance(static::getAccessor());
     }
 
-    /**
-     * @param string $name
-     *
-     * @return mixed
-     */
     protected static function resolveInstance(string $name): mixed
     {
-        if (isset(static::$resolvedInstance[$name])) {
-            return static::$resolvedInstance[$name];
+        if (isset(self::$resolvedInstance[$name])) {
+            return self::$resolvedInstance[$name];
         }
 
-        if (!static::$app->getContainer()) {
+        if (!self::$app->getContainer()) {
             return null;
         }
 
-        $container = static::$app->getContainer();
+        $container = self::$app->getContainer();
 
         try {
-            return static::$resolvedInstance[$name] = $container->get($name);
-        } catch (Exception $e) {
-            throw new RuntimeException(
-                "A facade {$name} root has not been set.".
-                " {$e->getMessage()}"
+            return self::$resolvedInstance[$name] = $container->get($name);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(sprintf(
+                'A facade [%s] root has not been set. %s',
+                $name,
+                $e->getMessage()
+            )
             );
         }
     }
 
-    /**
-     * @return string
-     */
     abstract protected static function getAccessor(): string;
 
-    /**
-     * @param array $aliases
-     */
     public static function registerAliases(array $aliases = []): void
     {
         self::setAliases($aliases);
@@ -107,35 +79,23 @@ abstract class Facade
         }
     }
 
-    /**
-     * @return string[]
-     */
     public static function getAliases(): array
     {
         return self::$aliases;
     }
 
-    /**
-     * @param array $aliases
-     */
     public static function setAliases(array $aliases): void
     {
         self::$aliases = array_merge(self::$aliases, $aliases);
     }
 
-    /**
-     * @return \Slim\App
-     */
     public static function getApp(): App
     {
-        return static::$app;
+        return self::$app;
     }
 
-    /**
-     * @param \Slim\App $app
-     */
     public static function setApp(App $app): void
     {
-        static::$app = $app;
+        self::$app = $app;
     }
 }

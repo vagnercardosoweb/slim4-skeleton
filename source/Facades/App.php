@@ -11,16 +11,8 @@
 
 namespace Core\Facades;
 
-/**
- * Class App.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class App extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return \Slim\App::class;

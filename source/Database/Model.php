@@ -11,22 +11,16 @@
 
 namespace Core\Database;
 
-use ArrayAccess;
-use Closure;
 use Core\Config;
 use Core\Database\Connection\Statement;
 use Core\Support\Common;
-use Exception;
-use InvalidArgumentException;
-use JsonSerializable;
-use PDO;
 
 /**
  * Class Model.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-abstract class Model implements ArrayAccess, JsonSerializable
+abstract class Model implements \ArrayAccess, \JsonSerializable
 {
     /**
      * @var \Core\Database\Database|null
@@ -263,7 +257,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function getQuery(): string
     {
         if (empty($this->table)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('[getQuery] `%s::table` is empty.', get_called_class())
             );
         }
@@ -476,7 +470,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @return mixed
      */
-    public function transaction(Closure $callback): mixed
+    public function transaction(\Closure $callback): mixed
     {
         return static::$database->transaction($callback, $this);
     }
@@ -538,7 +532,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function fetchById(int|string $id): ?static
     {
         if (empty($this->primaryKey)) {
-            throw new Exception(sprintf('Primary key is not configured in the model (%s).', static::class));
+            throw new \Exception(sprintf('Primary key is not configured in the model (%s).', static::class));
         }
 
         $this->limit = 1;
@@ -562,7 +556,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $this->mountWherePrimaryKey();
 
         if (empty($this->where)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('[update] `%s::where()` is empty.', get_called_class())
             );
         }
@@ -743,7 +737,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function fetchAll(): array
     {
         $statement = $this->getStatement();
-        $rows = $statement->fetchAll(PDO::FETCH_CLASS, get_called_class());
+        $rows = $statement->fetchAll(\PDO::FETCH_CLASS, get_called_class());
 
         if (method_exists($this, 'onEachRow')) {
             array_walk($rows, fn ($row) => $this->onEachRow($row));
@@ -778,7 +772,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $this->mountWherePrimaryKey();
 
         if (empty($this->where)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('[delete] `%s::where()` is empty.', get_called_class())
             );
         }

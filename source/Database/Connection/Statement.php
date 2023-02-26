@@ -11,15 +11,12 @@
 
 namespace Core\Database\Connection;
 
-use PDO;
-use PDOStatement;
-
 /**
  * Class Statement.
  *
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  */
-class Statement extends PDOStatement
+class Statement extends \PDOStatement
 {
     /**
      * @var array
@@ -31,7 +28,7 @@ class Statement extends PDOStatement
      *
      * @param \PDO $pdo
      */
-    protected function __construct(protected PDO $pdo)
+    protected function __construct(protected \PDO $pdo)
     {
     }
 
@@ -52,7 +49,7 @@ class Statement extends PDOStatement
      *
      * @return array<string, mixed>|\stdClass
      */
-    public function fetch(int|string $mode = PDO::FETCH_ASSOC, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
+    public function fetch(int|string $mode = \PDO::FETCH_ASSOC, int $cursorOrientation = \PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
     {
         if (is_int($mode) && $this->isFetchObject($mode)) {
             $mode = 'stdClass';
@@ -70,9 +67,9 @@ class Statement extends PDOStatement
      *
      * @return bool
      */
-    public function isFetchObject(int $style = PDO::ATTR_DEFAULT_FETCH_MODE): bool
+    public function isFetchObject(int $style = \PDO::ATTR_DEFAULT_FETCH_MODE): bool
     {
-        return in_array($style, [PDO::FETCH_OBJ, PDO::FETCH_CLASS]);
+        return in_array($style, [\PDO::FETCH_OBJ, \PDO::FETCH_CLASS]);
     }
 
     /**
@@ -88,14 +85,14 @@ class Statement extends PDOStatement
             $key = (is_string($key) ? ":{$key}" : $key + 1);
             $value = !empty($value) || '0' == $value ? filter_var($value) : null;
 
-            $type = PDO::PARAM_STR;
+            $type = \PDO::PARAM_STR;
 
             if (is_integer($value)) {
-                $type = PDO::PARAM_INT;
+                $type = \PDO::PARAM_INT;
             }
 
             if (is_bool($value)) {
-                $type = PDO::PARAM_BOOL;
+                $type = \PDO::PARAM_BOOL;
             }
 
             $this->bindValue($key, $value, $type);

@@ -30,7 +30,8 @@ class CorsMiddleware implements MiddlewareInterface
             ->withHeader('Access-Control-Allow-Origin', $origin)
             ->withHeader('Access-Control-Allow-Methods', $methods)
             ->withHeader('Access-Control-Allow-Headers', $headers)
-            ->withHeader('Access-Control-Allow-Credentials', 'true');
+            ->withHeader('Access-Control-Allow-Credentials', 'true')
+        ;
 
         if ('options' === strtolower($request->getMethod())) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_OK);

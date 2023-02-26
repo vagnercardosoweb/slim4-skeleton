@@ -11,19 +11,8 @@
 
 namespace Core\Facades;
 
-/**
- * Class Jwt.
- *
- * @method static string encode(array $payload, array $header = [])
- * @method static array  decode(string $token)
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class Jwt extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return \Core\Support\Jwt::class;

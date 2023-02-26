@@ -11,13 +11,11 @@
 
 namespace Core\Contracts;
 
-use Closure;
-
 interface Cache
 {
     public function has(string $key): bool;
 
-    public function get(string $key, array|null|Closure $default, int $seconds): array|null;
+    public function get(string $key, array|null|\Closure $default, int $seconds): array|null;
 
     public function set(string $key, array|null $value, int $seconds): bool;
 

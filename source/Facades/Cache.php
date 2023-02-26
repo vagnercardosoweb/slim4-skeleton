@@ -11,24 +11,8 @@
 
 namespace Core\Facades;
 
-use Closure;
-
-/**
- * Class Cache.
- *
- * @method static array|null get(string $key, array|Closure|null $default = null, int $seconds = 0)
- * @method static bool       has(string $key)
- * @method static bool       set(string $key, array|object $value, int $seconds = 0)
- * @method static bool       delete(string $key)
- * @method static void       flush()
- * @method static bool       increment(string $key, int $value = 1)
- * @method static bool       decrement(string $key, int $value = 1)
- */
 class Cache extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return \Core\Cache\Cache::class;

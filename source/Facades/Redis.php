@@ -13,14 +13,8 @@ namespace Core\Facades;
 
 use Predis\Client;
 
-/**
- * Class Redis.
- */
 class Redis extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return Client::class;

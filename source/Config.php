@@ -14,10 +14,6 @@ namespace Core;
 use Core\Support\Arr;
 use Core\Support\Common;
 use Core\Support\Path;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use UnexpectedValueException;
 
 /**
  * Class Config.
@@ -77,7 +73,7 @@ class Config
         }
 
         /** @var \DirectoryIterator $iterator */
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS));
         $iterator->rewind();
 
         $config = [];
@@ -139,7 +135,7 @@ class Config
 
         foreach ($keys as $key => $default) {
             if (is_numeric($key)) {
-                throw new UnexpectedValueException('the key must be a string');
+                throw new \UnexpectedValueException('the key must be a string');
             }
 
             $config[$key] = Arr::get(self::$items, $key, $default);

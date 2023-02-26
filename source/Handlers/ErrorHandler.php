@@ -11,12 +11,9 @@
 
 namespace Core\Handlers;
 
-/**
- * Class ErrorHandler.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
-class ErrorHandler extends \Slim\Handlers\ErrorHandler
+use Slim\Handlers\ErrorHandler as SlimErrorHandler;
+
+class ErrorHandler extends SlimErrorHandler
 {
     public const BAD_REQUEST = 'BAD_REQUEST';
 
@@ -34,12 +31,7 @@ class ErrorHandler extends \Slim\Handlers\ErrorHandler
 
     public const INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR';
 
-    /**
-     * @param int|string $code
-     *
-     * @return string
-     */
-    public static function getHtmlClass(int|string $code): string
+    public static function toHtmlClass(int|string $code): string
     {
         if (is_string($code) && 200 != $code) {
             $code = E_USER_ERROR;

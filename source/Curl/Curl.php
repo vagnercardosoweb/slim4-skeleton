@@ -12,7 +12,6 @@
 namespace Core\Curl;
 
 use Core\Support\Common;
-use InvalidArgumentException;
 
 /**
  * Class Curl.
@@ -220,7 +219,7 @@ class Curl
     private function makeUrl(): string
     {
         if (empty($this->url)) {
-            throw new InvalidArgumentException('Url is empty');
+            throw new \InvalidArgumentException('Url is empty');
         }
         $queryParams = '';
         if (!empty($this->queryParams)) {

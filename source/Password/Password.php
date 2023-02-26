@@ -11,8 +11,6 @@
 
 namespace Core\Password;
 
-use RuntimeException;
-
 /**
  * Class Password.
  *
@@ -42,7 +40,7 @@ abstract class Password
             $algoName = $hashedInfo['algoName'] ?? null;
 
             if ($algoName !== $this->algorithm()) {
-                throw new RuntimeException("This password does not use the {$algoName} algorithm.");
+                throw new \RuntimeException("This password does not use the {$algoName} algorithm.");
             }
         }
 

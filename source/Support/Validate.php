@@ -12,10 +12,6 @@
 namespace Core\Support;
 
 use Exception;
-use InvalidArgumentException;
-use PDO;
-use PDOStatement;
-use UnexpectedValueException;
 
 /**
  * Class Validate.
@@ -47,7 +43,7 @@ class Validate
     /**
      * @var \PDO
      */
-    protected static PDO $pdo;
+    protected static \PDO $pdo;
 
     /**
      * @param string $value
@@ -213,7 +209,7 @@ class Validate
             }
 
             if (!Validate::required($data[$column] ?? null)) {
-                throw new InvalidArgumentException($value);
+                throw new \InvalidArgumentException($value);
             }
         }
     }
@@ -318,7 +314,7 @@ class Validate
         }
 
         if (!is_numeric($value)) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 sprintf('%s: value must be an integer', self::$field)
             );
         }
@@ -489,7 +485,7 @@ class Validate
     ): bool {
         $field = $field ?? self::$field;
         $query = "SELECT COUNT(1) as total FROM {$table} WHERE {$table}.{$field} = :field {$where} LIMIT 1";
-        $result = self::pdoQuery($query, ['field' => $value])->fetch(PDO::FETCH_ASSOC);
+        $result = self::pdoQuery($query, ['field' => $value])->fetch(\PDO::FETCH_ASSOC);
 
         return 1 == $result['total'] ?? 0;
     }
@@ -500,12 +496,12 @@ class Validate
      *
      * @return \PDOStatement
      */
-    protected static function pdoQuery(string $sql, array $bindValues = []): PDOStatement
+    protected static function pdoQuery(string $sql, array $bindValues = []): \PDOStatement
     {
         $statement = self::$pdo->prepare($sql);
 
-        if (!$statement instanceof PDOStatement) {
-            throw new UnexpectedValueException("Invalid SQL statement: {$sql}");
+        if (!$statement instanceof \PDOStatement) {
+            throw new \UnexpectedValueException("Invalid SQL statement: {$sql}");
         }
 
         foreach ($bindValues as $key => $value) {
@@ -730,7 +726,7 @@ class Validate
             }
 
             if ($exception) {
-                throw new InvalidArgumentException($validate['message'], $validate['code']);
+                throw new \InvalidArgumentException($validate['message'], $validate['code']);
             }
 
             self::$errors[$field] = [

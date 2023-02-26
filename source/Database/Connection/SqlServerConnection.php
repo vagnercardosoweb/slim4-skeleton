@@ -11,8 +11,6 @@
 
 namespace Core\Database\Connection;
 
-use PDO;
-
 /**
  * Class SqlServerConnection.
  *
@@ -160,9 +158,9 @@ class SqlServerConnection extends Connection
     protected function setEncoding(array $config): void
     {
         if (!empty($config['charset']) && 'utf8' == $config['charset']) {
-            $this->setAttribute(PDO::SQLSRV_ATTR_ENCODING, PDO::SQLSRV_ENCODING_UTF8);
+            $this->setAttribute(\PDO::SQLSRV_ATTR_ENCODING, \PDO::SQLSRV_ENCODING_UTF8);
         } else {
-            $this->setAttribute(PDO::SQLSRV_ATTR_ENCODING, PDO::SQLSRV_ENCODING_DEFAULT);
+            $this->setAttribute(\PDO::SQLSRV_ATTR_ENCODING, \PDO::SQLSRV_ENCODING_DEFAULT);
         }
     }
 

@@ -15,7 +15,6 @@ use Core\Contracts\ServiceProvider;
 use Core\Database\Database;
 use Core\Facades\Facade;
 use DI\Container;
-use PDO;
 
 /**
  * Class PDOProvider.
@@ -32,9 +31,9 @@ class PDOProvider implements ServiceProvider
      *
      * @return \PDO
      */
-    public function __invoke(Container $container): PDO
+    public function __invoke(Container $container): \PDO
     {
-        Facade::setAliases(['PDO' => PDO::class]);
+        Facade::setAliases(['PDO' => \PDO::class]);
 
         $database = $container->get(Database::class);
 

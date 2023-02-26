@@ -18,7 +18,6 @@ use Monolog\Handler\SlackHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger as MonoLogger;
-use Throwable;
 
 class Logger extends MonoLogger
 {
@@ -65,7 +64,7 @@ class Logger extends MonoLogger
             );
             $slackHandler->setFormatter(new JsonFormatter());
             $this->pushHandler($slackHandler);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->error('Could not create SlackHandler', ['error_message' => $e->getMessage()]);
         }
 

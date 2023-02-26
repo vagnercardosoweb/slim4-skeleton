@@ -11,16 +11,8 @@
 
 namespace Core\Facades;
 
-/**
- * Class PDO.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class PDO extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return \PDO::class;

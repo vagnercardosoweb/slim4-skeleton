@@ -14,22 +14,18 @@ namespace App\Commands;
 use Core\Config;
 use Core\Support\Env;
 use Core\Support\Path;
-use InvalidArgumentException;
-use PDO;
-use PDOStatement;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use UnexpectedValueException;
 
 final class SchemaDumpCommand extends Command
 {
     /**
      * @var \PDO
      */
-    private PDO $pdo;
+    private \PDO $pdo;
 
-    public function __construct(PDO $pdo)
+    public function __construct(\PDO $pdo)
     {
         $this->pdo = $pdo;
         parent::__construct('schema:dump');
@@ -41,7 +37,7 @@ final class SchemaDumpCommand extends Command
         $driver = Env::get('DB_DRIVER', 'pgsql');
 
         if ('mysql' !== $driver) {
-            throw new InvalidArgumentException(sprintf('Driver [%s] not supported.', $driver));
+            throw new \InvalidArgumentException(sprintf('Driver [%s] not supported.', $driver));
         }
 
         $database = Env::get('DB_DATABASE');
@@ -55,9 +51,9 @@ final class SchemaDumpCommand extends Command
                 AND TABLE_NAME != '{$migrationName}'");
 
         $sql = [];
-        while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $statement2 = $this->query(sprintf('SHOW CREATE TABLE %s;', $row['TABLE_NAME']));
-            $createTableSql = $statement2->fetch(PDO::FETCH_ASSOC)['Create Table'];
+            $createTableSql = $statement2->fetch(\PDO::FETCH_ASSOC)['Create Table'];
             $sql[] = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableSql).';';
         }
 
@@ -71,12 +67,12 @@ final class SchemaDumpCommand extends Command
         return self::SUCCESS;
     }
 
-    private function query(string $sql): PDOStatement
+    private function query(string $sql): \PDOStatement
     {
         $statement = $this->pdo->query($sql);
 
         if (!$statement) {
-            throw new UnexpectedValueException('Query failed');
+            throw new \UnexpectedValueException('Query failed');
         }
 
         return $statement;

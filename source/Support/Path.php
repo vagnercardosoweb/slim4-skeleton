@@ -11,8 +11,6 @@
 
 namespace Core\Support;
 
-use RuntimeException;
-
 /**
  * Class Path.
  *
@@ -74,7 +72,7 @@ class Path
         }
 
         if (!isset($_SERVER['DOCUMENT_ROOT'])) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 'Constant [BASE_PATH] not defined.'.
                 'Or [DOCUMENT_ROOT] server not exists.'
             );

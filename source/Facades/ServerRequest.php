@@ -13,16 +13,8 @@ namespace Core\Facades;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Class ServerRequest.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class ServerRequest extends Facade
 {
-    /**
-     * @return string
-     */
     protected static function getAccessor(): string
     {
         return ServerRequestInterface::class;

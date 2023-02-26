@@ -12,8 +12,6 @@
 namespace Core\Uploader;
 
 use Core\Exception\UploaderException;
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * Class Uploader.
@@ -298,7 +296,7 @@ class Uploader
     protected function validateUploadFile(): void
     {
         if (empty($this->uploadFile['type'])) {
-            throw new InvalidArgumentException('Upload file not exists.');
+            throw new \InvalidArgumentException('Upload file not exists.');
         }
 
         if (!empty($this->uploadFile['error'])) {
@@ -316,7 +314,7 @@ class Uploader
         }
 
         if (!in_array($this->uploadFile['type'], $this->getAllowedMimeTypes())) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 "Media type `{$this->uploadFile['type']}` not allowed in upload."
             );
         }
@@ -328,7 +326,7 @@ class Uploader
     protected function validateExtensions(): void
     {
         if (!in_array($this->getExtension(), $this->getAllowedExtensions())) {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 "Extension `{$this->getExtension()}` not allowed for upload."
             );
         }
@@ -340,7 +338,7 @@ class Uploader
     protected function moveUploadedFile(string $uploadFileDir): void
     {
         if (!move_uploaded_file($this->uploadFile['tmp_name'], $uploadFileDir)) {
-            throw new RuntimeException(sprintf(
+            throw new \RuntimeException(sprintf(
                 'Error moving uploaded file %s to %s',
                 $this->uploadFile['name'],
                 $uploadFileDir

@@ -15,8 +15,7 @@ use Core\Controller;
 use Core\Curl\Curl;
 use Core\Facades\Cache;
 use Core\Support\Env;
-use Exception;
-use InvalidArgumentException;
+use Fig\Http\Message\StatusCodeInterface;
 
 class ZipCodeController extends Controller
 {
@@ -25,22 +24,22 @@ class ZipCodeController extends Controller
         $zipCode = preg_replace('/[^0-9]/', '', $zipCode);
 
         if (strlen($zipCode) < 8) {
-            throw new InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
+            throw new \InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
         }
 
-        return Cache::get("zip-code:{$zipCode}:results", function () use ($zipCode) {
+        $result = Cache::get("zip-code:{$zipCode}:results", function () use ($zipCode) {
             $response = Curl::get("https://viacep.com.br/ws/{$zipCode}/json")->send();
-            $responseJson = $response->toArray();
 
-            if (200 !== $response->getStatusCode() || !empty($responseJson->erro)) {
-                throw new Exception("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
+            if (200 !== $response->getStatusCode()) {
+                throw new \DomainException("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
             }
 
-            $responseJson['endereco'] = sprintf('%s - %s, %s - %s, %s, Brazil',
-                $responseJson['logradouro'],
-                $responseJson['bairro'],
-                $responseJson['localidade'],
-                $responseJson['uf'],
+            $resultViaCep = $response->toArray();
+            $resultViaCep['endereco'] = sprintf('%s - %s, %s - %s, %s, Brazil',
+                $resultViaCep['logradouro'],
+                $resultViaCep['bairro'],
+                $resultViaCep['localidade'],
+                $resultViaCep['uf'],
                 $zipCode
             );
 
@@ -50,7 +49,7 @@ class ZipCodeController extends Controller
                     ->addBody([
                         'key' => $googleMapsKey,
                         'sensor' => true,
-                        'address' => urlencode($responseJson['endereco']),
+                        'address' => urlencode($resultViaCep['endereco']),
                     ])
                     ->send()
                 ;
@@ -60,13 +59,19 @@ class ZipCodeController extends Controller
 
                     if ('OK' === $jsonMap['status'] && !empty($jsonMap['results'][0])) {
                         $location = $jsonMap['results'][0]['geometry']['location'];
-                        $responseJson['latitude'] = $location['lat'];
-                        $responseJson['longitude'] = $location['lng'];
+                        $resultViaCep['latitude'] = $location['lat'];
+                        $resultViaCep['longitude'] = $location['lng'];
                     }
                 }
             }
 
-            return $responseJson;
+            return $resultViaCep;
         });
+
+        return [
+            'data' => $result,
+            'statusCode' => StatusCodeInterface::STATUS_OK,
+            'metadata' => ['zipCode' => $zipCode],
+        ];
     }
 }

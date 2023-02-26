@@ -73,7 +73,7 @@ abstract class Controller
 
     /**
      * @param array $data
-     * @param int $options
+     * @param int   $options
      *
      * @throws \Exception
      *
@@ -82,8 +82,7 @@ abstract class Controller
     public function withJson(
         array $data = [],
         int $options = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         $response = $this->response->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode($data, JSON_THROW_ON_ERROR | $options));
 
@@ -96,9 +95,9 @@ abstract class Controller
     }
 
     /**
-     * @param string $template
+     * @param string               $template
      * @param array<string, mixed> $context
-     * @param int $status
+     * @param int                  $status
      *
      * @return ResponseInterface
      */
@@ -106,8 +105,7 @@ abstract class Controller
         string $template,
         array $context = [],
         int $status = StatusCodeInterface::STATUS_OK
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         return $this->container
             ->get(Twig::class)
             ->render(
@@ -115,12 +113,13 @@ abstract class Controller
                 $template,
                 $context,
                 $status
-            );
+            )
+        ;
     }
 
     /**
      * @param string $template
-     * @param array $context
+     * @param array  $context
      *
      * @return string
      */
@@ -131,7 +130,8 @@ abstract class Controller
             ->fetch(
                 $template,
                 $context
-            );
+            )
+        ;
     }
 
     /**
@@ -147,7 +147,7 @@ abstract class Controller
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -157,15 +157,14 @@ abstract class Controller
         string $routeName,
         array $data = [],
         array $queryParams = []
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         $destination = $this->getUrlFor($routeName, $data, $queryParams);
 
         return $this->withRedirect($destination);
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -177,9 +176,9 @@ abstract class Controller
     }
 
     /**
-     * @param string $destination
+     * @param string               $destination
      * @param array<string, mixed> $queryParams
-     * @param bool $permanent
+     * @param bool                 $permanent
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
@@ -187,8 +186,7 @@ abstract class Controller
         string $destination,
         array $queryParams = [],
         bool $permanent = false
-    ): ResponseInterface
-    {
+    ): ResponseInterface {
         if ($queryParams) {
             $destination = sprintf('%s?%s', $destination, http_build_query($queryParams));
         }
@@ -199,7 +197,7 @@ abstract class Controller
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
@@ -213,7 +211,7 @@ abstract class Controller
     }
 
     /**
-     * @param string $routeName
+     * @param string               $routeName
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
