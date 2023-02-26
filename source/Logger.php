@@ -6,156 +6,78 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core;
 
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\HandlerInterface;
+use Monolog\Formatter\JsonFormatter;
+use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\RotatingFileHandler;
-use Monolog\Handler\SlackWebhookHandler;
+use Monolog\Handler\SlackHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger as MonoLogger;
-use Monolog\Processor\MemoryUsageProcessor;
-use Monolog\Processor\ProcessorInterface;
-use Monolog\Processor\UidProcessor;
-use Monolog\Processor\WebProcessor;
 
-/**
- * Class Logger.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
-final class Logger
+class Logger extends MonoLogger
 {
-    /**
-     * Logger constructor.
-     *
-     * @param Level                                        $level
-     * @param array<\Monolog\Handler\HandlerInterface>     $handlers
-     * @param array<\Monolog\Processor\ProcessorInterface> $processors
-     */
-    public function __construct(
-        protected Level $level = Level::Debug,
-        protected array $handlers = [],
-        protected array $processors = []
-    ) {
-    }
-
-    /**
-     * @param string|null $name
-     *
-     * @return \Monolog\Logger
-     */
-    public function createLogger(string|null $name = null): MonoLogger
+    public function addStreamHandler(string $path = 'php://stdout', ?Level $level = null): Logger
     {
-        $logger = new MonoLogger($name ?? 'app');
+        $jsonFormatter = new JsonFormatter();
 
-        foreach ($this->processors as $processor) {
-            $logger->pushProcessor($processor);
+        $errorHandler = new ErrorLogHandler();
+        $errorHandler->setFormatter($jsonFormatter);
+
+        $consoleHandler = new StreamHandler($path);
+        $consoleHandler->setFormatter($jsonFormatter);
+
+        if (!empty($level)) {
+            $consoleHandler->setLevel($level);
+            $errorHandler->setLevel($level);
         }
 
-        foreach ($this->handlers as $handler) {
-            $logger->pushHandler($handler);
-        }
-
-        $this->handlers = [];
-        $this->processors = [];
-
-        return $logger;
-    }
-
-    /**
-     * @param int|null $level
-     *
-     * @return $this
-     */
-    public function addConsoleHandler(?int $level = null): Logger
-    {
-        $consoleHandler = new StreamHandler('php://stdout', $level ?? $this->level);
-        $consoleHandler->setFormatter($this->getLineFormatter());
-
-        $this->addHandler($consoleHandler);
+        $this->pushHandler($errorHandler);
+        $this->pushHandler($consoleHandler);
 
         return $this;
     }
 
-    /**
-     * @return \Monolog\Formatter\LineFormatter
-     */
-    protected function getLineFormatter(): LineFormatter
-    {
-        return new LineFormatter(
-            format: null,
-            dateFormat: 'Y-m-d H:i:s',
-            allowInlineLineBreaks: true,
-            ignoreEmptyContextAndExtra: true
-        );
-    }
-
-    /**
-     * @param \Monolog\Handler\HandlerInterface $handler
-     *
-     * @return $this
-     */
-    public function addHandler(HandlerInterface $handler): Logger
-    {
-        array_unshift($this->handlers, $handler);
-
-        return $this;
-    }
-
-    /**
-     * @param string      $webhookUrl
-     * @param string|null $channel
-     * @param string|null $username
-     * @param bool        $useAttachment
-     * @param string|null $iconEmoji
-     * @param bool        $useShortAttachment
-     * @param bool        $includeContextAndExtra
-     * @param mixed       $level
-     * @param bool        $bubble
-     * @param array       $excludeFields
-     *
-     * @return $this
-     */
-    public function addSlackWebhookHandler(
-        string $webhookUrl,
-        ?string $channel = null,
-        ?string $username = null,
-        bool $useAttachment = true,
-        ?string $iconEmoji = ':boom:',
-        bool $useShortAttachment = false,
-        bool $includeContextAndExtra = false,
-        int $level = MonoLogger::DEBUG,
-        bool $bubble = true,
+    public function addSlackHandler(
+        string $token,
+        string $channel,
+        string $username,
+        string $icon = '',
+        Level $level = Level::Error,
         array $excludeFields = []
     ): Logger {
-        $this->addHandler(new SlackWebhookHandler(
-            $webhookUrl,
-            $channel,
-            $username,
-            $useAttachment,
-            $iconEmoji,
-            $useShortAttachment,
-            $includeContextAndExtra,
-            $level,
-            $bubble,
-            $excludeFields
-        ));
+        try {
+            $slackHandler = new SlackHandler(
+                token: $token,
+                channel: $channel,
+                username: $username,
+                useAttachment: true,
+                iconEmoji: $icon,
+                level: $level,
+                useShortAttachment: true,
+                includeContextAndExtra: true,
+                excludeFields: $excludeFields
+            );
+            $slackHandler->setFormatter(new JsonFormatter());
+            $this->pushHandler($slackHandler);
+        } catch (\Throwable $e) {
+            $this->error('Could not create SlackHandler', ['error_message' => $e->getMessage()]);
+        }
 
         return $this;
     }
 
     /**
-     * @param string               $path
-     * @param array<string, mixed> $settings [maxFiles: int, level: int, bubble: bool, permission: int]
+     * @param string                                $path
+     * @param array{maxFiles: int, permission: int} $settings
      *
      * @return $this
      */
-    public function addRotationFileHandler(string $path, array $settings = []): Logger
+    public function addFileRotationHandler(string $path, array $settings = []): Logger
     {
         $pathInfo = pathinfo($path);
         $filename = sprintf(
@@ -173,77 +95,20 @@ final class Logger
 
         $settings = array_merge([
             'maxFiles' => 14,
-            'level' => $this->level,
             'bubble' => true,
-            'permission' => null,
         ], $settings);
 
         $fileHandler = new RotatingFileHandler(
             filename: $filename,
             maxFiles: $settings['maxFiles'],
-            level: $settings['level'],
             bubble: $settings['bubble'],
             filePermission: $settings['permission']
         );
 
         $fileHandler->setFilenameFormat('{date}', 'Y-m-d');
-        $fileHandler->setFormatter($this->getLineFormatter());
+        $fileHandler->setFormatter(new JsonFormatter());
 
-        $this->addHandler($fileHandler);
-
-        return $this;
-    }
-
-    /**
-     * @param string               $path
-     * @param array<string, mixed> $settings [level: int, bubble: bool, filePermission: int, useLocking: boolean]
-     *
-     * @return $this
-     */
-    public function addFileHandler(string $path, array $settings = []): Logger
-    {
-        $settings = array_merge([
-            'level' => $this->level,
-            'bubble' => true,
-            'filePermission' => null,
-            'useLocking' => false,
-        ], $settings);
-
-        $handler = new StreamHandler(
-            stream: $path,
-            level: $settings['level'],
-            bubble: $settings['bubble'],
-            filePermission: $settings['filePermission'],
-            useLocking: $settings['useLocking']
-        );
-
-        $handler->setFormatter($this->getLineFormatter());
-
-        $this->addHandler($handler);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function addDefaultProcessors(): Logger
-    {
-        $this->addProcessor(new UidProcessor());
-        $this->addProcessor(new MemoryUsageProcessor());
-        $this->addProcessor(new WebProcessor());
-
-        return $this;
-    }
-
-    /**
-     * @param \Monolog\Processor\ProcessorInterface $processor
-     *
-     * @return $this
-     */
-    public function addProcessor(ProcessorInterface $processor): Logger
-    {
-        array_unshift($this->processors, $processor);
+        $this->pushHandler($fileHandler);
 
         return $this;
     }

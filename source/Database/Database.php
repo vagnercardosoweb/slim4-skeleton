@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -17,7 +17,6 @@ use Core\Database\Connection\SQLiteConnection;
 use Core\Database\Connection\SqlServerConnection;
 use Core\Database\Connection\Statement;
 use Core\EventEmitter;
-use Core\Support\Obj;
 
 /**
  * Class Database.
@@ -39,7 +38,12 @@ class Database
     /**
      * @var string
      */
-    protected string $defaultDriver = 'mysql';
+    protected string $currentDriver = 'pgsql';
+
+    /**
+     * @var string
+     */
+    protected string $defaultDriver = 'pgsql';
 
     /**
      * @param string $driver
@@ -55,6 +59,18 @@ class Database
     }
 
     /**
+     * @param string $defaultDriver
+     *
+     * @return \Core\Database\Database
+     */
+    public function setDefaultDriver(string $defaultDriver): Database
+    {
+        $this->defaultDriver = $defaultDriver;
+
+        return $this;
+    }
+
+    /**
      * @param string|null $driver
      *
      * @throws \Exception
@@ -63,7 +79,7 @@ class Database
      */
     public function connection(?string $driver = null): Database
     {
-        $driver = $driver ?? $this->getDefaultDriver();
+        $driver = $driver ?? $this->defaultDriver;
 
         if (empty($this->connections[$driver])) {
             throw new \Exception(
@@ -94,54 +110,15 @@ class Database
         }
 
         $this->pdo = $this->connections[$driver];
+        $this->currentDriver = $driver;
 
         return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDefaultDriver(): string
-    {
-        return $this->defaultDriver;
-    }
-
-    /**
-     * @param string $defaultDriver
-     *
-     * @return \Core\Database\Database
-     */
-    public function setDefaultDriver(string $defaultDriver): Database
-    {
-        $this->defaultDriver = $defaultDriver;
-
-        return $this;
-    }
-
-    /**
-     * @return \PDO
-     */
-    public function getPdo(): \PDO
-    {
-        if (!$this->pdo instanceof \PDO) {
-            throw new \Exception('Database connection is not established.');
-        }
-
-        return $this->pdo;
-    }
-
-    /**
-     * @return array
-     */
-    public function getConnections(): array
-    {
-        return $this->connections;
     }
 
     /**
      * @param \Closure $callback
      *
-     * @throws \Exception
+     * @throws \Throwable
      *
      * @return mixed
      */
@@ -167,11 +144,23 @@ class Database
             $this->getPdo()->commit();
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->getPdo()->rollBack();
 
             throw $e;
         }
+    }
+
+    /**
+     * @return \PDO
+     */
+    public function getPdo(): \PDO
+    {
+        if (!$this->pdo instanceof \PDO) {
+            throw new \DomainException('Database connection is not established.');
+        }
+
+        return $this->pdo;
     }
 
     /**
@@ -180,9 +169,9 @@ class Database
      *
      * @throws \Exception
      *
-     * @return int|null
+     * @return array|int|string|null
      */
-    public function create(string $table, array $records): ?int
+    public function create(string $table, array $records): array|int|string|null
     {
         if (!empty($records[0]) && is_array($records[0])) {
             throw new \InvalidArgumentException('Use method (createMultiple).');
@@ -194,32 +183,40 @@ class Database
 
         $values = '(:'.implode(', :', array_keys($records)).')';
         $columns = implode(', ', array_keys($records));
+        $returning = 'pgsql' === $this->currentDriver ? 'RETURNING *' : '';
 
-        $sql = "INSERT INTO {$table} ({$columns}) VALUES {$values}";
-        $lastInsertId = $this->query($sql, $records)->lastInsertId();
+        $sql = trim("INSERT INTO {$table} ({$columns}) VALUES {$values} {$returning};");
+        $statement = $this->query($sql, $records);
 
-        EventEmitter::emit("{$table}:created", $lastInsertId);
+        if ('pgsql' === $this->currentDriver) {
+            $result = $statement->fetch();
+        } else {
+            $result = $statement->lastInsertId();
+        }
 
-        return !empty($lastInsertId)
-            ? (int)$lastInsertId
-            : null;
+        EventEmitter::emit("{$table}:created", $result);
+
+        return $result;
     }
 
     /**
      * @param string $sql
      * @param array  $bindings
      *
-     * @throws \Exception
-     *
      * @return Statement
      */
     public function query(string $sql, array $bindings = []): Statement
     {
-        $stmt = $this->getPdo()->prepare($sql);
-        $stmt->bindValues($bindings);
-        $stmt->execute();
+        $statement = $this->getPdo()->prepare($sql);
 
-        return $stmt;
+        if (false === $statement) {
+            throw new \DomainException('Prepare statement returns false.');
+        }
+
+        $statement->addBindings($bindings);
+        $statement->execute();
+
+        return $statement;
     }
 
     /**
@@ -261,11 +258,11 @@ class Database
      *
      * @throws \Exception
      *
-     * @return object[]|null
+     * @return array<int, array<string, mixed>>|null
      */
     public function update(string $table, array $data, string $conditions, array $bindings = []): ?array
     {
-        if (!$rows = $this->findAndTransformRowsObject($table, $conditions, $bindings)) {
+        if (!$rows = $this->findInternalRows($table, $conditions, $bindings)) {
             return null;
         }
 
@@ -277,7 +274,7 @@ class Database
 
         foreach ($data as $key => $value) {
             foreach ($rows as $row) {
-                $row->{$key} = $value;
+                $row[$key] = $value;
             }
 
             $setToArray[] = "{$key} = :{$key}";
@@ -294,7 +291,7 @@ class Database
         }
 
         $setsToString = implode(', ', $setToArray);
-        $this->query("UPDATE {$table} SET {$setsToString} {$conditions}", $bindings);
+        $this->query("UPDATE {$table} SET {$setsToString} WHERE {$conditions};", $bindings);
         EventEmitter::emit("{$table}:updated", $rows);
 
         return $rows;
@@ -305,33 +302,16 @@ class Database
      * @param string $condition
      * @param array  $bindings
      *
-     * @throws \Exception
-     *
-     * @return object[]
+     * @return array<int, array<string, mixed>>
      */
-    private function findAndTransformRowsObject(string $table, string $condition, array $bindings = []): array
+    private function findInternalRows(string $table, string $condition, array $bindings = []): array
     {
-        $rows = $this->read($table, $condition, $bindings)->fetchAll();
-
-        foreach ($rows as $key => $row) {
-            $rows[$key] = Obj::fromArray($row);
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param string      $table
-     * @param string|null $condition
-     * @param array       $bindings
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Database\Connection\Statement
-     */
-    public function read(string $table, ?string $condition = null, array $bindings = []): Statement
-    {
-        return $this->query("SELECT {$table}.* FROM {$table} {$condition}", $bindings);
+        return $this->query(
+            "SELECT {$table}.* FROM {$table} WHERE 1 = 1 AND {$condition}",
+            $bindings
+        )
+            ->fetchAll(\PDO::FETCH_ASSOC)
+        ;
     }
 
     /**
@@ -339,18 +319,16 @@ class Database
      * @param string $condition
      * @param array  $bindings
      *
-     * @throws \Exception
-     *
-     * @return object[]|null
+     * @return array<int, array<string, mixed>>|null
      */
     public function delete(string $table, string $condition, array $bindings = []): ?array
     {
-        if (!$rows = $this->findAndTransformRowsObject($table, $condition, $bindings)) {
+        if (!$rows = $this->findInternalRows($table, $condition, $bindings)) {
             return null;
         }
 
         EventEmitter::emit("{$table}:deleting", $rows);
-        $this->query("DELETE {$table} FROM {$table} {$condition}", $bindings);
+        $this->query("DELETE FROM {$table} WHERE {$condition};", $bindings);
         EventEmitter::emit("{$table}:deleted", $rows);
 
         return $rows;

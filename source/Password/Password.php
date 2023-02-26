@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Password;
@@ -25,16 +25,6 @@ abstract class Password
      */
     public function __construct(protected bool $verifyAlgorithm = false)
     {
-    }
-
-    /**
-     * @param string $hashedValue
-     *
-     * @return array<string, mixed>
-     */
-    public function info(string $hashedValue): array
-    {
-        return password_get_info($hashedValue);
     }
 
     /**
@@ -62,6 +52,21 @@ abstract class Password
     }
 
     /**
+     * @param string $hashedValue
+     *
+     * @return array<string, mixed>
+     */
+    public function info(string $hashedValue): array
+    {
+        return password_get_info($hashedValue);
+    }
+
+    /**
+     * @return int|string
+     */
+    abstract protected function algorithm(): int|string;
+
+    /**
      * @param string|int $password
      * @param array      $options
      *
@@ -70,16 +75,16 @@ abstract class Password
     public function make(int|string $password, array $options = []): string
     {
         $options = $this->getOptions($options);
-        $hashed = password_hash($password, $this->algorithm(), $options);
 
-        if (false === $hashed) {
-            throw new \RuntimeException(
-                sprintf('%s password not supported.', __CLASS__)
-            );
-        }
-
-        return $hashed;
+        return password_hash($password, $this->algorithm(), $options);
     }
+
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    abstract protected function getOptions(array $options): array;
 
     /**
      * @param string $hash
@@ -93,16 +98,4 @@ abstract class Password
 
         return password_needs_rehash($hash, $this->algorithm(), $options);
     }
-
-    /**
-     * @return int|string
-     */
-    abstract protected function algorithm(): int|string;
-
-    /**
-     * @param array $options
-     *
-     * @return array
-     */
-    abstract protected function getOptions(array $options): array;
 }

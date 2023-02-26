@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -36,9 +36,8 @@ use Slim\Interfaces\RouteParserInterface;
 use Slim\Psr7\Factory\StreamFactory;
 use Slim\Psr7\Factory\UploadedFileFactory;
 use Slim\Psr7\Factory\UriFactory;
-use Slim\ResponseEmitter;
 
-class Bootstrap
+class Application
 {
     public const VERSION = '1.0.0';
 
@@ -271,7 +270,6 @@ class Bootstrap
         }
 
         $response = self::$app->handle(ServerRequest::getResolvedInstance());
-        $responseEmitter = new ResponseEmitter();
-        $responseEmitter->emit($response);
+        (new ResponseEmitter())->emit($response);
     }
 }

@@ -6,121 +6,83 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Cache;
 
 use Core\Contracts\Cache;
-use Core\Support\Common;
 use Predis\Client;
 
-/**
- * Class RedisCache.
- */
-class RedisCache implements Cache
+readonly class RedisCache implements Cache
 {
-    /**
-     * Cache constructor.
-     *
-     * @param \Predis\Client $client
-     * @param string|null    $prefix
-     */
     public function __construct(
-        protected Client $client,
-        protected ?string $prefix = null
+        private Client $client,
     ) {
     }
 
-    /**
-     * @param string     $key
-     * @param mixed|null $default
-     * @param int        $seconds
-     *
-     * @return mixed
-     */
-    public function get(string $key, mixed $default = null, int $seconds = 0): mixed
+    public function has(string $key): bool
+    {
+        return null !== $this->client->get($key);
+    }
+
+    public function get(string $key, array|null|\Closure $default = null, int $seconds = 0): array|null
     {
         $value = $this->client->get($key);
 
-        if (empty($value)) {
-            $value = $default instanceof \Closure ? $default() : $default;
-
-            if ($value) {
+        if (empty($value) && $default instanceof \Closure) {
+            if (!empty($value = $default())) {
                 $this->set($key, $value, $seconds);
             }
         }
 
-        return is_string($value) ? Common::unserialize($value) : $value;
-    }
-
-    /**
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function has(string $key): bool
-    {
-        return !is_null($this->client->get($key));
-    }
-
-    /**
-     * @param string $key
-     * @param mixed  $value
-     * @param int    $seconds
-     *
-     * @return bool
-     */
-    public function set(string $key, mixed $value, int $seconds = 0): bool
-    {
-        $value = Common::serialize($value);
-
-        if ($seconds <= 0) {
-            return (bool)$this->client->set($key, $value);
+        if (is_array($default) && empty($value)) {
+            return $default;
         }
 
-        return (bool)$this->client->setex($key, $seconds, $value);
+        if (is_array($value)) {
+            return $value;
+        }
+
+        return json_decode($value, true);
     }
 
-    /**
-     * @param string $key
-     *
-     * @return bool
-     */
+    public function set(string $key, array|null $value, int $seconds = 0): bool
+    {
+        if (empty($value)) {
+            return false;
+        }
+
+        $value = json_encode($value);
+
+        if ($seconds <= 0) {
+            $status = $this->client->set($key, $value);
+        } else {
+            $status = $this->client->setex($key, $seconds, $value);
+        }
+
+        return 'OK' == $status;
+    }
+
     public function delete(string $key): bool
     {
-        return (bool)$this->client->del($key);
+        return $this->client->del($key) > 0;
     }
 
-    /**
-     * @return void
-     */
     public function flush(): void
     {
         foreach ($this->client->keys('*') as $key) {
-            $this->client->del(str_replace($this->prefix, '', $key));
+            $this->client->del($key);
         }
     }
 
-    /**
-     * @param string $key
-     * @param int    $value
-     *
-     * @return mixed
-     */
     public function increment(string $key, int $value = 1): bool
     {
-        return (bool)$this->client->incrby($key, $value);
+        return $this->client->incrby($key, $value) > 0;
     }
 
-    /**
-     * @param string $key
-     * @param int    $value
-     *
-     * @return mixed
-     */
     public function decrement(string $key, int $value = 1): bool
     {
-        return (bool)$this->client->decrby($key, $value);
+        return $this->client->decrby($key, $value) > 0;
     }
 }

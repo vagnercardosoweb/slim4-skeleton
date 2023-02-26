@@ -6,17 +6,17 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
 
-use Core\Bootstrap;
+use Core\Application;
 use Core\Config;
 use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
 use DI\Container;
-use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -27,16 +27,11 @@ use Symfony\Component\Console\Output\ConsoleOutput;
  */
 class SymfonyConsoleProvider implements ServiceProvider
 {
-    /**
-     * @param \DI\Container $container
-     *
-     * @return \Symfony\Component\Console\Application
-     */
-    public function __invoke(Container $container): Application
+    public function __invoke(Container $container): SymfonyApplication
     {
-        Facade::setAliases(['Application' => Application::class]);
+        Facade::setAliases(['SymfonyApplication' => SymfonyApplication::class]);
 
-        $application = new Application(Config::get('app.name'), Bootstrap::VERSION);
+        $application = new SymfonyApplication(Config::get('app.name'), Application::VERSION);
 
         $optionEnv = new InputOption(
             name: '--env',
@@ -47,7 +42,6 @@ class SymfonyConsoleProvider implements ServiceProvider
         );
 
         $application->getDefinition()->addOption($optionEnv);
-
         $commands = Config::get('commands');
 
         foreach ($commands as $command) {

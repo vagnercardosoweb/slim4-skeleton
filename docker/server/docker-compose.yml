@@ -98,6 +98,6 @@ services:
       - slim4.network
     environment:
       - ALLOW_EMPTY_PASSWORD=no
-      - REDIS_PASSWORD=root
+      - REDIS_PASSWORD=redis
     ports:
       - '6379:6379'

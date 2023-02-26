@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 use Core\Support\Env;
@@ -28,7 +28,7 @@ return [
 
     'host' => Env::get('REDIS_HOST', '127.0.0.1'),
     'port' => Env::get('REDIS_PORT', 6379),
-    'prefix' => Env::get('REDIS_PREFIX'),
+    'prefix' => Env::get('REDIS_PREFIX', 'app'),
     'password' => Env::get('REDIS_PASSWORD'),
     'database' => Env::get('REDIS_DATABASE', '0'),
 

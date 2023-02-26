@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Facades;
@@ -54,55 +54,11 @@ abstract class Facade
     }
 
     /**
-     * @param array $aliases
-     */
-    public static function setAliases(array $aliases): void
-    {
-        self::$aliases = array_merge(self::$aliases, $aliases);
-    }
-
-    /**
-     * @param array $aliases
-     */
-    public static function registerAliases(array $aliases = []): void
-    {
-        self::setAliases($aliases);
-
-        foreach (self::$aliases as $alias => $class) {
-            class_alias($class, $alias, true);
-        }
-    }
-
-    /**
      * @return mixed
      */
     public static function getResolvedInstance(): mixed
     {
         return static::resolveInstance(static::getAccessor());
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function getAliases(): array
-    {
-        return self::$aliases;
-    }
-
-    /**
-     * @return \Slim\App
-     */
-    public static function getApp(): App
-    {
-        return static::$app;
-    }
-
-    /**
-     * @param \Slim\App $app
-     */
-    public static function setApp(App $app): void
-    {
-        static::$app = $app;
     }
 
     /**
@@ -136,4 +92,48 @@ abstract class Facade
      * @return string
      */
     abstract protected static function getAccessor(): string;
+
+    /**
+     * @param array $aliases
+     */
+    public static function registerAliases(array $aliases = []): void
+    {
+        self::setAliases($aliases);
+
+        foreach (self::$aliases as $alias => $class) {
+            class_alias($class, $alias, true);
+        }
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function getAliases(): array
+    {
+        return self::$aliases;
+    }
+
+    /**
+     * @param array $aliases
+     */
+    public static function setAliases(array $aliases): void
+    {
+        self::$aliases = array_merge(self::$aliases, $aliases);
+    }
+
+    /**
+     * @return \Slim\App
+     */
+    public static function getApp(): App
+    {
+        return static::$app;
+    }
+
+    /**
+     * @param \Slim\App $app
+     */
+    public static function setApp(App $app): void
+    {
+        static::$app = $app;
+    }
 }

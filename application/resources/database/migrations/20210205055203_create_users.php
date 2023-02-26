@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -39,22 +39,26 @@ final class CreateUsers extends AbstractMigration
                 ]
             )
             ->changePrimaryKey('id')
-            ->addIndex('id');
+            ->addIndex('id')
+        ;
 
         $table
             ->addColumn('name', 'string', ['limit' => 128])
-            ->addIndex('name');
+            ->addIndex('name')
+        ;
 
         $table
             ->addColumn('email', 'string', ['limit' => 128])
-            ->addIndex('email', ['unique' => true]);
+            ->addIndex('email', ['unique' => true])
+        ;
 
         $table->addColumn('password', 'string', ['limit' => 128]);
 
         $table
             ->addTimestampsWithTimezone()
             ->addIndex('created_at')
-            ->addIndex('updated_at');
+            ->addIndex('updated_at')
+        ;
 
         $table->save();
     }

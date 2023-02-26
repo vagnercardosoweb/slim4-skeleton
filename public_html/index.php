@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
-use Core\Bootstrap;
+use Core\Application;
 
 // Auxiliary constants
 $basePath = realpath(dirname(__DIR__));
@@ -43,7 +43,6 @@ define('FULL_URL', BASE_URL.REQUEST_URI);
 // Date formats
 define('DATE_BR', 'd/m/Y');
 define('DATE_TIME_BR', 'd/m/Y H:i:s');
-define('DATE_DATABASE', 'Y-m-d H:i:s');
 
 // Error success using in throw
 define('E_USER_SUCCESS', 'success');
@@ -61,7 +60,7 @@ if (!file_exists($autoloadPath)) {
 require_once "{$autoloadPath}";
 
 // Start application
-(new Bootstrap(
+(new Application(
     pathRoutes: ROUTE_PATH,
     pathMiddleware: sprintf('%s/middleware.php', CONFIG_PATH),
     pathProviders: sprintf('%s/providers.php', CONFIG_PATH),

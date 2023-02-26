@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -14,7 +14,6 @@ namespace Core\Database;
 use Core\Config;
 use Core\Database\Connection\Statement;
 use Core\Support\Common;
-use Core\Support\Obj;
 
 /**
  * Class Model.
@@ -34,9 +33,9 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     protected string $table;
 
     /**
-     * @var string|null
+     * @var string
      */
-    protected string|null $primaryKey = 'id';
+    protected string $primaryKey = 'id';
 
     /**
      * @var string|null
@@ -74,50 +73,31 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     protected array $order = [];
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $bindings = [];
 
     /**
-     * @var int|null
+     * @var int
      */
-    protected int|null $limit = null;
+    protected int $limit = 100;
 
     /**
-     * @var int|null
+     * @var int
      */
-    protected int|null $offset = null;
+    protected int $offset = 0;
 
     /**
-     * @var object|null
+     * @var array<string, mixed>
      */
-    protected object|null $data = null;
-
-    /**
-     * @return $this
-     */
-    public static function query(): self
-    {
-        return new static();
-    }
+    protected array $data = [];
 
     /**
      * @return void
      */
     public function __clone()
     {
-        $data = clone $this->toObject();
-        unset($data->{$this->primaryKey});
-
-        $this->data = $data;
-    }
-
-    /**
-     * @return object
-     */
-    public function toObject(): object
-    {
-        return Obj::fromArray($this->data);
+        unset($this->data[$this->primaryKey]);
     }
 
     /**
@@ -137,8 +117,8 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      */
     public function __get(string $name): mixed
     {
-        if (isset($this->data->{$name})) {
-            return $this->data->{$name};
+        if (isset($this->data[$name])) {
+            return $this->data[$name];
         }
 
         return null;
@@ -154,8 +134,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
             return;
         }
 
-        $this->data = Obj::fromArray($this->data);
-        $this->data->{$name} = $value;
+        $this->data[$name] = $value;
     }
 
     /**
@@ -184,7 +163,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      */
     public function __isset(string $name): bool
     {
-        return isset($this->data->{$name});
+        return isset($this->data[$name]);
     }
 
     /**
@@ -200,7 +179,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      */
     public function __unset(string $name): void
     {
-        unset($this->data->{$name});
+        unset($this->data[$name]);
     }
 
     /**
@@ -216,17 +195,50 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      */
     public function toArray(): array
     {
-        return Obj::toArray($this->data);
+        return $this->data;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @throws \Exception
+     *
+     * @return int
+     */
+    public function count(string $column = '1'): int
+    {
+        $query = sprintf('SELECT COUNT(%s) AS n FROM %s LIMIT 1;', $column, $this->table);
+        $statement = static::$database->query($query);
+        $row = $statement->fetch();
+        $statement->closeCursor();
+
+        return $row['n'] ?? 0;
+    }
+
+    /**
+     * @return static
+     */
+    public static function query(): static
+    {
+        return new static();
     }
 
     /**
      * @throws \Exception
      *
-     * @return int
+     * @return static|null
      */
-    public function rowCount(): int
+    public function fetch(): static|null
     {
-        return $this->getStatement()->rowCount();
+        $statement = $this->getStatement();
+        $row = $statement->fetch(get_called_class()) ?: null;
+        $statement->closeCursor();
+
+        if ($row && method_exists($this, 'onEachRow')) {
+            $this->onEachRow($row);
+        }
+
+        return $row;
     }
 
     /**
@@ -236,11 +248,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      */
     public function getStatement(): Statement
     {
-        $statement = static::$database->query($this->getQuery(), $this->bindings);
-
-        $this->clearProperties();
-
-        return $statement;
+        return static::$database->query($this->getQuery(), $this->bindings);
     }
 
     /**
@@ -254,8 +262,8 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
             );
         }
 
-        if (method_exists($this, '_conditions')) {
-            $this->_conditions();
+        if (method_exists($this, 'onBeforeQuery')) {
+            $this->onBeforeQuery();
         }
 
         // Build select
@@ -288,14 +296,10 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
         }
 
         // Build limit && offset
-        if (!empty($this->limit) && is_int($this->limit)) {
-            $this->offset = $this->offset ?: 0;
-
-            if (in_array(Config::get('database.default'), ['dblib', 'sqlsrv'])) {
-                $sql .= "OFFSET {$this->offset} ROWS FETCH NEXT {$this->limit} ROWS ONLY";
-            } else {
-                $sql .= "LIMIT {$this->limit} OFFSET {$this->offset}";
-            }
+        if (in_array(Config::get('database.default'), ['dblib', 'sqlsrv'])) {
+            $sql .= "OFFSET {$this->offset} ROWS FETCH NEXT {$this->limit} ROWS ONLY";
+        } else {
+            $sql .= "LIMIT {$this->limit} OFFSET {$this->offset}";
         }
 
         return trim($sql);
@@ -318,30 +322,12 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @param string $column
-     *
-     * @throws \Exception
-     *
-     * @return int
-     */
-    public function count(string $column = '1'): int
-    {
-        $row = $this->select("COUNT({$column}) AS count")
-            ->order('count DESC')->limit(1)
-            ->getStatement()
-            ->fetch(\PDO::FETCH_OBJ)
-        ;
-
-        return (int)$row?->count;
-    }
-
-    /**
      * @param int $limit
      * @param int $offset
      *
-     * @return $this
+     * @return static
      */
-    public function limit(int $limit, int $offset = 0): self
+    public function limit(int $limit, int $offset = 0): static
     {
         $this->limit = $limit;
 
@@ -355,9 +341,9 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @param int $offset
      *
-     * @return $this
+     * @return static
      */
-    public function offset(int $offset): self
+    public function offset(int $offset): static
     {
         $this->offset = $offset;
 
@@ -367,9 +353,9 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @param array|string $order
      *
-     * @return $this
+     * @return static
      */
-    public function order(array|string $order): self
+    public function order(array|string $order): static
     {
         $this->mountProperty($order, 'order');
 
@@ -377,30 +363,40 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @param string|array|null $conditions
-     * @param string            $property
+     * @param string|array<string>|null $conditions
+     * @param string                    $property
      *
      * @return void
      */
     protected function mountProperty(array|string|null $conditions, string $property): void
     {
+        if (empty($conditions)) {
+            return;
+        }
+
+        if (!is_array($conditions)) {
+            $conditions = [$conditions];
+        }
+
         if (!is_array($this->{$property})) {
             $this->{$property} = [];
         }
 
-        foreach ((array)$conditions as $condition) {
-            if (!empty($condition) && !array_search($condition, $this->{$property})) {
-                $this->{$property}[] = trim((string)$condition);
+        foreach ($conditions as $condition) {
+            if (array_search($condition, $this->{$property})) {
+                continue;
             }
+
+            $this->{$property}[] = trim($condition);
         }
     }
 
     /**
      * @param array|string $select
      *
-     * @return $this
+     * @return static
      */
-    public function select(array|string $select = '*'): self
+    public function select(array|string $select = '*'): static
     {
         if (is_string($select)) {
             $select = explode(',', $select);
@@ -412,27 +408,31 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @param string|null $table
-     *
-     * @return $this|string
+     * @return string
      */
-    public function table(string|null $table = null): string|self
+    public function getTable(): string
     {
-        if (!empty($table)) {
-            $this->table = $table;
-
-            return $this;
-        }
-
         return $this->table;
+    }
+
+    /**
+     * @param string $table
+     *
+     * @return \Core\Database\Model
+     */
+    public function table(string $table): static
+    {
+        $this->table = $table;
+
+        return $this;
     }
 
     /**
      * @param array|string $join
      *
-     * @return $this
+     * @return static
      */
-    public function join(array|string $join): self
+    public function join(array|string $join): static
     {
         $this->mountProperty($join, 'join');
 
@@ -442,9 +442,9 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @param array|string $group
      *
-     * @return $this
+     * @return static
      */
-    public function group(array|string $group): self
+    public function group(array|string $group): static
     {
         $this->mountProperty($group, 'group');
 
@@ -454,9 +454,9 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @param array|string $having
      *
-     * @return $this
+     * @return static
      */
-    public function having(array|string $having): self
+    public function having(array|string $having): static
     {
         $this->mountProperty($having, 'having');
 
@@ -466,28 +466,28 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @param \Closure $callback
      *
-     * @throws \Exception
+     * @throws \Throwable
      *
      * @return mixed
      */
     public function transaction(\Closure $callback): mixed
     {
-        return self::$database->transaction($callback, $this);
+        return static::$database->transaction($callback, $this);
     }
 
     /**
-     * @param object|array $data
-     * @param bool         $validate
+     * @param array<string, mixed> $data
+     * @param bool                 $validate
      *
      * @throws \Exception
      *
-     * @return $this
+     * @return static
      */
-    public function save(object|array $data = [], bool $validate = true): self
+    public function save(array $data = [], bool $validate = true): static
     {
         $primaryValue = $this->getPrimaryValue($data);
 
-        if (!$primaryValue && !empty($this->bindings[$this->getPrimaryKey()])) {
+        if (null === $primaryValue && !empty($this->bindings[$this->getPrimaryKey()])) {
             $primaryValue = $this->bindings[$this->getPrimaryKey()];
         }
 
@@ -499,30 +499,25 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @param object|array $data
+     * @param array<string, mixed> $data
      *
-     * @return string|null
+     * @return string|int|null
      */
-    public function getPrimaryValue(object|array $data = []): string|null
+    public function getPrimaryValue(array $data = []): int|string|null
     {
-        $data = Obj::toArray($data);
-        $actualData = Obj::toArray($this->data);
-
         if (!empty($data[$this->primaryKey])) {
             return $data[$this->primaryKey];
         }
 
-        if (!empty($actualData[$this->primaryKey])) {
-            return $actualData[$this->primaryKey];
-        }
+        $value = $this->{$this->primaryKey};
 
-        return $this->{$this->primaryKey} ?? null;
+        return !empty($value) ? $value : null;
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getPrimaryKey(): string|null
+    public function getPrimaryKey(): string
     {
         return $this->primaryKey;
     }
@@ -532,48 +527,30 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @throws \Exception
      *
-     * @return $this|null
+     * @return static|null
      */
-    public function fetchById(int|string $id): ?self
+    public function fetchById(int|string $id): ?static
     {
         if (empty($this->primaryKey)) {
             throw new \Exception(sprintf('Primary key is not configured in the model (%s).', static::class));
         }
 
-        array_unshift($this->where, "AND {$this->table}.{$this->primaryKey} = :u{$this->primaryKey}");
-        $this->bindings["u{$this->primaryKey}"] = Common::filterRequestValues($id)[0];
+        $this->limit = 1;
+        array_unshift($this->where, "AND {$this->table}.{$this->primaryKey} = :__pkey_{$this->primaryKey}");
+        $this->bindings["__pkey_{$this->primaryKey}"] = Common::filterValues($id)[0];
 
         return $this->fetch();
     }
 
     /**
-     * @throws \Exception
-     *
-     * @return $this|array|null
-     */
-    public function fetch(): array|self|null
-    {
-        $statement = $this->getStatement();
-        $row = $statement->fetch(get_called_class()) ?: null;
-
-        if ($row && method_exists($this, '_row')) {
-            $this->_row($row);
-        }
-
-        $statement->closeCursor();
-
-        return $row;
-    }
-
-    /**
-     * @param object|array $data
-     * @param bool         $validate
+     * @param array<string, mixed> $data
+     * @param bool                 $validate
      *
      * @throws \Exception
      *
-     * @return $this[]|null
+     * @return array<int, static>|null
      */
-    public function update(object|array $data = [], bool $validate = true): ?array
+    public function update(array $data = [], bool $validate = true): ?array
     {
         $this->data($data, $validate);
         $this->mountWherePrimaryKey();
@@ -586,48 +563,43 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
 
         $rows = static::$database->update(
             $this->table,
-            Obj::toArray($this->data),
-            "WHERE {$this->normalizeProperty($this->where)}",
+            $this->data,
+            $this->normalizeProperty($this->where),
             $this->bindings
         );
 
-        $this->clearProperties();
+        $this->clear();
 
         if (!$rows) {
             return null;
         }
 
-        foreach ($rows as $key => $row) {
+        foreach ($rows as $index => $row) {
             $new = new static();
             $new->data = $row;
-            $rows[$key] = $new;
+            $rows[$index] = $new;
         }
 
         return $rows;
     }
 
     /**
-     * @param object|array $data
-     * @param bool         $validate
+     * @param array<string, mixed> $data
+     * @param bool                 $validate
      *
      * @throws \Exception
      *
-     * @return $this
+     * @return static
      */
-    public function data(object|array $data = [], bool $validate = true): self
+    protected function data(array $data = [], bool $validate = true): static
     {
-        $data = array_merge(
-            Obj::toArray($this->data),
-            Obj::toArray($data)
-        );
+        $data = array_merge($this->data, $data);
 
-        if (method_exists($this, '_data')) {
-            $this->_data($data, $validate);
+        if (method_exists($this, 'onBeforeData')) {
+            $this->onBeforeData($data, $validate);
         }
 
-        foreach ($data as $key => $value) {
-            $this->{$key} = $value;
-        }
+        $this->data = $data;
 
         return $this;
     }
@@ -638,38 +610,56 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     protected function mountWherePrimaryKey(): void
     {
         if (!empty($this->getPrimaryValue())) {
-            $this->where[] = "AND {$this->table}.{$this->getPrimaryKey()} = :pkey";
-            $this->bindings['pkey'] = $this->getPrimaryValue();
+            $this->where[] = "AND {$this->table}.{$this->getPrimaryKey()} = :__pkey__";
+            $this->bindings['__pkey__'] = $this->getPrimaryValue();
         }
     }
 
+    private function clear()
+    {
+        $this->select = [];
+        $this->join = [];
+        $this->where = [];
+        $this->group = [];
+        $this->having = [];
+        $this->order = [];
+
+        $this->limit = 100;
+        $this->offset = 0;
+
+        $this->bindings = [];
+        // $this->data = [];
+    }
+
     /**
-     * @param object|array $data
-     * @param bool         $validate
+     * @param array<string, mixed> $data
+     * @param bool                 $validate
      *
      * @throws \Exception
      *
-     * @return $this
+     * @return static
      */
-    public function create(object|array $data = [], bool $validate = true): self
+    public function create(array $data = [], bool $validate = true): static
     {
         $this->data($data, $validate);
+        $result = static::$database->create($this->table, $this->data);
+        $this->clear();
 
-        $lastInsertId = static::$database->create($this->table, Obj::toArray($this->data));
+        if (is_array($result) && !empty($result)) {
+            $this->data = $result;
 
-        if ($lastInsertId && $this->primaryKey) {
-            $row = $this->fetchById($lastInsertId);
-        } else {
-            foreach ($this->data as $key => $value) {
-                $this->whereBy($key, $value);
-            }
-
-            $row = $this->fetch();
+            return $this;
         }
 
-        $this->clearProperties();
+        if (!empty($result) && !empty($this->primaryKey)) {
+            return $this->fetchById($result);
+        }
 
-        return $row;
+        foreach ($this->data as $key => $value) {
+            $this->whereBy($key, $value);
+        }
+
+        return $this->fetch();
     }
 
     /**
@@ -678,9 +668,9 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @throws \Exception
      *
-     * @return $this
+     * @return static
      */
-    public function whereBy(string $column, mixed $value): self
+    public function whereBy(string $column, mixed $value): static
     {
         $parsedColumn = $column;
 
@@ -691,18 +681,18 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
         }
 
         $this->where("AND {$parsedColumn} = :{$column}");
-        $this->bindings([$column => $value]);
+        $this->bindings[$column] = $value;
 
         return $this;
     }
 
     /**
-     * @param string|array $where
-     * @param null         $bindings
+     * @param string|array         $where
+     * @param array<string, mixed> $bindings
      *
-     * @return $this
+     * @return static
      */
-    public function where(array|string $where, $bindings = null): self
+    public function where(array|string $where, array $bindings = []): static
     {
         $this->mountProperty($where, 'where');
         $this->bindings($bindings);
@@ -711,13 +701,13 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @param array|string|null $bindings
+     * @param array<string, mixed> $bindings
      *
-     * @return $this
+     * @return static
      */
-    public function bindings(array|string|null $bindings): self
+    public function bindings(array $bindings): static
     {
-        Common::parseStr($bindings, $this->bindings);
+        $this->bindings = array_merge($this->bindings, $bindings);
 
         return $this;
     }
@@ -727,7 +717,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @throws \Exception
      *
-     * @return self[]
+     * @return array<int, static>
      */
     public function fetchByIds(array $ids): array
     {
@@ -742,17 +732,15 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @throws \Exception
      *
-     * @return $this[]
+     * @return array<int, static>
      */
     public function fetchAll(): array
     {
         $statement = $this->getStatement();
         $rows = $statement->fetchAll(\PDO::FETCH_CLASS, get_called_class());
 
-        if (method_exists($this, '_row')) {
-            foreach ($rows as $row) {
-                $this->_row($row);
-            }
+        if (method_exists($this, 'onEachRow')) {
+            array_walk($rows, fn ($row) => $this->onEachRow($row));
         }
 
         $statement->closeCursor();
@@ -769,23 +757,15 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @return string
-     */
-    public function getTable(): string
-    {
-        return $this->table;
-    }
-
-    /**
-     * @param int|null $id
+     * @param int|string|null $id
      *
      * @throws \Exception
      *
-     * @return $this[]|null
+     * @return array<int, static>|null
      */
-    public function delete(int|null $id = null): ?array
+    public function delete(int|string|null $id = null): ?array
     {
-        if (!is_array($id) && !empty($id) && $this->primaryKey) {
+        if (!empty($id) && !empty($this->primaryKey)) {
             $this->data([$this->primaryKey => $id]);
         }
 
@@ -799,11 +779,11 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
 
         $rows = static::$database->delete(
             $this->table,
-            "WHERE {$this->normalizeProperty($this->where)}",
+            $this->normalizeProperty($this->where),
             $this->bindings
         );
 
-        $this->clearProperties();
+        $this->clear();
 
         if (!$rows) {
             return null;
@@ -823,11 +803,11 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @throws \Exception
      *
-     * @return $this
+     * @return static
      */
-    public function connection(string $connection): self
+    public function connection(string $connection): static
     {
-        self::setDatabase(self::$database->connection($connection));
+        static::setDatabase(static::$database->connection($connection));
 
         return $this;
     }
@@ -846,21 +826,5 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     public function getDatabase(): ?Database
     {
         return static::$database;
-    }
-
-    private function clearProperties()
-    {
-        $this->select = [];
-        $this->join = [];
-        $this->where = [];
-        $this->group = [];
-        $this->having = [];
-        $this->order = [];
-
-        $this->limit = null;
-        $this->offset = null;
-
-        $this->bindings = [];
-        $this->data = null;
     }
 }

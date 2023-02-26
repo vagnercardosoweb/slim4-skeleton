@@ -6,128 +6,63 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Curl;
 
 use Core\Support\Common;
 
-/**
- * Class Response.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
-class Response
+readonly class Response
 {
-    /**
-     * Response constructor.
-     *
-     * @param string $body
-     * @param array  $info
-     * @param mixed  $error
-     */
     public function __construct(
-        protected string $body,
-        protected array $info,
-        protected mixed $error
+        private string $body,
+        private array $httpInfo,
+        private string $error
     ) {
     }
 
-    /**
-     * @return bool
-     */
+    public function getError(): string
+    {
+        return $this->error;
+    }
+
     public function isClientError(): bool
     {
         return $this->getStatusCode() >= 400 && $this->getStatusCode() < 500;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getStatusCode(): ?int
+    public function getStatusCode(): int
     {
-        return $this->info['http_code'] ?? 500;
+        return $this->httpInfo['http_code'] ?? 500;
     }
 
-    /**
-     * @return bool
-     */
     public function isServerError(): bool
     {
         return $this->getStatusCode() >= 500 && $this->getStatusCode() < 600;
     }
 
-    /**
-     * @return object|null
-     */
-    public function getError(): ?object
-    {
-        if (empty($this->error) && (!$this->isClientError() && !$this->isServerError())) {
-            return null;
-        }
-
-        $message = $this->isServerError() ? 'Server error.' : 'Client error.';
-
-        $object = new \stdClass();
-        $object->error = true;
-        $object->status = $this->getStatusCode();
-        $object->message = $this->error ?? $message;
-
-        return $object;
-    }
-
-    /**
-     * @return string
-     */
     public function getBody(): string
     {
         return $this->body;
     }
 
     /**
-     * @return \SimpleXMLElement|null
+     * @throws \JsonException
      */
-    public function toXml(): ?\SimpleXMLElement
+    public function toArray(): array
     {
-        return Common::parseXml($this->body);
-    }
+        $body = $this->body;
 
-    /**
-     * @return object|null
-     */
-    public function toJson(): ?object
-    {
-        $this->parseXmlToString();
-
-        return Common::parseJson($this->body);
-    }
-
-    /**
-     * @return array|null
-     */
-    public function toArray(): ?array
-    {
-        $this->parseXmlToString();
-
-        return Common::parseJson($this->body, true);
-    }
-
-    /**
-     * @return array
-     */
-    public function getInfo(): array
-    {
-        return $this->info;
-    }
-
-    /**
-     * @return void
-     */
-    protected function parseXmlToString(): void
-    {
-        if ($toXml = $this->toXml()) {
-            $this->body = json_encode($toXml);
+        if ($toXml = Common::parseXml($this->body)) {
+            $body = json_encode($toXml);
         }
+
+        return Common::parseJson($body, true);
+    }
+
+    public function getHttpInfo(): array
+    {
+        return $this->httpInfo;
     }
 }

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 use Core\Support\Env;
@@ -39,6 +39,7 @@ return [
             'charset' => Env::get('DB_CHARSET', 'utf8mb4'),
             'collation' => Env::get('DB_COLLATE', 'utf8mb4_unicode_ci'),
             'timezone' => Env::get('DB_TIMEZONE', 'UTC'),
+            'application_name' => Env::get('DB_APPLICATION_NAME', 'app'),
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)
@@ -53,9 +54,10 @@ return [
             'username' => Env::get('DB_USERNAME'),
             'password' => Env::get('DB_PASSWORD'),
             'database' => Env::get('DB_DATABASE'),
-            'schema' => ['public'],
+            'schema' => Env::get('DB_SCHEMA', 'public'),
             'charset' => Env::get('DB_CHARSET', 'utf8'),
             'timezone' => Env::get('DB_TIMEZONE', 'UTC'),
+            'application_name' => Env::get('DB_APPLICATION_NAME', 'app'),
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)
@@ -71,6 +73,7 @@ return [
             'password' => Env::get('DB_PASSWORD'),
             'database' => Env::get('DB_DATABASE'),
             'charset' => Env::get('DB_CHARSET', 'utf8'),
+            'application_name' => Env::get('DB_APPLICATION_NAME', 'app'),
             'options' => [], // Use pdo connection options \PDO::ATTR... => \PDO::...
             'attributes' => [], // Use pdo->setAttribute(key => value)
             'commands' => [], // Use pdo->exec(...command...)

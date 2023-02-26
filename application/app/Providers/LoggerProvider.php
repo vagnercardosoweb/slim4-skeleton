@@ -6,15 +6,20 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
 
 use Core\Contracts\ServiceProvider;
-use Core\Facades\Facade;
 use Core\Logger;
+use Core\Support\Env;
+use Core\Support\Path;
 use DI\Container;
+use Monolog\Level;
+use Monolog\Processor\HostnameProcessor;
+use Monolog\Processor\ProcessIdProcessor;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class LoggerProvider.
@@ -26,12 +31,27 @@ class LoggerProvider implements ServiceProvider
     /**
      * @param \DI\Container $container
      *
-     * @return \Core\Logger
+     * @return LoggerInterface
      */
-    public function __invoke(Container $container): Logger
+    public function __invoke(Container $container): LoggerInterface
     {
-        Facade::setAliases(['Logger' => Logger::class]);
+        $logger = new Logger(Env::get('LOGGER_NAME', 'app'));
 
-        return new Logger();
+        $logger->pushProcessor(new HostnameProcessor());
+        $logger->pushProcessor(new ProcessIdProcessor());
+
+        $logger->addStreamHandler(sprintf(Path::storage('/logs/php/%s.log'), date('Y-m-d')));
+
+        if (Env::get('SLACK_ENABLED', false)) {
+            $logger->addSlackHandler(
+                token: Env::get('SLACK_TOKEN'),
+                channel: Env::get('SLACK_CHANNEL'),
+                username: Env::get('SLACK_USERNAME'),
+                icon: Env::get('SLACK_ICON', ''),
+                level: Level::fromValue(Env::get('SLACK_LEVEL', Level::Error))
+            );
+        }
+
+        return $logger;
     }
 }

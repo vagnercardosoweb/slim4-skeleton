@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -35,7 +35,8 @@ final class CreateUsersResetPasswords extends AbstractMigration
                 'default' => Literal::from('uuid_generate_v4()'),
             ])
             ->changePrimaryKey('id')
-            ->addIndex('id');
+            ->addIndex('id')
+        ;
 
         $table
             ->addColumn('user_id', 'uuid', ['null' => false])
@@ -45,11 +46,13 @@ final class CreateUsersResetPasswords extends AbstractMigration
                 'users',
                 'id',
                 ['update' => 'CASCADE', 'delete' => 'CASCADE']
-            );
+            )
+        ;
 
         $table
             ->addColumn('expired_at', 'timestamp', ['timezone' => true])
-            ->addIndex('expired_at');
+            ->addIndex('expired_at')
+        ;
 
         $table->save();
     }

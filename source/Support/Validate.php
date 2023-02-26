@@ -6,10 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
+
+use Exception;
 
 /**
  * Class Validate.
@@ -50,7 +52,7 @@ class Validate
      */
     public static function email(string $value): bool
     {
-        $value = filter_var((string)$value, FILTER_SANITIZE_EMAIL);
+        $value = filter_var($value, FILTER_SANITIZE_EMAIL);
         $regex = '/[a-z0-9_\.\-]+@[a-z0-9_\.\-]*[a-z0-9_\.\-]+\.[a-z]{2,4}$/';
 
         if (filter_var($value, FILTER_VALIDATE_EMAIL) && preg_match($regex, $value)) {
@@ -131,10 +133,6 @@ class Validate
         $sumA = (($digitA % 11) < 2) ? 0 : 11 - ($digitA % 11);
         $sumB = (($digitB % 11) < 2) ? 0 : 11 - ($digitB % 11);
 
-        if (14 != strlen($value)) {
-            return false;
-        }
-
         if ($sumA != $value[12] || $sumB != $value[13]) {
             return false;
         }
@@ -201,6 +199,19 @@ class Validate
         }
 
         return true;
+    }
+
+    public static function requiredArray(array $data, array $fields): void
+    {
+        foreach ($fields as $column => $value) {
+            if (is_array($value)) {
+                self::requiredArray($data[$column], $value);
+            }
+
+            if (!Validate::required($data[$column] ?? null)) {
+                throw new \InvalidArgumentException($value);
+            }
+        }
     }
 
     /**
@@ -284,13 +295,13 @@ class Validate
 
     /**
      * @param mixed $value
-     * @param mixed $min
-     * @param mixed $max
+     * @param int   $min
+     * @param int   $max
      * @param bool  $length
      *
      * @return bool
      */
-    public static function between(mixed $value, $min = PHP_INT_MIN, $max = PHP_INT_MAX, bool $length = false): bool
+    public static function between(mixed $value, int $min = PHP_INT_MIN, int $max = PHP_INT_MAX, bool $length = false): bool
     {
         if ($length) {
             $value = strlen($value);
@@ -308,9 +319,11 @@ class Validate
             );
         }
 
-        return filter_var($value, is_int($value) ? FILTER_VALIDATE_INT : FILTER_VALIDATE_FLOAT, [
-            'options' => ['min_range' => $min, 'max_range' => $max],
-        ]);
+        return filter_var(
+            $value,
+            is_int($value) ? FILTER_VALIDATE_INT : FILTER_VALIDATE_FLOAT,
+            ['options' => ['min_range' => $min, 'max_range' => $max]]
+        );
     }
 
     /**
@@ -378,7 +391,7 @@ class Validate
             $repeat = self::$data[$repeat];
         }
 
-        return self::comparison($value, '=', $repeat);
+        return self::compare($value, '=', $repeat);
     }
 
     /**
@@ -388,7 +401,7 @@ class Validate
      *
      * @return bool
      */
-    public static function comparison(mixed $value1, string $operator, mixed $value2): bool
+    public static function compare(mixed $value1, string $operator, mixed $value2): bool
     {
         return match ($operator) {
             '<' => $value1 < $value2,
@@ -500,13 +513,7 @@ class Validate
         return $statement;
     }
 
-    /**
-     * @param mixed      $value
-     * @param mixed|null $options
-     *
-     * @return bool
-     */
-    public static function url(mixed $value, $options = null): bool
+    public static function url(mixed $value, array|int $options = 0): bool
     {
         return false !== filter_var($value, FILTER_VALIDATE_URL, $options);
     }
@@ -525,7 +532,7 @@ class Validate
         if ($url = parse_url($value, PHP_URL_HOST)) {
             try {
                 return count(dns_get_record($url, DNS_A | DNS_AAAA)) > 0;
-            } catch (\Exception) {
+            } catch (Exception) {
                 return false;
             }
         }
@@ -551,9 +558,8 @@ class Validate
     public static function phone(string $value): bool
     {
         $phone = Common::onlyNumber($value);
-        $length = strlen($phone);
 
-        return in_array($length, [11, 10]);
+        return in_array(strlen($phone), [11, 10]);
     }
 
     /**
@@ -667,6 +673,34 @@ class Validate
     }
 
     /**
+     * @param string $rule
+     *
+     * @return string[]
+     */
+    protected static function parseClassMethodCallable(string $rule): array
+    {
+        return explode('@', $rule, 2) + [1 => '__invoke'];
+    }
+
+    /**
+     * @param callable|string $callable $callable
+     * @param string|null     $method
+     * @param array           $params
+     *
+     * @return mixed
+     */
+    protected static function callCallable(callable|string $callable, ?string $method, array $params): mixed
+    {
+        try {
+            return forward_static_call_array([$callable, $method], $params);
+        } catch (Exception) {
+            $parseCallable = is_null($method) ? $callable : [new $callable(), $method];
+
+            return call_user_func_array($parseCallable, $params);
+        }
+    }
+
+    /**
      * @param array $validate
      * @param bool  $exception
      *
@@ -704,33 +738,5 @@ class Validate
         }
 
         return true;
-    }
-
-    /**
-     * @param callable|string $callable $callable
-     * @param string|null     $method
-     * @param array           $params
-     *
-     * @return mixed
-     */
-    protected static function callCallable(callable|string $callable, ?string $method, array $params): mixed
-    {
-        try {
-            return forward_static_call_array([$callable, $method], $params);
-        } catch (\Exception) {
-            $parseCallable = is_null($method) ? $callable : [new $callable(), $method];
-
-            return call_user_func_array($parseCallable, $params);
-        }
-    }
-
-    /**
-     * @param string $rule
-     *
-     * @return string[]
-     */
-    protected static function parseClassMethodCallable(string $rule): array
-    {
-        return explode('@', $rule, 2) + [1 => '__invoke'];
     }
 }

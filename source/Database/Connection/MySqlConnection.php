@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -25,13 +25,14 @@ class MySqlConnection extends Connection
      */
     protected function getDsn(array $config): string
     {
+        $config['port'] = $config['port'] ?? 3306;
+        $config['application_name'] = $config['application_name'] ?? 'app';
+
         if (!empty($config['unix_socket'])) {
-            return "mysql:unix_socket={$config['unix_socket']};dbname={$config['database']}";
+            return "mysql:unix_socket={$config['unix_socket']};dbname={$config['database']};options=--application_name={$config['application_name']}";
         }
 
-        $config['port'] = $config['port'] ?? 3306;
-
-        return "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
+        return "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']}options=--application_name={$config['application_name']}";
     }
 
     /**

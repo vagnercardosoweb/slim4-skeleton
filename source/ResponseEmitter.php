@@ -9,33 +9,33 @@
  * @copyright 26/02/2023 Vagner Cardoso
  */
 
-namespace App\Middlewares;
+declare(strict_types = 1);
+
+namespace Core;
 
 use Core\Support\Env;
-use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Slim\ResponseEmitter as SlimResponseEmitter;
 
-class CorsMiddleware implements MiddlewareInterface
+class ResponseEmitter extends SlimResponseEmitter
 {
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function emit(ResponseInterface $response): void
     {
         $origin = Env::get('CORS_ORIGIN', '*');
         $methods = Env::get('CORS_METHODS', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         $headers = Env::get('CORS_HEADERS', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
 
-        $response = $handler->handle($request)
+        $response = $response
             ->withHeader('Access-Control-Allow-Origin', $origin)
-            ->withHeader('Access-Control-Allow-Methods', $methods)
             ->withHeader('Access-Control-Allow-Headers', $headers)
-            ->withHeader('Access-Control-Allow-Credentials', 'true');
+            ->withHeader('Access-Control-Allow-Methods', $methods)
+            ->withHeader('Access-Control-Allow-Credentials', 'true')
+        ;
 
-        if ('options' === strtolower($request->getMethod())) {
-            $response = $response->withStatus(StatusCodeInterface::STATUS_OK);
+        if (ob_get_contents()) {
+            ob_clean();
         }
 
-        return $response;
+        parent::emit($response);
     }
 }

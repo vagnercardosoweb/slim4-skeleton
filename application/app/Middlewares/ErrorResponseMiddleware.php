@@ -6,6 +6,17 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
+ * @copyright 26/02/2023 Vagner Cardoso
+ */
+
+declare(strict_types = 1);
+
+/*
+ * Vagner Cardoso <https://github.com/vagnercardosoweb>
+ *
+ * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
+ * @link https://github.com/vagnercardosoweb
+ * @license http://www.opensource.org/licenses/mit-license.html MIT License
  * @copyright 25/02/2023 Vagner Cardoso
  */
 
@@ -21,28 +32,15 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Psr7\Response;
 
-/**
- * Class ErrorResponseMiddleware.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 class ErrorResponseMiddleware implements MiddlewareInterface
 {
-    /**
-     * @param \Psr\Http\Message\ServerRequestInterface $request
-     * @param \Psr\Http\Server\RequestHandlerInterface $handler
-     *
-     * @throws \Exception
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         try {
             return $handler->handle($request);
         } catch (\Exception $exception) {
             if (
-                Env::get('APP_RESPONSE_ERROR_JSON', false)
+                Env::get('APP_ONLY_API', false)
                 || 'XMLHttpRequest' === $request->getHeaderLine('X-Requested-With')
                 || !Container::has(Twig::class)
             ) {

@@ -1,16 +1,22 @@
 #!/usr/bin/env php
 <?php
 
-use Core\Bootstrap;
-use Symfony\Component\Console\Application;
+use Core\Application;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\Console\Application as SymfonyApplication;
 
 require_once __DIR__ . '/../public_html/index.php';
 
 try {
-  $container = Bootstrap::getApp()->getContainer();
-  $application = $container?->get(Application::class);
+  $container = Application::getApp()->getContainer();
+
+  if (!$container instanceof ContainerInterface) {
+    throw new DomainException("Container is not instanceof PSR");
+  }
+
+  $application = $container->get(SymfonyApplication::class);
 
   exit($application->run());
-} catch (Exception $e) {
+} catch (Throwable $e) {
   dd($e);
 }

@@ -6,25 +6,19 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace App\Modules\Api\Controllers;
 
 use Core\Controller;
 use Core\Curl\Curl;
+use Core\Facades\Cache;
 use Core\Support\Env;
 
 class ZipCodeController extends Controller
 {
-    /**
-     * @param string $zipCode
-     *
-     * @throws \Exception
-     *
-     * @return object
-     */
-    public function index(string $zipCode): object
+    public function index(string $zipCode): array
     {
         $zipCode = preg_replace('/[^0-9]/', '', $zipCode);
 
@@ -32,43 +26,45 @@ class ZipCodeController extends Controller
             throw new \InvalidArgumentException("O CEP {$zipCode} informado deve conter, no mínimo 8 números.");
         }
 
-        $response = Curl::get("https://viacep.com.br/ws/{$zipCode}/json")->send();
-        $responseJson = $response->toJson();
+        return Cache::get("zip-code:{$zipCode}:results", function () use ($zipCode) {
+            $response = Curl::get("https://viacep.com.br/ws/{$zipCode}/json")->send();
+            $responseJson = $response->toArray();
 
-        if (200 !== $response->getStatusCode() || !empty($responseJson->erro)) {
-            throw new \Exception("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
-        }
+            if (200 !== $response->getStatusCode() || !empty($responseJson->erro)) {
+                throw new \Exception("O CEP {$zipCode} informado não foi encontrado, verifique e tente novamente.");
+            }
 
-        $responseJson->endereco = sprintf('%s - %s, %s - %s, %s, Brazil',
-            $responseJson->logradouro,
-            $responseJson->bairro,
-            $responseJson->localidade,
-            $responseJson->uf,
-            $zipCode
-        );
+            $responseJson['endereco'] = sprintf('%s - %s, %s - %s, %s, Brazil',
+                $responseJson['logradouro'],
+                $responseJson['bairro'],
+                $responseJson['localidade'],
+                $responseJson['uf'],
+                $zipCode
+            );
 
-        if ($googleMapsKey = Env::get('GOOGLE_GEOCODE_API_KEY')) {
-            $responseMap = Curl::get('https://maps.google.com/maps/api/geocode/json')
-                ->setHeader('Content-Type', 'application/json')
-                ->setBody([
-                    'key' => $googleMapsKey,
-                    'sensor' => true,
-                    'address' => urlencode($responseJson->endereco),
-                ])
-                ->send()
-            ;
+            if ($googleMapsKey = Env::get('GOOGLE_GEOCODE_API_KEY')) {
+                $responseMap = Curl::get('https://maps.google.com/maps/api/geocode/json')
+                    ->addHeader('Content-Type', 'application/json')
+                    ->addBody([
+                        'key' => $googleMapsKey,
+                        'sensor' => true,
+                        'address' => urlencode($responseJson['endereco']),
+                    ])
+                    ->send()
+                ;
 
-            if (200 === $responseMap->getStatusCode()) {
-                $jsonMap = $responseMap->toJson();
+                if (200 === $responseMap->getStatusCode()) {
+                    $jsonMap = $responseMap->toArray();
 
-                if ('OK' === $jsonMap->status && !empty($jsonMap->results[0])) {
-                    $location = $jsonMap->results[0]->geometry->location;
-                    $responseJson->latitude = (string)$location->lat;
-                    $responseJson->longitude = (string)$location->lng;
+                    if ('OK' === $jsonMap['status'] && !empty($jsonMap['results'][0])) {
+                        $location = $jsonMap['results'][0]['geometry']['location'];
+                        $responseJson['latitude'] = $location['lat'];
+                        $responseJson['longitude'] = $location['lng'];
+                    }
                 }
             }
-        }
 
-        return $responseJson;
+            return $responseJson;
+        });
     }
 }

@@ -6,22 +6,18 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace App\Commands;
 
 use Core\Config;
+use Core\Support\Env;
 use Core\Support\Path;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Class SchemaDumpCommand.
- *
- * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
- */
 final class SchemaDumpCommand extends Command
 {
     /**
@@ -29,43 +25,25 @@ final class SchemaDumpCommand extends Command
      */
     private \PDO $pdo;
 
-    /**
-     * The constructor.
-     *
-     * @param \PDO        $pdo  The database connection
-     * @param string|null $name The name
-     */
-    public function __construct(\PDO $pdo, ?string $name = null)
+    public function __construct(\PDO $pdo)
     {
-        parent::__construct($name);
         $this->pdo = $pdo;
-    }
-
-    /**
-     * Configure.
-     *
-     * @return void
-     */
-    protected function configure(): void
-    {
-        parent::configure();
-
-        $this->setName('schema:dump');
+        parent::__construct('schema:dump');
         $this->setDescription('Generate a schema.sql from the schema data source.');
     }
 
-    /**
-     * Execute command.
-     *
-     * @param InputInterface  $input  The input
-     * @param OutputInterface $output The output
-     *
-     * @return int The error code, 0 on success
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln(sprintf('Use database: %s', (string)$this->query('select database()')->fetchColumn()));
+        $driver = Env::get('DB_DRIVER', 'pgsql');
+
+        if ('mysql' !== $driver) {
+            throw new \InvalidArgumentException(sprintf('Driver [%s] not supported.', $driver));
+        }
+
+        $database = Env::get('DB_DATABASE');
         $migrationName = Config::get('phinx.environments.default_migration_table', 'migrations');
+
+        $output->writeln(sprintf('Use database: %s', $database));
 
         $statement = $this->query("SELECT TABLE_NAME
                 FROM information_schema.TABLES
@@ -74,7 +52,7 @@ final class SchemaDumpCommand extends Command
 
         $sql = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $statement2 = $this->query(sprintf('SHOW CREATE TABLE `%s`;', (string)$row['TABLE_NAME']));
+            $statement2 = $this->query(sprintf('SHOW CREATE TABLE %s;', $row['TABLE_NAME']));
             $createTableSql = $statement2->fetch(\PDO::FETCH_ASSOC)['Create Table'];
             $sql[] = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableSql).';';
         }
@@ -84,20 +62,11 @@ final class SchemaDumpCommand extends Command
         file_put_contents($filename, $sql);
 
         $output->writeln(sprintf('Generated file: %s', realpath($filename)));
-        $output->writeln(sprintf('<info>Done</info>'));
+        $output->writeln('<info>Done</info>');
 
         return self::SUCCESS;
     }
 
-    /**
-     * Create query statement.
-     *
-     * @param string $sql The sql
-     *
-     * @throws \UnexpectedValueException
-     *
-     * @return \PDOStatement The statement
-     */
     private function query(string $sql): \PDOStatement
     {
         $statement = $this->pdo->query($sql);

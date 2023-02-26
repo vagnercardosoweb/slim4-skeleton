@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -33,7 +33,7 @@ class Config
      *
      * @return void
      */
-    public static function prepend(string $key, mixed $value)
+    public static function prepend(string $key, mixed $value): void
     {
         $array = self::get($key);
         array_unshift($array, $value);
@@ -49,10 +49,7 @@ class Config
      */
     public static function get(array|string $key, mixed $default = null): mixed
     {
-        if (empty(self::$items)) {
-            self::loadItems();
-        }
-
+        self::loadItems();
         if (is_array($key)) {
             return self::getMany($key);
         }
@@ -67,6 +64,10 @@ class Config
      */
     public static function loadItems(string $path = null): array
     {
+        if (!empty(self::$items)) {
+            return self::$items;
+        }
+
         if (empty($path) || !is_dir($path)) {
             $path = Path::config();
         }
@@ -99,8 +100,6 @@ class Config
 
             $iterator->next();
         }
-
-        ksort($config, SORT_NATURAL);
 
         self::$items = self::normalize($config);
 
@@ -151,14 +150,10 @@ class Config
      *
      * @return void
      */
-    public static function set(array|string $key, mixed $value = null)
+    public static function set(array|string $key, mixed $value = null): void
     {
-        if (empty(self::$items)) {
-            self::loadItems();
-        }
-
+        self::loadItems();
         $keys = is_array($key) ? $key : [$key => $value];
-
         foreach ($keys as $key => $value) {
             Arr::set(self::$items, $key, $value);
         }
@@ -170,7 +165,7 @@ class Config
      *
      * @return void
      */
-    public static function push(string $key, mixed $value)
+    public static function push(string $key, mixed $value): void
     {
         $array = self::get($key);
         $array[] = $value;
@@ -185,7 +180,7 @@ class Config
      *
      * @return void
      */
-    public static function add(string $key, mixed $value, mixed $newKey)
+    public static function add(string $key, mixed $value, mixed $newKey): void
     {
         $array = self::get($key);
         $array[$newKey] = $value;
@@ -198,9 +193,7 @@ class Config
      */
     public static function all(): array
     {
-        if (empty(self::$items)) {
-            self::loadItems();
-        }
+        self::loadItems();
 
         return self::$items;
     }
@@ -212,9 +205,7 @@ class Config
      */
     public function exists(string $key): bool
     {
-        if (empty(self::$items)) {
-            self::loadItems();
-        }
+        self::loadItems();
 
         return Arr::has(self::$items, $key);
     }

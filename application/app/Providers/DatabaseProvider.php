@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -18,24 +18,14 @@ use Core\Database\Model;
 use Core\Facades\Facade;
 use DI\Container;
 
-/**
- * Class DatabaseProvider.
- */
 class DatabaseProvider implements ServiceProvider
 {
-    /**
-     * @param \DI\Container $container
-     *
-     * @throws \Exception
-     *
-     * @return \Core\Database\Database
-     */
     public function __invoke(Container $container): Database
     {
         Facade::setAliases(['Database' => Database::class]);
 
         $database = new Database();
-        $database->setDefaultDriver(Config::get('database.default', 'postgres'));
+        $database->setDefaultDriver(Config::get('database.default', 'pgsql'));
 
         foreach (Config::get('database.connections') as $driver => $config) {
             $database->addConnection($driver, $config);

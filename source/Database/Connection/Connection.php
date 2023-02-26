@@ -6,12 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
-
-use Core\Contracts\ConnectionEvent;
 
 /**
  * Class Connection.
@@ -29,7 +27,7 @@ abstract class Connection extends \PDO
         \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
-        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
+        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
         \PDO::ATTR_PERSISTENT => false,
         \PDO::ATTR_STRINGIFY_FETCHES => false,
         \PDO::ATTR_EMULATE_PREPARES => false,
@@ -67,31 +65,12 @@ abstract class Connection extends \PDO
     }
 
     /**
-     * @return array
-     */
-    public static function getAvailableDrivers(): array
-    {
-        return array_intersect(
-            self::getSupportedDrivers(),
-            str_replace(['pdo_dblib'], 'dblib', \PDO::getAvailableDrivers())
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public static function getSupportedDrivers(): array
-    {
-        return ['mysql', 'pgsql', 'sqlite', 'sqlsrv', 'dblib'];
-    }
-
-    /**
      * @param array $config
      */
     protected function validateConfig(array $config): void
     {
-        $classSplit = explode('\\', get_called_class());
-        $className = array_pop($classSplit);
+        $parts = explode('\\', get_called_class());
+        $className = array_pop($parts);
 
         if (empty($config['host'])) {
             throw new \InvalidArgumentException(
@@ -169,13 +148,13 @@ abstract class Connection extends \PDO
     protected function setAttributesAndCommands(array $config): void
     {
         if (!empty($config['attributes'])) {
-            foreach ((array)$config['attributes'] as $key => $value) {
+            foreach ($config['attributes'] as $key => $value) {
                 $this->setAttribute($key, $value);
             }
         }
 
         if (!empty($config['commands'])) {
-            foreach ((array)$config['commands'] as $command) {
+            foreach ($config['commands'] as $command) {
                 $this->exec($command);
             }
         }
@@ -186,16 +165,31 @@ abstract class Connection extends \PDO
      */
     protected function setEvents(array $config): void
     {
-        if (!empty($config['events'])) {
-            foreach ((array)$config['events'] as $class) {
-                if (!is_a($class, ConnectionEvent::class, true)) {
-                    throw new \RuntimeException(
-                        sprintf('Class %s must implement class %s.', $class, ConnectionEvent::class)
-                    );
-                }
-
-                call_user_func([new $class(), '__invoke'], $this);
-            }
+        if (empty($config['events'])) {
+            return;
         }
+
+        foreach ($config['events'] as $class) {
+            call_user_func([new $class(), 'run'], $this);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public static function getAvailableDrivers(): array
+    {
+        return array_intersect(
+            self::getSupportedDrivers(),
+            str_replace(['pdo_dblib'], 'dblib', \PDO::getAvailableDrivers())
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public static function getSupportedDrivers(): array
+    {
+        return ['mysql', 'pgsql', 'sqlite', 'sqlsrv', 'dblib'];
     }
 }

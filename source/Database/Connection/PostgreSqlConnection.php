@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -25,9 +25,13 @@ class PostgreSqlConnection extends Connection
      */
     protected function getDsn(array $config): string
     {
-        $config['port'] = $config['port'] ?? 5432;
-
-        return "pgsql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
+        return sprintf(
+            'pgsql:host=%s;port=%s;dbname=%s;options=--application_name=%s',
+            $config['host'],
+            $config['port'] ?? 5432,
+            $config['database'],
+            $config['application_name'] ?? 'app'
+        );
     }
 
     /**
@@ -35,16 +39,8 @@ class PostgreSqlConnection extends Connection
      */
     protected function setSchema(array $config): void
     {
-        if (!empty($config['schema'])) {
-            if (is_string($config['schema'])) {
-                $config['schema'] = explode('', $config['schema']);
-            }
-
-            $this->exec(sprintf(
-                'SET search_path TO %s',
-                implode(', ', array_map([$this, 'quote'], $config['schema']))
-            ));
-        }
+        $config['schema'] = $config['schema'] ?? 'public';
+        $this->exec(sprintf('SET search_path TO %s;', $config['schema']));
     }
 
     /**
@@ -52,9 +48,8 @@ class PostgreSqlConnection extends Connection
      */
     protected function setEncoding(array $config): void
     {
-        if (!empty($config['charset'])) {
-            $this->exec("SET client_encoding TO {$this->quote(strtoupper($config['charset']))}");
-        }
+        $config['charset'] = $config['charset'] ?? 'utf8';
+        $this->exec("SET client_encoding TO {$this->quote(strtoupper($config['charset']))}");
     }
 
     /**
@@ -62,8 +57,7 @@ class PostgreSqlConnection extends Connection
      */
     protected function setTimezone(array $config): void
     {
-        if (!empty($config['timezone'])) {
-            $this->exec("SET timezone TO {$this->quote($config['timezone'])}");
-        }
+        $config['timezone'] = $config['timezone'] ?? 'UTC';
+        $this->exec("SET timezone TO {$this->quote($config['timezone'])}");
     }
 }

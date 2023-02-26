@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 25/02/2023 Vagner Cardoso
+ * @copyright 26/02/2023 Vagner Cardoso
  */
 
 namespace Core\Database\Connection;
@@ -21,7 +21,7 @@ class Statement extends \PDOStatement
     /**
      * @var array
      */
-    protected array $bindings = [];
+    public array $bindings = [];
 
     /**
      * Statement constructor.
@@ -30,14 +30,6 @@ class Statement extends \PDOStatement
      */
     protected function __construct(protected \PDO $pdo)
     {
-    }
-
-    /**
-     * @return \PDO
-     */
-    public function getPdo(): \PDO
-    {
-        return $this->pdo;
     }
 
     /**
@@ -51,29 +43,15 @@ class Statement extends \PDOStatement
     }
 
     /**
-     * @return int
-     */
-    public function rowCount(): int
-    {
-        $rowCount = parent::rowCount();
-
-        if (-1 === $rowCount) {
-            $rowCount = count($this->fetchAll());
-        }
-
-        return $rowCount;
-    }
-
-    /**
-     * @param int|string|null $mode
-     * @param int             $cursorOrientation
-     * @param int             $cursorOffset
+     * @param int|string $mode
+     * @param int        $cursorOrientation
+     * @param int        $cursorOffset
      *
-     * @return mixed
+     * @return array<string, mixed>|\stdClass
      */
-    public function fetch(int|string $mode = null, int $cursorOrientation = \PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
+    public function fetch(int|string $mode = \PDO::FETCH_ASSOC, int $cursorOrientation = \PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
     {
-        if (!class_exists($mode) && (is_int($mode) && $this->isFetchObject($mode))) {
+        if (is_int($mode) && $this->isFetchObject($mode)) {
             $mode = 'stdClass';
         }
 
@@ -91,35 +69,13 @@ class Statement extends \PDOStatement
      */
     public function isFetchObject(int $style = \PDO::ATTR_DEFAULT_FETCH_MODE): bool
     {
-        $allowed = [\PDO::FETCH_OBJ, \PDO::FETCH_CLASS];
-
-        if (in_array($style, $allowed)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @return string
-     */
-    public function getQueryString(): string
-    {
-        return $this->queryString;
-    }
-
-    /**
-     * @return array
-     */
-    public function getBindings(): array
-    {
-        return $this->bindings;
+        return in_array($style, [\PDO::FETCH_OBJ, \PDO::FETCH_CLASS]);
     }
 
     /**
      * @param array $bindings
      */
-    public function bindValues(array $bindings = []): void
+    public function addBindings(array $bindings = []): void
     {
         if (empty($bindings)) {
             return;
