@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 namespace Tests\Traits;
 
-use Core\Bootstrap;
+use Core\Application;
 use Core\Support\Path;
 use Psr\Container\ContainerInterface;
 use Slim\App;
@@ -21,7 +21,6 @@ trait AppTestTrait
     use HttpTestTrait;
     use HttpJsonTestTrait;
     use RouteTestTrait;
-    use AssertTestTrait;
     use MockTestTrait;
 
     protected App $app;
@@ -32,7 +31,7 @@ trait AppTestTrait
     {
         require_once __DIR__.'/../../../public_html/index.php';
 
-        $this->app = Bootstrap::getApp();
+        $this->app = Application::getApp();
         $container = $this->app->getContainer();
 
         if (!$container instanceof ContainerInterface) {

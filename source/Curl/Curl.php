@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 namespace Core\Curl;
@@ -127,7 +127,7 @@ class Curl
     public function addBody(array $data): Curl
     {
         $this->body = json_encode($data);
-        $this->addHeader('Content-Type', 'application/json');
+        $this->addHeader('Content-Type', 'application/json; charset=utf-8');
         $this->addHeader('Content-Length', mb_strlen($this->body));
 
         return $this;

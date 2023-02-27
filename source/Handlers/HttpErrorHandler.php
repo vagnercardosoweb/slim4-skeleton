@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -14,6 +14,7 @@ declare(strict_types = 1);
 namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
+use Core\Support\Str;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Exception\HttpBadRequestException;
@@ -48,13 +49,16 @@ class HttpErrorHandler extends ErrorHandler
             $statusCode = StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR;
         }
 
+        $errorId = mb_strtoupper(Str::randomHexBytes(16));
+        $errorMessage = str_replace('{{errorId}}', $errorId, $this->exception->getMessage());
+
         $error = [
             'name' => basename(str_replace('\\', '/', get_class($this->exception))),
             'code' => $type,
             'statusCode' => $statusCode,
-            'errorId' => mb_strtoupper(bin2hex(random_bytes(8))),
-            'message' => $this->exception->getMessage(),
-            'colorName' => ErrorHandler::toHtmlClass($statusCode),
+            'errorId' => $errorId,
+            'message' => $errorMessage,
+            'color' => ErrorHandler::toHtmlClass($statusCode),
         ];
 
         if ($this->displayErrorDetails) {
@@ -75,7 +79,9 @@ class HttpErrorHandler extends ErrorHandler
             ]);
         }
 
-        $response = $this->responseFactory->createResponse($statusCode)->withHeader('Content-Type', 'application/json');
+        $response = $this->responseFactory->createResponse($statusCode)
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+        ;
         $response->getBody()->write(json_encode($error, JSON_PRETTY_PRINT));
 
         return $response;

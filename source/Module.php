@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -34,20 +34,28 @@ abstract class Module
     /**
      * @return void
      */
-    abstract public function registerRoutes(): void;
+    public function registerProviders(): void
+    {
+    }
 
     /**
      * @return void
      */
-    abstract public function registerProviders(): void;
+    public function registerMiddleware(): void
+    {
+    }
 
     /**
      * @return void
      */
-    abstract public function registerMiddleware(): void;
+    public function registerViews(): void
+    {
+    }
 
     /**
      * @return void
      */
-    abstract public function registerViews(): void;
+    public function registerRoutes(): void
+    {
+    }
 }

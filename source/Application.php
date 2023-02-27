@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -25,6 +25,7 @@ use DI\ContainerBuilder;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
@@ -34,6 +35,7 @@ use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
 use Slim\Interfaces\RouteCollectorInterface;
 use Slim\Interfaces\RouteParserInterface;
+use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
 use Slim\Psr7\Factory\UploadedFileFactory;
 use Slim\Psr7\Factory\UriFactory;
@@ -44,6 +46,15 @@ class Application
 
     private static ?App $app = null;
 
+    /**
+     * @param string|null $pathRoutes
+     * @param string|null $pathMiddleware
+     * @param string|null $pathProviders
+     * @param string|null $pathModules
+     * @param bool|null   $immutableEnv
+     *
+     * @throws \Throwable
+     */
     public function __construct(
         protected ?string $pathRoutes = null,
         protected ?string $pathMiddleware = null,
@@ -71,47 +82,63 @@ class Application
         }
     }
 
-    private function registerApp(): App
+    /**
+     * @throws \Throwable
+     *
+     * @return void
+     */
+    private function registerApp(): void
     {
         if (is_null(self::$app)) {
             $container = $this->registerContainerBuilder();
             self::$app = $container->get(App::class);
         }
-
-        return self::$app;
     }
 
+    /**
+     * @throws \Throwable
+     *
+     * @return \DI\Container
+     */
     private function registerContainerBuilder(): Container
     {
-        $container = [];
-        $containerPath = (string)$this->pathProviders;
-        $containerBuilder = new ContainerBuilder();
+        $definitions = [];
+        $providersPath = (string)$this->pathProviders;
+        $container = new ContainerBuilder();
 
         if (Env::get('CONTAINER_CACHE', false)) {
-            $containerBuilder->enableCompilation(Path::storage('/cache/container'));
+            $container->enableCompilation(Path::storage('/cache/container'));
         }
 
-        $containerBuilder->useAutowiring(Env::get('CONTAINER_AUTO_WIRING', true));
+        $container->useAutowiring(Env::get('CONTAINER_AUTO_WIRING', true));
 
-        if (file_exists($containerPath)) {
-            $container = require_once "{$containerPath}";
+        if (file_exists($providersPath)) {
+            $definitions = require_once "{$providersPath}";
 
-            if (!is_array($container)) {
+            if (!is_array($definitions)) {
                 throw new \DomainException(
-                    "The [{$containerPath}] file must return an array."
+                    "The [{$providersPath}] file must return an array."
                 );
             }
         }
 
-        $containerBuilder->addDefinitions(array_merge([
+        $container->addDefinitions(array_merge([
             App::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
 
                 return AppFactory::create();
             },
 
+            StreamFactoryInterface::class => fn () => new StreamFactory(),
             UploadedFileFactoryInterface::class => fn () => new UploadedFileFactory(),
             UriFactoryInterface::class => fn () => new UriFactory(),
+
+            ServerRequestFactoryInterface::class => function (ContainerInterface $container) {
+                return new ServerRequestFactory(
+                    $container->get(StreamFactoryInterface::class),
+                    $container->get(UriFactoryInterface::class)
+                );
+            },
 
             ServerRequestInterface::class => function () {
                 $serverRequestCreator = ServerRequestCreatorFactory::create();
@@ -134,13 +161,9 @@ class Application
             ResponseInterface::class => function (ContainerInterface $container) {
                 return $container->get(ResponseFactoryInterface::class)->createResponse();
             },
+        ], $definitions));
 
-            StreamFactoryInterface::class => function () {
-                return new StreamFactory();
-            },
-        ], $container));
-
-        return $containerBuilder->build();
+        return $container->build();
     }
 
     private function registerFacade(): void
@@ -149,6 +172,11 @@ class Application
         Facade::registerAliases();
     }
 
+    /**
+     * @throws \Throwable
+     *
+     * @return void
+     */
     private function registerPhpSettings(): void
     {
         error_reporting(-1);
@@ -244,13 +272,7 @@ class Application
             }
 
             foreach ($modules as $module) {
-                if (class_exists($module)) {
-                    if (!is_subclass_of($module, Module::class)) {
-                        throw new \DomainException(
-                            sprintf('Class %s not extends %s', $module, Module::class)
-                        );
-                    }
-
+                if (class_exists($module) && is_subclass_of($module, Module::class)) {
                     new $module(self::$app);
                 }
             }
@@ -260,7 +282,10 @@ class Application
     public static function getApp(): App
     {
         if (is_null(self::$app)) {
-            throw new \RuntimeException(sprintf('Class %s has not been initialized.', __CLASS__));
+            throw new \RuntimeException(sprintf(
+                'Class %s has not been initialized.',
+                __CLASS__
+            ));
         }
 
         return self::$app;

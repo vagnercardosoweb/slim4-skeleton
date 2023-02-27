@@ -6,12 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 namespace App\Modules\Api;
 
 use App\Middlewares\CorsMiddleware;
+use App\Middlewares\NoCacheMiddleware;
 use Core\Module;
 use Core\Route;
 
@@ -25,35 +26,10 @@ class ApiModule extends Module
         Route::group([
             'pattern' => '/api',
             'namespace' => 'App/Modules/Api/Controllers',
-            'middlewares' => [CorsMiddleware::class],
-            'resetNamespace' => true,
+            'middlewares' => [CorsMiddleware::class, NoCacheMiddleware::class],
         ], function () {
             Route::get('/docs', 'SwaggerController');
             Route::get('/zipcode/{p}', 'ZipCodeController');
         });
-    }
-
-    /**
-     * @return void
-     */
-    public function registerProviders(): void
-    {
-        // TODO: Implement registerProviders() method.
-    }
-
-    /**
-     * @return void
-     */
-    public function registerMiddleware(): void
-    {
-        // TODO: Implement registerMiddleware() method.
-    }
-
-    /**
-     * @return void
-     */
-    public function registerViews(): void
-    {
-        // TODO: Implement registerViews() method.
     }
 }

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -14,6 +14,7 @@ namespace Core;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Slim\Interfaces\RouteCollectorProxyInterface;
 use Slim\Interfaces\RouteGroupInterface;
 use Slim\Interfaces\RouteInterface;
@@ -28,7 +29,7 @@ class Route
     /**
      * @var string
      */
-    protected static string $defaultNamespace = 'App\\Controllers';
+    protected static string $namespace = 'App\\Controllers';
 
     /**
      * @var string
@@ -39,14 +40,6 @@ class Route
      * @var \Slim\Interfaces\RouteCollectorProxyInterface
      */
     protected static RouteCollectorProxyInterface $routeCollectorProxy;
-
-    /**
-     * @param string $groupPattern
-     */
-    public static function setGroupPattern(string $groupPattern): void
-    {
-        self::$groupPattern = $groupPattern;
-    }
 
     /**
      * @param \Slim\Interfaces\RouteCollectorProxyInterface $routeCollectorProxy
@@ -88,8 +81,8 @@ class Route
         $name = self::validateRouteName($name);
         $methods = '*' == $methods ? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] : $methods;
         $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
-        $pattern = self::$groupPattern.$pattern;
 
+        $pattern = self::$groupPattern.$pattern;
         $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
 
         if (!empty($name)) {
@@ -135,7 +128,7 @@ class Route
      */
     private static function handleCallableRouter(callable|string $callable): \Closure
     {
-        $namespace = self::$defaultNamespace;
+        $namespace = self::$namespace;
 
         return function (ServerRequestInterface $request, ResponseInterface $response, array $params) use ($callable, $namespace) {
             if (is_callable($callable)) {
@@ -155,9 +148,13 @@ class Route
                 $response = $controller->getResponse();
             }
 
-            if ((is_array($result) || is_object($result)) && !$result instanceof ResponseInterface) {
-                $response = $response->withHeader('Content-Type', 'application/json');
-                $result = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            if ($result instanceof ResponseInterface) {
+                return $result;
+            }
+
+            if (is_array($result) || is_object($result)) {
+                $response = $response->withHeader('Content-Type', 'application/json; charset=utf-8');
+                $result = json_encode($result, JSON_THROW_ON_ERROR);
             }
 
             if (!$result instanceof ResponseInterface) {
@@ -242,23 +239,17 @@ class Route
     public static function group(string|array $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
     {
         $namespace = null;
-        $resetNamespace = false;
 
         if (is_array($pattern)) {
             $namespace = rtrim(ltrim($pattern['namespace'] ?? '', '\/'), '\/');
-            $resetNamespace = $pattern['resetNamespace'] ?? false;
             $middlewares = array_merge($middlewares, $pattern['middlewares'] ?? []);
             $pattern = $pattern['pattern'] ?? '';
         }
 
-        $currentDefaultNamespace = self::$defaultNamespace;
+        $currentDefaultNamespace = self::$namespace;
 
         if (!empty($namespace)) {
-            if (!$resetNamespace) {
-                $namespace = $currentDefaultNamespace.$namespace;
-            }
-
-            self::setDefaultNamespace($namespace);
+            self::setNamespace($namespace);
         }
 
         $currentGroupPattern = self::$groupPattern;
@@ -272,19 +263,19 @@ class Route
         }
 
         self::$groupPattern = $currentGroupPattern;
-        self::$defaultNamespace = $currentDefaultNamespace;
+        self::$namespace = $currentDefaultNamespace;
 
         return $group;
     }
 
     /**
-     * @param string $defaultNamespace
+     * @param string $namespace
      */
-    public static function setDefaultNamespace(string $defaultNamespace): void
+    public static function setNamespace(string $namespace): void
     {
-        $defaultNamespace = self::normalizeNamespace($defaultNamespace);
+        $namespace = self::normalizeNamespace($namespace);
 
-        self::$defaultNamespace = $defaultNamespace;
+        self::$namespace = $namespace;
     }
 
     /**
@@ -306,13 +297,13 @@ class Route
     }
 
     /**
-     * @param string $from
-     * @param        $to
-     * @param int    $status
+     * @param string                                $from
+     * @param \Psr\Http\Message\UriInterface|string $to
+     * @param int                                   $status
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function redirect(string $from, $to, int $status = 302): RouteInterface
+    public static function redirect(string $from, UriInterface|string $to, int $status = 302): RouteInterface
     {
         return self::$routeCollectorProxy->redirect($from, $to, $status);
     }

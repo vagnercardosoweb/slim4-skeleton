@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 26/02/2023 Vagner Cardoso
+ * @copyright 27/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -83,7 +83,7 @@ abstract class Controller
         array $data = [],
         int $options = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
     ): ResponseInterface {
-        $response = $this->response->withHeader('Content-Type', 'application/json');
+        $response = $this->response->withHeader('Content-Type', 'application/json; charset=utf-8');
         $response->getBody()->write(json_encode($data, JSON_THROW_ON_ERROR | $options));
 
         return $response;
