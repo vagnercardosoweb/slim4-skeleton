@@ -23,7 +23,7 @@ RUN yum update -y && \
     rm -rf /var/cache/apk/*
 
 # Install nginx and node16
-RUN amazon-linux-extras install nginx1 postgresql10
+RUN amazon-linux-extras install nginx1 postgresql14
 RUN curl -sL https://rpm.nodesource.com/setup_16.x | bash -
 
 # Install php 8.2 via https://rpms.remirepo.net/wizard/
