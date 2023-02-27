@@ -22,7 +22,7 @@ class Str extends \Illuminate\Support\Str
      * Limit number of letters in a string.
      *
      * @param string $string $string
-     * @param int    $limit
+     * @param int $limit
      * @param string $end
      *
      * @return string
@@ -35,7 +35,7 @@ class Str extends \Illuminate\Support\Str
 
         $length = strrpos(self::substr($string, 0, $limit), ' ');
 
-        return self::substr($string, 0, $length).$end;
+        return self::substr($string, 0, $length) . $end;
     }
 
     /**
@@ -53,8 +53,6 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
-     * @throws \Exception
-     *
      * @return string
      */
     public static function uuid(): string
@@ -86,8 +84,7 @@ class Str extends \Illuminate\Support\Str
      */
     public static function randomHexBytes(int $length = 32): string
     {
-        $length = (intval($length) <= 8 ? 32 : $length);
-
+        $length = $length <= 8 ? 32 : $length;
         $hashed = bin2hex(random_bytes($length));
 
         return mb_substr($hashed, 0, $length);

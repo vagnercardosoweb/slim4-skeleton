@@ -11,6 +11,8 @@
 
 namespace Tests\Fixture;
 
+use Core\Support\Str;
+
 class UserFixture implements Fixture
 {
     /**
@@ -32,9 +34,9 @@ class UserFixture implements Fixture
     {
         return [
             [
-                'id' => 1,
+                'id' => Str::uuid(),
                 'name' => 'any_name',
-                'email' => 'any_mail@mail.com',
+                'email' => 'any_mail@any.com',
                 'password' => 'any_password',
             ],
         ];
