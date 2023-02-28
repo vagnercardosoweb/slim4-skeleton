@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -59,11 +59,11 @@ class Route
      */
     public static function get(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
-        return self::route('get', $pattern, $callable, $name, $middlewares);
+        return self::route(['get'], $pattern, $callable, $name, $middlewares);
     }
 
     /**
-     * @param string|array    $methods
+     * @param array           $methods
      * @param string          $pattern
      * @param string|\Closure $callable
      * @param string|null     $name
@@ -72,15 +72,14 @@ class Route
      * @return \Slim\Interfaces\RouteInterface
      */
     public static function route(
-        array|string $methods,
+        array $methods,
         string $pattern,
         string|\Closure $callable,
         ?string $name = null,
         array $middlewares = []
     ): RouteInterface {
         $name = self::validateRouteName($name);
-        $methods = '*' == $methods ? ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] : $methods;
-        $methods = (is_string($methods) ? explode(',', mb_strtoupper($methods)) : $methods);
+        $methods = array_map(fn (string $method) => strtoupper($method), $methods);
 
         $pattern = self::$groupPattern.$pattern;
         $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
@@ -177,7 +176,7 @@ class Route
      */
     public static function post(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
-        return self::route('post', $pattern, $callable, $name, $middlewares);
+        return self::route(['post'], $pattern, $callable, $name, $middlewares);
     }
 
     /**
@@ -190,7 +189,7 @@ class Route
      */
     public static function put(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
-        return self::route('put', $pattern, $callable, $name, $middlewares);
+        return self::route(['put'], $pattern, $callable, $name, $middlewares);
     }
 
     /**
@@ -203,7 +202,7 @@ class Route
      */
     public static function delete(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
-        return self::route('delete', $pattern, $callable, $name, $middlewares);
+        return self::route(['delete'], $pattern, $callable, $name, $middlewares);
     }
 
     /**
@@ -216,7 +215,7 @@ class Route
      */
     public static function patch(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
     {
-        return self::route('patch', $pattern, $callable, $name, $middlewares);
+        return self::route(['patch'], $pattern, $callable, $name, $middlewares);
     }
 
     /**

@@ -6,16 +6,16 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
 
 use Core\Config;
-use Core\Contracts\ServiceProvider;
 use Core\Database\Database;
 use Core\Database\Model;
 use Core\Facades\Facade;
+use Core\Interfaces\ServiceProvider;
 use DI\Container;
 
 class DatabaseProvider implements ServiceProvider

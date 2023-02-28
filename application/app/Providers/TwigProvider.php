@@ -6,14 +6,14 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
 
 use Core\Config;
-use Core\Contracts\ServiceProvider;
 use Core\Facades\Facade;
+use Core\Interfaces\ServiceProvider;
 use Core\Support\Env;
 use Core\Twig\Twig;
 use Core\Twig\TwigExtension;
@@ -33,13 +33,16 @@ class TwigProvider implements ServiceProvider
         $twig = new Twig($config['templates'], $config['options']);
 
         $filters = $config['filters'] ?? [];
-        $globals = $config['globals'] ?? [];
         $functions = $config['functions'] ?? [];
+        $globals = $config['globals'] ?? [];
 
         $app = $container->get(App::class);
         $routeParser = $container->get(RouteParserInterface::class);
         $serverRequest = $container->get(ServerRequestInterface::class);
-        $resolveCallable = fn ($value) => class_exists($value) ? $container->get($value) : $value;
+        $resolveCallable = fn ($value) => is_string($value) && class_exists($value) ? $container->get($value) : $value;
+
+        $globals['requestQueryParams'] = $serverRequest->getQueryParams();
+        $globals['requestServerParams'] = $serverRequest->getServerParams();
 
         $twig->addExtension(new DebugExtension());
         $twig->addExtension(new TwigExtension(

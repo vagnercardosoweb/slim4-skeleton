@@ -6,13 +6,15 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
+use App\Middlewares\CorsMiddleware;
 use App\Middlewares\ErrorResponseMiddleware;
 use App\Middlewares\GenerateEnvMiddleware;
 use App\Middlewares\MaintenanceMiddleware;
 use App\Middlewares\NoCacheMiddleware;
+use App\Middlewares\OldParsedBodyMiddleware;
 use App\Middlewares\TrailingSlashMiddleware;
 use App\Middlewares\TranslatorMiddleware;
 use Slim\App;
@@ -27,8 +29,9 @@ return function (App $app) {
     $app->add(MethodOverrideMiddleware::class);
 
     $app->add(NoCacheMiddleware::class);
-    // $app->add(CorsMiddleware::class);
+    $app->add(CorsMiddleware::class);
     // $app->add(AuthorizationMiddleware::class);
+    $app->add(OldParsedBodyMiddleware::class);
     $app->add(GenerateEnvMiddleware::class);
     $app->add(TrailingSlashMiddleware::class);
     $app->add(TranslatorMiddleware::class);

@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
 
-use Core\Contracts\ServiceProvider;
+use Core\Interfaces\ServiceProvider;
 use Core\Logger;
 use Core\Support\Env;
 use Core\Support\Path;
@@ -40,7 +40,9 @@ class LoggerProvider implements ServiceProvider
         $logger->pushProcessor(new HostnameProcessor());
         $logger->pushProcessor(new ProcessIdProcessor());
 
-        $logger->addStreamHandler(sprintf(Path::storage('/logs/php/%s.log'), date('Y-m-d')));
+        $path = 'development' === Env::get('APP_ENV') ? 'php://stdout'
+            : sprintf(Path::storage('/logs/app/%s.log'), date('Y-m-d'));
+        $logger->addStreamHandler($path);
 
         if (Env::get('SLACK_ENABLED', false)) {
             $logger->addSlackHandler(

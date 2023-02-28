@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace Core\Cache;
 
-use Core\Contracts\Cache as ContractCache;
+use Core\Interfaces\Cache as ContractCache;
 use Predis\Client;
 
 /**
@@ -47,7 +47,7 @@ class Cache
     /**
      * @param string|null $driver
      *
-     * @return \Core\Contracts\Cache
+     * @return \Core\Interfaces\Cache
      */
     public function resolve(string|null $driver = null): ContractCache
     {
@@ -91,7 +91,7 @@ class Cache
     /**
      * @param array $config
      *
-     * @return \Core\Contracts\Cache
+     * @return \Core\Interfaces\Cache
      */
     protected function createFileDriver(array $config): ContractCache
     {
@@ -101,7 +101,7 @@ class Cache
     /**
      * @param array $config
      *
-     * @return \Core\Contracts\Cache
+     * @return \Core\Interfaces\Cache
      */
     protected function createRedisDriver(array $config): ContractCache
     {

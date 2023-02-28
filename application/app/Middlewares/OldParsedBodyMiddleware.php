@@ -11,21 +11,27 @@
 
 namespace App\Middlewares;
 
+use Core\Twig\Twig;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class NoCacheMiddleware implements MiddlewareInterface
+readonly class OldParsedBodyMiddleware implements MiddlewareInterface
 {
+    public function __construct(private ContainerInterface $container)
+    {
+    }
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return $handler->handle($request)
-            ->withHeader('Expires', '0')
-            ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
-            ->withAddedHeader('Cache-Control', 'post-check=0, pre-check=0')
-            ->withHeader('Surrogate-Control', 'no-store')
-            ->withHeader('Pragma', 'no-cache')
-        ;
+        if ($this->container->has(Twig::class) && 'GET' !== strtoupper($request->getMethod())) {
+            /** @var Twig $twig */
+            $twig = $this->container->get(Twig::class);
+            $twig->addGlobal('oldParsedBody', $request->getParsedBody());
+        }
+
+        return $handler->handle($request);
     }
 }

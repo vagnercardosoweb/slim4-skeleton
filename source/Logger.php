@@ -6,13 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace Core;
 
 use Monolog\Formatter\JsonFormatter;
-use Monolog\Handler\ErrorLogHandler;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\SlackHandler;
 use Monolog\Handler\StreamHandler;
@@ -21,22 +20,17 @@ use Monolog\Logger as MonoLogger;
 
 class Logger extends MonoLogger
 {
-    public function addStreamHandler(string $path = 'php://stdout', ?Level $level = null): Logger
+    public function addStreamHandler(string $path, ?Level $level = null): Logger
     {
         $jsonFormatter = new JsonFormatter();
-
-        $errorHandler = new ErrorLogHandler();
-        $errorHandler->setFormatter($jsonFormatter);
-
         $consoleHandler = new StreamHandler($path);
+
         $consoleHandler->setFormatter($jsonFormatter);
 
         if (!empty($level)) {
             $consoleHandler->setLevel($level);
-            $errorHandler->setLevel($level);
         }
 
-        $this->pushHandler($errorHandler);
         $this->pushHandler($consoleHandler);
 
         return $this;

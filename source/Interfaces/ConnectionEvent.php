@@ -9,14 +9,9 @@
  * @copyright 28/02/2023 Vagner Cardoso
  */
 
-namespace Core\Facades;
+namespace Core\Interfaces;
 
-use Psr\Http\Message\ResponseInterface;
-
-class Response extends Facade
+interface ConnectionEvent
 {
-    protected static function getAccessor(): string
-    {
-        return ResponseInterface::class;
-    }
+    public function run(\PDO $pdo): mixed;
 }

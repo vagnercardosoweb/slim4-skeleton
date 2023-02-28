@@ -6,12 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 namespace Core\Mailer;
 
-use Core\Contracts\Mailer as MailerContract;
+use Core\Interfaces\Mailer as MailerContract;
 use PHPMailer\PHPMailer\PHPMailer as LIBPHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 

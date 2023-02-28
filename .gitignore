@@ -31,7 +31,9 @@
 
 # Logs
 /**/storage/logs/*
-/**/storage/logs/**/.gitkeep
+!/**/storage/logs/php/.gitkeep
+!/**/storage/logs/nginx/.gitkeep
+!/**/storage/logs/app/.gitkeep
 
 # Session
 /**/storage/sessions/*

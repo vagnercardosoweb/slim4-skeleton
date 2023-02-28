@@ -6,10 +6,11 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 use Core\Config;
+use Core\Session;
 use Core\Support\Asset;
 use Core\Support\Env;
 use Core\Support\Path;
@@ -42,6 +43,7 @@ return [
     'globals' => [
         'env' => Env::class,
         'config' => Config::class,
+        'session' => Session::class,
         'asset' => Asset::class,
     ],
 ];

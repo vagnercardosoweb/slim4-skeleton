@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 27/02/2023 Vagner Cardoso
+ * @copyright 28/02/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -17,7 +17,7 @@ use Core\Facades\Facade;
 use Core\Facades\Logger as LoggerFacade;
 use Core\Facades\ServerRequest;
 use Core\Handlers\HttpErrorHandler;
-use Core\Handlers\ShutdownErrorHandler;
+use Core\Interfaces\SessionInterface;
 use Core\Support\Env;
 use Core\Support\Path;
 use DI\Container;
@@ -126,9 +126,13 @@ class Application
             App::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
 
+                // Execute new session container
+                $container->get(SessionInterface::class);
+
                 return AppFactory::create();
             },
 
+            SessionInterface::class => fn () => new Session(),
             StreamFactoryInterface::class => fn () => new StreamFactory(),
             UploadedFileFactoryInterface::class => fn () => new UploadedFileFactory(),
             UriFactoryInterface::class => fn () => new UriFactory(),
@@ -180,6 +184,9 @@ class Application
     private function registerPhpSettings(): void
     {
         error_reporting(-1);
+
+        ini_set('display_errors', 'On');
+        ini_set('display_startup_errors', 'On');
 
         $locale = Env::get('APP_LOCALE', 'pt_BR');
         $charset = Env::get('APP_CHARSET', 'UTF-8');
@@ -246,18 +253,31 @@ class Application
         $logErrorDetails = Env::get('SLIM_LOG_ERROR_DETAIL', true);
         $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
 
-        $serverRequest = ServerRequest::getResolvedInstance();
+        $app = self::getApp();
+        // $serverRequest = ServerRequest::getResolvedInstance();
         $logger = LoggerFacade::getResolvedInstance();
 
-        $httpErrorHandler = new HttpErrorHandler(self::$app->getCallableResolver(), self::$app->getResponseFactory(), $logger);
-        $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler, $displayErrorDetails);
-        register_shutdown_function($shutdownErrorHandler);
+        $httpErrorHandler = new HttpErrorHandler($app->getCallableResolver(), $app->getResponseFactory(), $logger);
+        // $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler);
+        // register_shutdown_function($shutdownErrorHandler);
 
         $errorMiddleware = self::$app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
         $errorMiddleware->setDefaultErrorHandler($httpErrorHandler);
 
         ini_set('display_errors', 'Off');
         ini_set('display_startup_errors', 'Off');
+    }
+
+    public static function getApp(): App
+    {
+        if (is_null(self::$app)) {
+            throw new \RuntimeException(sprintf(
+                'Class %s has not been initialized.',
+                __CLASS__
+            ));
+        }
+
+        return self::$app;
     }
 
     private function registerModules(): void
@@ -279,18 +299,6 @@ class Application
         }
     }
 
-    public static function getApp(): App
-    {
-        if (is_null(self::$app)) {
-            throw new \RuntimeException(sprintf(
-                'Class %s has not been initialized.',
-                __CLASS__
-            ));
-        }
-
-        return self::$app;
-    }
-
     public function run(): void
     {
         if (!self::runningInWebserver()) {
@@ -299,5 +307,6 @@ class Application
 
         $response = self::$app->handle(ServerRequest::getResolvedInstance());
         (new ResponseEmitter())->emit($response);
+        exit;
     }
 }
