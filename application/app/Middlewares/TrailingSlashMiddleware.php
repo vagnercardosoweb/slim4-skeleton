@@ -6,13 +6,15 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace App\Middlewares;
 
 use Fig\Http\Message\StatusCodeInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -28,17 +30,18 @@ class TrailingSlashMiddleware implements MiddlewareInterface
     /**
      * TrailingSlashMiddleware constructor.
      *
-     * @param \Psr\Container\ContainerInterface $container
+     * @param ContainerInterface $container
      */
-    public function __construct(private ContainerInterface $container)
-    {
-    }
+    public function __construct(private ContainerInterface $container) {}
 
     /**
-     * @param \Psr\Http\Message\ServerRequestInterface $request
-     * @param \Psr\Http\Server\RequestHandlerInterface $handler
+     * @param ServerRequestInterface  $request
+     * @param RequestHandlerInterface $handler
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     *
+     * @return ResponseInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

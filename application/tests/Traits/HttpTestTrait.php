@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Tests\Traits;
@@ -23,13 +23,13 @@ trait HttpTestTrait
     /**
      * Create a form request.
      *
-     * @param string                                $method The HTTP method
-     * @param string|\Psr\Http\Message\UriInterface $uri    The URI
-     * @param array|null                            $data   The form data
+     * @param string              $method The HTTP method
+     * @param string|UriInterface $uri    The URI
+     * @param array|null          $data   The form data
      *
      * @return ServerRequestInterface
      */
-    protected function createFormRequest(string $method, UriInterface|string $uri, array $data = null): ServerRequestInterface
+    protected function createFormRequest(string $method, string|UriInterface $uri, array $data = null): ServerRequestInterface
     {
         $request = $this->createRequest($method, $uri);
 
@@ -43,13 +43,13 @@ trait HttpTestTrait
     /**
      * Create a server request.
      *
-     * @param string                                $method
-     * @param \Psr\Http\Message\UriInterface|string $uri
-     * @param array                                 $serverParams
+     * @param string              $method
+     * @param UriInterface|string $uri
+     * @param array               $serverParams
      *
-     * @return \Psr\Http\Message\ServerRequestInterface
+     * @return ServerRequestInterface
      */
-    protected function createRequest(string $method, UriInterface|string $uri, array $serverParams = []): ServerRequestInterface
+    protected function createRequest(string $method, string|UriInterface $uri, array $serverParams = []): ServerRequestInterface
     {
         $factory = $this->container->get(ServerRequestFactoryInterface::class);
 
@@ -62,7 +62,7 @@ trait HttpTestTrait
      * @param int    $code
      * @param string $reasonPhrase
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     protected function createResponse(int $code = StatusCodeInterface::STATUS_OK, string $reasonPhrase = ''): ResponseInterface
     {

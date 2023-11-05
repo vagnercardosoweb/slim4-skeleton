@@ -25,7 +25,9 @@
   "paths": {
     "/api/zipcode/{code}": {
       "get": {
-        "tags": ["helpers"],
+        "tags": [
+          "helpers"
+        ],
         "summary": "Recupera informações do cep.",
         "parameters": [
           {
@@ -44,7 +46,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/zipcode-response"
+                  "$ref": "#/components/schemas/ZipCode"
                 }
               }
             }
@@ -56,15 +58,17 @@
   "components": {
     "securitySchemes": {
       "bearerAuth": {
-        "type": "http",
         "scheme": "bearer",
         "description": "JWT ou Token de autorização."
+        "type": "http",
       }
     },
     "schemas": {
-      "zipcode-response": {
+      "ZipCode": {
         "type": "object",
-        "required": ["*"],
+        "required": [
+          "*"
+        ],
         "properties": {
           "cep": {
             "type": "string"

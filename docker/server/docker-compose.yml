@@ -8,29 +8,31 @@ services:
   server:
     build: .
     container_name: "slim4.server"
-    tty: true
+    restart: unless-stopped
     user: root
+    tty: true
     depends_on:
-      - redis
       - postgres
+      - redis
     ports:
       - "80:80"
       - "433:433"
       - "9003:9003"
-    volumes:
-      - ../../:/var/www/app.dev:z
-      - ../server/cache:/etc/nginx/cache:z
     networks:
       - slim4.network
+    volumes:
+      - ../../:/var/www:z
+      - ../server/cache:/etc/nginx/cache:z
 
   #  mariadb:
   #    image: mariadb
-  #    tty: true
   #    container_name: "slim4.mariadb"
-  #    networks:
-  #      - slim4.network
+  #    restart: unless-stopped
+  #    tty: true
   #    ports:
   #      - '3306:3306'
+  #    networks:
+  #      - slim4.network
   #    volumes:
   #      - ../mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:z
   #      - ../mysql/database:/var/lib/mysql:z
@@ -41,12 +43,13 @@ services:
 
   #  mysql:
   #    image: mysql:8
-  #    tty: true
   #    container_name: "slim4.mysql"
-  #    networks:
-  #      - slim4.network
+  #    restart: unless-stopped
+  #    tty: true
   #    ports:
   #      - '3306:3306'
+  #    networks:
+  #      - slim4.network
   #    volumes:
   #      - ../mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:z
   #      - ../mysql/database:/var/lib/mysql:z
@@ -58,31 +61,33 @@ services:
   #  phpmyadmin:
   #    image: library/phpmyadmin
   #    container_name: "slim4.phpmyadmin"
+  #    restart: unless-stopped
   #    tty: true
-  #    networks:
-  #      - slim4.network
   #    depends_on:
   #      - mysql
   #      - mariadb
+  #    ports:
+  #      - '8080:80'
+  #    networks:
+  #      - slim4.network
   #    environment:
   #      PMA_USER: root
   #      PMA_PASSWORD: root
   #      PMA_HOSTS: mysql,mariadb
   #      PMA_PORT: 3306
   #      PMA_ARBITRARY: 1
-  #    ports:
-  #      - '8080:80'
 
   postgres:
     image: bitnami/postgresql:15
     container_name: slim4.postgres
+    restart: unless-stopped
     tty: true
-    volumes:
-      - ../postgres:/bitnami/postgresql
-    networks:
-      - slim4.network
     ports:
       - "${DB_PORT:-5432}:5432"
+    networks:
+      - slim4.network
+    volumes:
+      - ../postgres:/bitnami/postgresql
     environment:
       - POSTGRESQL_USERNAME=${DB_USERNAME:-root}
       - POSTGRESQL_PASSWORD=${DB_PASSWORD:-root}
@@ -90,14 +95,15 @@ services:
 
   redis:
     image: bitnami/redis:latest
-    tty: true
+    restart: unless-stopped
     container_name: "slim4.redis"
-    volumes:
-      - ../redis:/bitnami/redis/data:z
-    networks:
-      - slim4.network
-    environment:
-      - ALLOW_EMPTY_PASSWORD=no
-      - REDIS_PASSWORD=redis
+    tty: true
     ports:
       - '6379:6379'
+    networks:
+      - slim4.network
+    volumes:
+      - ../redis:/bitnami/redis/data:z
+    environment:
+      - ALLOW_EMPTY_PASSWORD=${REDIS_ALLOW_EMPTY_PASSWORD:-no}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-root}

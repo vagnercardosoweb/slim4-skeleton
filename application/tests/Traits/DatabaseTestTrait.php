@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Tests\Traits;
@@ -94,23 +94,6 @@ trait DatabaseTestTrait
             '-c',
             Path::config('phinx.php'),
         ]), new ConsoleOutput());
-    }
-
-    /**
-     * Workaround for MySQL 8: update_time not working.
-     *
-     * https://bugs.mysql.com/bug.php?id=95407
-     *
-     * @return void
-     */
-    private function unsetStatsExpiry(): void
-    {
-        $expiry = $this->getDatabaseVariable('information_schema_stats_expiry');
-        $version = (string)$this->getDatabaseVariable('version');
-
-        if (null !== $expiry && version_compare($version, '8.0.0', '>=')) {
-            $this->getConnection()->exec('SET information_schema_stats_expiry=0;');
-        }
     }
 
     /**
@@ -547,5 +530,22 @@ trait DatabaseTestTrait
     protected function assertTableRowNotExists(string $table, int $id, string $message = ''): void
     {
         $this->assertFalse((bool)$this->findTableRowById($table, $id), $message);
+    }
+
+    /**
+     * Workaround for MySQL 8: update_time not working.
+     *
+     * https://bugs.mysql.com/bug.php?id=95407
+     *
+     * @return void
+     */
+    private function unsetStatsExpiry(): void
+    {
+        $expiry = $this->getDatabaseVariable('information_schema_stats_expiry');
+        $version = (string)$this->getDatabaseVariable('version');
+
+        if (null !== $expiry && version_compare($version, '8.0.0', '>=')) {
+            $this->getConnection()->exec('SET information_schema_stats_expiry=0;');
+        }
     }
 }

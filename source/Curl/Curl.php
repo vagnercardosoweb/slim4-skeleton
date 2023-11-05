@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Curl;
@@ -105,7 +105,7 @@ class Curl
         return $http;
     }
 
-    public function addQueryParam(string $name, string|int $value): Curl
+    public function addQueryParam(string $name, int|string $value): Curl
     {
         $this->queryParams[trim($name)] = filter_var($value);
 

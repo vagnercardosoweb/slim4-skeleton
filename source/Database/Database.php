@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -28,7 +28,7 @@ class Database
     /**
      * @var \PDO|null
      */
-    protected \PDO|null $pdo = null;
+    protected null|\PDO $pdo = null;
 
     /**
      * @var array
@@ -77,7 +77,7 @@ class Database
      *
      * @return \Core\Database\Database
      */
-    public function connection(?string $driver = null): Database
+    public function connection(string $driver = null): Database
     {
         $driver = $driver ?? $this->defaultDriver;
 
@@ -171,7 +171,7 @@ class Database
      *
      * @return array|int|string|null
      */
-    public function create(string $table, array $records): array|int|string|null
+    public function create(string $table, array $records): null|array|int|string
     {
         if (!empty($records[0]) && is_array($records[0])) {
             throw new \InvalidArgumentException('Use method (createMultiple).');

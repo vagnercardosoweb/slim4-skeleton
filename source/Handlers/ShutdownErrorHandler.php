@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -23,8 +23,7 @@ readonly class ShutdownErrorHandler
     public function __construct(
         private ServerRequestInterface $request,
         private HttpErrorHandler $errorHandler,
-    ) {
-    }
+    ) {}
 
     #[NoReturn]
     public function __invoke(): void

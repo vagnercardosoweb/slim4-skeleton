@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -14,7 +14,6 @@ namespace App\Middlewares;
 use Core\Facades\Encryption;
 use Core\Facades\Jwt;
 use Core\Support\Env;
-use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -39,8 +38,8 @@ class AuthorizationMiddleware implements MiddlewareInterface
         try {
             $parts = explode('.', $token);
             $decoded = 3 === count($parts) ? Jwt::decode($token) : Encryption::decrypt($token);
-        } catch (Exception) {
-            throw new HttpUnauthorizedException($request, 'Acesso negado, please login again.');
+        } catch (\Exception) {
+            throw new HttpUnauthorizedException($request, 'Access denied, please login again.');
         }
 
         if ($decoded['exp'] && $decoded['exp'] < time()) {

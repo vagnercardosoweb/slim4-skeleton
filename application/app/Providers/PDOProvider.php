@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -15,6 +15,8 @@ use Core\Database\Database;
 use Core\Facades\Facade;
 use Core\Interfaces\ServiceProvider;
 use DI\Container;
+use DI\DependencyException;
+use DI\NotFoundException;
 
 /**
  * Class PDOProvider.
@@ -24,10 +26,10 @@ use DI\Container;
 class PDOProvider implements ServiceProvider
 {
     /**
-     * @param \DI\Container $container
+     * @param Container $container
      *
-     * @throws \DI\DependencyException
-     * @throws \DI\NotFoundException
+     * @throws NotFoundException
+     * @throws DependencyException
      *
      * @return \PDO
      */

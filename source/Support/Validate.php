@@ -6,12 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
-
-use Exception;
 
 /**
  * Class Validate.
@@ -463,8 +461,8 @@ class Validate
     public static function databaseNotExists(
         mixed $value,
         string $table,
-        ?string $field = null,
-        ?string $where = null,
+        string $field = null,
+        string $where = null,
     ): bool {
         return !self::databaseExists($value, $table, $field, $where);
     }
@@ -480,8 +478,8 @@ class Validate
     public static function databaseExists(
         mixed $value,
         string $table,
-        ?string $field = null,
-        ?string $where = null,
+        string $field = null,
+        string $where = null,
     ): bool {
         $field = $field ?? self::$field;
         $query = "SELECT COUNT(1) as total FROM {$table} WHERE {$table}.{$field} = :field {$where} LIMIT 1";
@@ -532,7 +530,7 @@ class Validate
         if ($url = parse_url($value, PHP_URL_HOST)) {
             try {
                 return count(dns_get_record($url, DNS_A | DNS_AAAA)) > 0;
-            } catch (Exception) {
+            } catch (\Exception) {
                 return false;
             }
         }
@@ -693,7 +691,7 @@ class Validate
     {
         try {
             return forward_static_call_array([$callable, $method], $params);
-        } catch (Exception) {
+        } catch (\Exception) {
             $parseCallable = is_null($method) ? $callable : [new $callable(), $method];
 
             return call_user_func_array($parseCallable, $params);

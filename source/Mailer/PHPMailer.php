@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Mailer;
@@ -41,7 +41,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function from(string $address, ?string $name = null): PHPMailer
+    public function from(string $address, string $name = null): PHPMailer
     {
         $this->setFrom($address, $name);
 
@@ -56,7 +56,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addTo(string $address, ?string $name = null): PHPMailer
+    public function addTo(string $address, string $name = null): PHPMailer
     {
         $this->addAddress($address, $name);
 
@@ -71,7 +71,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addReply(string $address, ?string $name = null): PHPMailer
+    public function addReply(string $address, string $name = null): PHPMailer
     {
         $this->addReplyTo($address, $name);
 
@@ -86,7 +86,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addToBcc(string $address, ?string $name = null): PHPMailer
+    public function addToBcc(string $address, string $name = null): PHPMailer
     {
         $this->addBCC($address, $name);
 
@@ -101,7 +101,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addToCc(string $address, ?string $name = null): PHPMailer
+    public function addToCc(string $address, string $name = null): PHPMailer
     {
         $this->addCC($address, $name);
 
@@ -128,7 +128,7 @@ class PHPMailer extends LIBPHPMailer implements MailerContract
      *
      * @return $this
      */
-    public function addFile(string $path, ?string $name = null): PHPMailer
+    public function addFile(string $path, string $name = null): PHPMailer
     {
         $this->addAttachment($path, $name);
 

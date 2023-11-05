@@ -6,23 +6,21 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Cache;
 
 use Core\Interfaces\Cache;
-use Exception;
 
 readonly class FileCache implements Cache
 {
     public function __construct(
         private string $directory,
         private int $permission = 0755
-    ) {
-    }
+    ) {}
 
-    public function get(string $key, array|null|\Closure $default = null, int $seconds = 0): array|null
+    public function get(string $key, array|\Closure $default = null, int $seconds = 0): null|array
     {
         $value = $this->getPayload($key)['payload'];
 
@@ -56,7 +54,7 @@ readonly class FileCache implements Cache
             if ($cache['expire_time'] > 0 && $currentTimestamp >= $cache['expire_time']) {
                 throw new \DomainException('Cache is expired.');
             }
-        } catch (Exception) {
+        } catch (\Exception) {
             $this->delete($key);
             $cache = $emptyPayload;
         }
@@ -85,7 +83,7 @@ readonly class FileCache implements Cache
         return unlink($path);
     }
 
-    public function set(string $key, array|null $value, int $seconds = 0): bool
+    public function set(string $key, null|array $value, int $seconds = 0): bool
     {
         if (empty($value)) {
             return false;

@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -57,7 +57,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function get(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function get(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route(['get'], $pattern, $callable, $name, $middlewares);
     }
@@ -74,8 +74,8 @@ class Route
     public static function route(
         array $methods,
         string $pattern,
-        string|\Closure $callable,
-        ?string $name = null,
+        \Closure|string $callable,
+        string $name = null,
         array $middlewares = []
     ): RouteInterface {
         $name = self::validateRouteName($name);
@@ -174,7 +174,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function post(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function post(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route(['post'], $pattern, $callable, $name, $middlewares);
     }
@@ -187,7 +187,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function put(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function put(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route(['put'], $pattern, $callable, $name, $middlewares);
     }
@@ -200,7 +200,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function delete(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function delete(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route(['delete'], $pattern, $callable, $name, $middlewares);
     }
@@ -213,7 +213,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function patch(string $pattern, string|\Closure $callable, ?string $name = null, array $middlewares = []): RouteInterface
+    public static function patch(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
         return self::route(['patch'], $pattern, $callable, $name, $middlewares);
     }
@@ -235,7 +235,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteGroupInterface
      */
-    public static function group(string|array $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
+    public static function group(array|string $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
     {
         $namespace = null;
 
@@ -302,7 +302,7 @@ class Route
      *
      * @return \Slim\Interfaces\RouteInterface
      */
-    public static function redirect(string $from, UriInterface|string $to, int $status = 302): RouteInterface
+    public static function redirect(string $from, string|UriInterface $to, int $status = 302): RouteInterface
     {
         return self::$routeCollectorProxy->redirect($from, $to, $status);
     }

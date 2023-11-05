@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Cache;
@@ -29,9 +29,7 @@ class Cache
      *
      * @param array $config
      */
-    public function __construct(protected array $config)
-    {
-    }
+    public function __construct(protected array $config) {}
 
     /**
      * @param string $method
@@ -47,9 +45,9 @@ class Cache
     /**
      * @param string|null $driver
      *
-     * @return \Core\Interfaces\Cache
+     * @return ContractCache
      */
-    public function resolve(string|null $driver = null): ContractCache
+    public function resolve(string $driver = null): ContractCache
     {
         $driver = $driver ?? $this->config['default'] ?? 'redis';
         $method = sprintf('create%sDriver', ucfirst($driver));
@@ -91,7 +89,7 @@ class Cache
     /**
      * @param array $config
      *
-     * @return \Core\Interfaces\Cache
+     * @return ContractCache
      */
     protected function createFileDriver(array $config): ContractCache
     {
@@ -101,7 +99,7 @@ class Cache
     /**
      * @param array $config
      *
-     * @return \Core\Interfaces\Cache
+     * @return ContractCache
      */
     protected function createRedisDriver(array $config): ContractCache
     {

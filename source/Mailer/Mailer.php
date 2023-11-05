@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Mailer;
@@ -25,8 +25,7 @@ class Mailer
      */
     public function __construct(
         protected MailerContract $mailer
-    ) {
-    }
+    ) {}
 
     /**
      * @param string      $address
@@ -34,7 +33,7 @@ class Mailer
      *
      * @return Mailer
      */
-    public function from(string $address, ?string $name = null): Mailer
+    public function from(string $address, string $name = null): Mailer
     {
         $this->mailer->from($address, $name);
 
@@ -47,7 +46,7 @@ class Mailer
      *
      * @return Mailer
      */
-    public function reply(string $address, ?string $name = null): Mailer
+    public function reply(string $address, string $name = null): Mailer
     {
         $this->mailer->addReply($address, $name);
 
@@ -60,7 +59,7 @@ class Mailer
      *
      * @return Mailer
      */
-    public function addCC(string $address, ?string $name = null): Mailer
+    public function addCC(string $address, string $name = null): Mailer
     {
         $this->mailer->addToCc($address, $name);
 
@@ -73,7 +72,7 @@ class Mailer
      *
      * @return Mailer
      */
-    public function addBCC(string $address, ?string $name = null): Mailer
+    public function addBCC(string $address, string $name = null): Mailer
     {
         $this->mailer->addToBcc($address, $name);
 
@@ -86,7 +85,7 @@ class Mailer
      *
      * @return Mailer
      */
-    public function to(string $address, ?string $name = null): Mailer
+    public function to(string $address, string $name = null): Mailer
     {
         $this->mailer->addTo($address, $name);
 
@@ -111,7 +110,7 @@ class Mailer
      *
      * @return Mailer
      */
-    public function addFile(string $path, ?string $name = null): Mailer
+    public function addFile(string $path, string $name = null): Mailer
     {
         $this->mailer->addFile($path, $name);
 

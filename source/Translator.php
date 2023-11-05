@@ -6,14 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core;
 
 use Core\Support\Arr;
 use Core\Support\Path;
-use Exception;
 
 /**
  * Class Translator.
@@ -250,7 +249,7 @@ abstract class Translator
                 $args = $args[0]['arguments'] ?? $args[0];
 
                 return sprintf($message, ...$args);
-            } catch (Exception) {
+            } catch (\Exception) {
             }
         }
 

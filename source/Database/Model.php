@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -25,7 +25,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @var \Core\Database\Database|null
      */
-    protected static Database|null $database = null;
+    protected static null|Database $database = null;
 
     /**
      * @var string
@@ -40,7 +40,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @var string|null
      */
-    protected string|null $foreignKey = null;
+    protected null|string $foreignKey = null;
 
     /**
      * @var array
@@ -228,7 +228,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @return static|null
      */
-    public function fetch(): static|null
+    public function fetch(): null|static
     {
         $statement = $this->getStatement();
         $row = $statement->fetch(get_called_class()) ?: null;
@@ -368,7 +368,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @return void
      */
-    protected function mountProperty(array|string|null $conditions, string $property): void
+    protected function mountProperty(null|array|string $conditions, string $property): void
     {
         if (empty($conditions)) {
             return;
@@ -503,7 +503,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @return string|int|null
      */
-    public function getPrimaryValue(array $data = []): int|string|null
+    public function getPrimaryValue(array $data = []): null|int|string
     {
         if (!empty($data[$this->primaryKey])) {
             return $data[$this->primaryKey];
@@ -751,7 +751,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @return string|null
      */
-    public function getForeignKey(): string|null
+    public function getForeignKey(): null|string
     {
         return $this->foreignKey;
     }
@@ -763,7 +763,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
      *
      * @return array<int, static>|null
      */
-    public function delete(int|string|null $id = null): ?array
+    public function delete(int|string $id = null): ?array
     {
         if (!empty($id) && !empty($this->primaryKey)) {
             $this->data([$this->primaryKey => $id]);

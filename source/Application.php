@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -17,6 +17,7 @@ use Core\Facades\Facade;
 use Core\Facades\Logger as LoggerFacade;
 use Core\Facades\ServerRequest;
 use Core\Handlers\HttpErrorHandler;
+use Core\Handlers\ShutdownErrorHandler;
 use Core\Interfaces\SessionInterface;
 use Core\Support\Env;
 use Core\Support\Path;
@@ -98,7 +99,7 @@ class Application
     /**
      * @throws \Throwable
      *
-     * @return \DI\Container
+     * @return Container
      */
     private function registerContainerBuilder(): Container
     {
@@ -125,8 +126,6 @@ class Application
         $container->addDefinitions(array_merge([
             App::class => function (ContainerInterface $container) {
                 AppFactory::setContainer($container);
-
-                // Execute new session container
                 $container->get(SessionInterface::class);
 
                 return AppFactory::create();
@@ -254,12 +253,12 @@ class Application
         $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
 
         $app = self::getApp();
-        // $serverRequest = ServerRequest::getResolvedInstance();
+        $serverRequest = ServerRequest::getResolvedInstance();
         $logger = LoggerFacade::getResolvedInstance();
 
         $httpErrorHandler = new HttpErrorHandler($app->getCallableResolver(), $app->getResponseFactory(), $logger);
-        // $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler);
-        // register_shutdown_function($shutdownErrorHandler);
+        $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler);
+        register_shutdown_function($shutdownErrorHandler);
 
         $errorMiddleware = self::$app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
         $errorMiddleware->setDefaultErrorHandler($httpErrorHandler);

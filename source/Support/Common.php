@@ -6,12 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
-
-use Exception;
 
 /**
  * Class Helper.
@@ -138,7 +136,7 @@ class Common
      *
      * @return string
      */
-    public static function httpBuildQuery(array $array, ?string $prefix = null): string
+    public static function httpBuildQuery(array $array, string $prefix = null): string
     {
         $build = [];
 
@@ -213,7 +211,7 @@ class Common
         $bytes = max($bytes, 0);
         $base = floor(log($bytes) / log(1024));
         $base = min($base, count($units) - 1);
-        $bytes = $bytes / pow(1000, $base);
+        $bytes /= pow(1000, $base);
 
         return number_format(
             round($bytes, $precision),
@@ -368,7 +366,7 @@ class Common
         bool $assoc = false,
         int $depth = 512,
         int $options = 0
-    ): object|array {
+    ): array|object {
         $value = json_decode($value, $assoc, $depth, $options);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
@@ -413,7 +411,7 @@ class Common
 
         try {
             return unserialize($value);
-        } catch (Exception) {
+        } catch (\Exception) {
             return $value;
         }
     }
@@ -423,7 +421,7 @@ class Common
      *
      * @return bool
      */
-    public static function emptyArrayRecursive(object|array $data): bool
+    public static function emptyArrayRecursive(array|object $data): bool
     {
         if (empty($data)) {
             return true;

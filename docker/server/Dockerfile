@@ -1,10 +1,10 @@
-FROM amazonlinux:2
+FROM amazonlinux:2023
 LABEL maintainer="vagnercardosoweb@gmail.com"
 LABEL server="Slim4 Skeleton"
 
 # Environments
 ENV TZ=${TZ:-UTC}
-ENV WORKDIR=${WORKDIR:-/var/www/app.dev}
+ENV WORKDIR=${WORKDIR:-/var/www}
 
 # Update system and install utils
 RUN yum update -y && \
@@ -19,19 +19,14 @@ RUN yum update -y && \
     less \
     unzip \
     rsync \
+    nginx \
+    git \
     sudo && \
     rm -rf /var/cache/apk/*
 
-# Install nginx and node16
-RUN amazon-linux-extras install nginx1 postgresql14
-RUN curl -sL https://rpm.nodesource.com/setup_16.x | bash -
-
-# Install php 8.2 via https://rpms.remirepo.net/wizard/
-RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum -y install https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-RUN yum -y install yum-utils rpl
-RUN yum-config-manager --enable remi-php82
-RUN rpl [remi-php82] "[remi-php82]\npriority=1" /etc/yum.repos.d/remi-php82.repo -e
+# Install nodejs 20.x
+RUN yum install https://rpm.nodesource.com/pub_20.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+RUN yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
 
 # Install node and php extensions
 RUN yum install -y \
@@ -59,10 +54,12 @@ RUN yum install -y \
 RUN pecl channel-update pecl.php.net
 RUN pecl -v install redis xdebug mongodb sqlsrv pdo_sqlsrv
 
-# Copy composer and required files to container
-COPY ./etc /etc
+# Install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy configs
 COPY ./docker-entrypoint /usr/bin/docker-entrypoint
-COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+COPY ./etc /etc
 
 # Create folder and permissions
 RUN mkdir /run/php-fpm

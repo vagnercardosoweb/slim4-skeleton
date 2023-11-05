@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 28/02/2023 Vagner Cardoso
+ * @copyright 05/11/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
@@ -23,7 +23,7 @@ class Obj
      *
      * @return object|null
      */
-    public static function fromArray(object|array|null $array): ?object
+    public static function fromArray(null|array|object $array): ?object
     {
         if (is_object($array)) {
             return $array;
@@ -53,7 +53,7 @@ class Obj
      *
      * @return mixed
      */
-    public static function get(object $object, ?string $name = null, $default = null): mixed
+    public static function get(object $object, string $name = null, $default = null): mixed
     {
         if (empty($name)) {
             return $object;
@@ -96,7 +96,7 @@ class Obj
      *
      * @return string
      */
-    public static function toJson(object|array $object): string
+    public static function toJson(array|object $object): string
     {
         return json_encode(self::toArray($object), JSON_UNESCAPED_SLASHES, JSON_PRETTY_PRINT);
     }
@@ -106,7 +106,7 @@ class Obj
      *
      * @return array|null
      */
-    public static function toArray(object|array|null $object): ?array
+    public static function toArray(null|array|object $object): ?array
     {
         $array = [];
 
