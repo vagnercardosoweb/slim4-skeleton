@@ -6,19 +6,17 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
 use Core\Support\Str;
-use ErrorException;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
-use ReflectionClass;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpInternalServerErrorException;
@@ -45,25 +43,27 @@ class HttpErrorHandler extends ErrorHandler
     {
         $type = $this->types[$this->exception::class] ?? 'BAD_REQUEST';
         $statusCode = $this->exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
-        $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
+        $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
 
-        $errorId = mb_strtoupper(Str::randomHexBytes());
+        $errorId = Str::randomHexBytes(22);
         $message = $this->exception->getMessage();
 
-        if ($this->exception::class === ErrorException::class || !in_array($statusCode, $validStatusCodes)) {
+        if ($this->exception::class === \ErrorException::class || !in_array($statusCode, $validStatusCodes)) {
             $type = 'INTERNAL_SERVER_ERROR';
             $statusCode = StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR;
             $message = 'Internal server error, report the code [{{errorId}}] to support.';
         }
 
         $errorMessage = str_replace('{{errorId}}', $errorId, $message);
+        $requestId = $this->request->getAttribute('requestId') ?? 'EMPTY';
+
         $error = [
             'name' => basename(str_replace('\\', '/', get_class($this->exception))),
             'code' => $type,
             'statusCode' => $statusCode,
             'errorId' => $errorId,
+            'requestId' => $requestId,
             'message' => $errorMessage,
-            'color' => HttpErrorHandler::colorFromStatusCode($statusCode),
         ];
 
         if ($this->logErrorDetails) {
@@ -87,7 +87,9 @@ class HttpErrorHandler extends ErrorHandler
 
         $response = $this->responseFactory
             ->createResponse($statusCode)
-            ->withHeader('Content-Type', 'application/json; charset=utf-8');
+            ->withHeader('X-Request-ID', $requestId)
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+        ;
 
         if ($this->exception instanceof HttpMethodNotAllowedException) {
             $allowedMethods = implode(', ', $this->exception->getAllowedMethods());
@@ -97,20 +99,6 @@ class HttpErrorHandler extends ErrorHandler
         $response->getBody()->write(json_encode($error, JSON_PRETTY_PRINT));
 
         return $response;
-    }
-
-    public static function colorFromStatusCode(int|string $code): string
-    {
-        if (is_string($code) && 200 != $code) {
-            $code = E_USER_ERROR;
-        }
-
-        return match ($code) {
-            E_USER_NOTICE, E_NOTICE => 'info',
-            E_USER_WARNING, E_WARNING => 'warning',
-            200 => 'success',
-            default => 'danger',
-        };
     }
 
     protected function writeToErrorLog(): void {}

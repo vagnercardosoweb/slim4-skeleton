@@ -21,61 +21,8 @@ services:
     networks:
       - slim4.network
     volumes:
-      - ../../:/var/www:z
-      - ../server/cache:/etc/nginx/cache:z
-
-  #  mariadb:
-  #    image: mariadb
-  #    container_name: "slim4.mariadb"
-  #    restart: unless-stopped
-  #    tty: true
-  #    ports:
-  #      - '3306:3306'
-  #    networks:
-  #      - slim4.network
-  #    volumes:
-  #      - ../mysql/config/mariadb.cnf:/etc/mysql/conf.d/custom.cnf:z
-  #      - ../mysql/database:/var/lib/mysql:z
-  #    environment:
-  #      - MYSQL_PASSWORD=root
-  #      - MYSQL_ROOT_PASSWORD=root
-  #      - MYSQL_DATABASE=development
-
-  #  mysql:
-  #    image: mysql:8
-  #    container_name: "slim4.mysql"
-  #    restart: unless-stopped
-  #    tty: true
-  #    ports:
-  #      - '3306:3306'
-  #    networks:
-  #      - slim4.network
-  #    volumes:
-  #      - ../mysql/config/mysql.cnf:/etc/mysql/conf.d/custom.cnf:z
-  #      - ../mysql/database:/var/lib/mysql:z
-  #    environment:
-  #      - MYSQL_PASSWORD=root
-  #      - MYSQL_ROOT_PASSWORD=root
-  #      - MYSQL_DATABASE=development
-
-  #  phpmyadmin:
-  #    image: library/phpmyadmin
-  #    container_name: "slim4.phpmyadmin"
-  #    restart: unless-stopped
-  #    tty: true
-  #    depends_on:
-  #      - mysql
-  #      - mariadb
-  #    ports:
-  #      - '8080:80'
-  #    networks:
-  #      - slim4.network
-  #    environment:
-  #      PMA_USER: root
-  #      PMA_PASSWORD: root
-  #      PMA_HOSTS: mysql,mariadb
-  #      PMA_PORT: 3306
-  #      PMA_ARBITRARY: 1
+      - ../server/cache:/etc/nginx/cache
+      - ../../:/var/www
 
   postgres:
     image: bitnami/postgresql:15
@@ -93,6 +40,20 @@ services:
       - POSTGRESQL_PASSWORD=${DB_PASSWORD:-root}
       - POSTGRESQL_DATABASE=${DB_NAME:-development}
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: "slim4.pgadmin"
+    tty: true
+    depends_on:
+      - postgres
+    ports:
+      - "8080:80"
+    networks:
+      - slim4.network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@localhost.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+
   redis:
     image: bitnami/redis:latest
     restart: unless-stopped
@@ -103,7 +64,7 @@ services:
     networks:
       - slim4.network
     volumes:
-      - ../redis:/bitnami/redis/data:z
+      - ../redis:/bitnami/redis/data
     environment:
       - ALLOW_EMPTY_PASSWORD=${REDIS_ALLOW_EMPTY_PASSWORD:-no}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-root}

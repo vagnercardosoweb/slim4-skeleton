@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
-namespace App\Modules\Api\Controllers;
+namespace App\Controllers;
 
 use Core\Controller;
 use Core\Curl\Curl;

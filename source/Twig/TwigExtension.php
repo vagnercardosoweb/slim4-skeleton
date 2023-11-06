@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 namespace Core\Twig;
@@ -22,11 +22,11 @@ class TwigExtension extends AbstractExtension
     /**
      * TwigExtension constructor.
      *
-     * @param \Slim\Interfaces\RouteParserInterface $routeParser
-     * @param \Psr\Http\Message\UriInterface        $uri
-     * @param array<string, callable>               $filters
-     * @param array<string, callable>               $functions
-     * @param string|null                           $basePath
+     * @param RouteParserInterface    $routeParser
+     * @param UriInterface            $uri
+     * @param array<string, callable> $filters
+     * @param array<string, callable> $functions
+     * @param string|null             $basePath
      */
     public function __construct(
         protected RouteParserInterface $routeParser,
@@ -53,7 +53,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @return \Twig\TwigFunction[]
+     * @return TwigFunction[]
      */
     public function getFunctions(): array
     {
@@ -67,7 +67,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @return \Twig\TwigFilter[]
+     * @return TwigFilter[]
      */
     public function getFilters(): array
     {
@@ -157,7 +157,7 @@ class TwigExtension extends AbstractExtension
     }
 
     /**
-     * @return \Psr\Http\Message\UriInterface
+     * @return UriInterface
      */
     public function getUri(): UriInterface
     {

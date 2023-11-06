@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -14,10 +14,6 @@ declare(strict_types = 1);
 namespace Core;
 
 use Core\Facades\Facade;
-use Core\Facades\Logger as LoggerFacade;
-use Core\Facades\ServerRequest;
-use Core\Handlers\HttpErrorHandler;
-use Core\Handlers\ShutdownErrorHandler;
 use Core\Interfaces\SessionInterface;
 use Core\Support\Env;
 use Core\Support\Path;
@@ -51,7 +47,6 @@ class Application
      * @param string|null $pathRoutes
      * @param string|null $pathMiddleware
      * @param string|null $pathProviders
-     * @param string|null $pathModules
      * @param bool|null   $immutableEnv
      *
      * @throws \Throwable
@@ -60,7 +55,6 @@ class Application
         protected ?string $pathRoutes = null,
         protected ?string $pathMiddleware = null,
         protected ?string $pathProviders = null,
-        protected ?string $pathModules = null,
         protected ?bool $immutableEnv = false
     ) {
         Env::load($this->immutableEnv);
@@ -71,15 +65,12 @@ class Application
 
         if ($this->runningWebserverOrTest()) {
             $this->registerMiddleware();
-            $this->registerErrorHandler();
 
             Route::setRouteCollectorProxy(self::$app);
 
             if ($this->pathRoutes) {
                 Route::registerPath($this->pathRoutes);
             }
-
-            $this->registerModules();
         }
     }
 
@@ -184,9 +175,6 @@ class Application
     {
         error_reporting(-1);
 
-        ini_set('display_errors', 'On');
-        ini_set('display_startup_errors', 'On');
-
         $locale = Env::get('APP_LOCALE', 'pt_BR');
         $charset = Env::get('APP_CHARSET', 'UTF-8');
 
@@ -234,37 +222,14 @@ class Application
         }
 
         if (!file_exists($path)) {
-            throw new \DomainException("File does not exist in the path [{$path}].");
+            throw new \DomainException("The [{$path}] file does not exist.");
         }
 
-        $callable = require_once "{$path}";
-
-        if (!is_callable($callable)) {
-            throw new \DomainException("The [{$path}] file must return a closure.");
+        if (!is_callable($callable = require_once "{$path}")) {
+            throw new \DomainException("The [{$path}] file must return a callable.");
         }
 
         call_user_func($callable, self::$app);
-    }
-
-    private function registerErrorHandler(): void
-    {
-        $logErrors = Env::get('SLIM_LOG_ERRORS', true);
-        $logErrorDetails = Env::get('SLIM_LOG_ERROR_DETAIL', true);
-        $displayErrorDetails = Env::get('SLIM_DISPLAY_ERROR_DETAILS', true);
-
-        $app = self::getApp();
-        $serverRequest = ServerRequest::getResolvedInstance();
-        $logger = LoggerFacade::getResolvedInstance();
-
-        $httpErrorHandler = new HttpErrorHandler($app->getCallableResolver(), $app->getResponseFactory(), $logger);
-        $shutdownErrorHandler = new ShutdownErrorHandler($serverRequest, $httpErrorHandler);
-        register_shutdown_function($shutdownErrorHandler);
-
-        $errorMiddleware = self::$app->addErrorMiddleware($displayErrorDetails, $logErrors, $logErrorDetails);
-        $errorMiddleware->setDefaultErrorHandler($httpErrorHandler);
-
-        ini_set('display_errors', 'Off');
-        ini_set('display_startup_errors', 'Off');
     }
 
     public static function getApp(): App
@@ -279,33 +244,13 @@ class Application
         return self::$app;
     }
 
-    private function registerModules(): void
-    {
-        if (!is_null($this->pathModules) && file_exists($this->pathModules)) {
-            $modules = require_once "{$this->pathModules}";
-
-            if (!is_array($modules)) {
-                throw new \DomainException(
-                    "The [{$this->pathModules}] file must return an array."
-                );
-            }
-
-            foreach ($modules as $module) {
-                if (class_exists($module) && is_subclass_of($module, Module::class)) {
-                    new $module(self::$app);
-                }
-            }
-        }
-    }
-
     public function run(): void
     {
         if (!self::runningInWebserver()) {
             return;
         }
 
-        $response = self::$app->handle(ServerRequest::getResolvedInstance());
-        (new ResponseEmitter())->emit($response);
+        self::$app->run();
         exit;
     }
 }

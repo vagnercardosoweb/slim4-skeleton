@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -14,33 +14,38 @@ namespace Core;
 use Core\Support\Common;
 use Core\Twig\Twig;
 use Fig\Http\Message\StatusCodeInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Interfaces\RouteParserInterface;
 
 abstract class Controller
 {
+    /**
+     * @var RouteParserInterface
+     */
     protected RouteParserInterface $routeParser;
 
-    protected ServerRequestInterface $request;
-
-    protected ResponseInterface $response;
-
     /**
-     * @param \Psr\Container\ContainerInterface $container
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface      $response
+     * @param ContainerInterface     $container
      *
-     * @throws \Throwable
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-    public function __construct(protected ContainerInterface $container)
-    {
-        $this->request = $container->get(ServerRequestInterface::class);
-        $this->response = $container->get(ResponseInterface::class);
+    public function __construct(
+        protected readonly ServerRequestInterface $request,
+        protected readonly ResponseInterface $response,
+        protected readonly ContainerInterface $container
+    ) {
         $this->routeParser = $container->get(RouteParserInterface::class);
     }
 
     /**
-     * @return \Slim\Interfaces\RouteParserInterface
+     * @return RouteParserInterface
      */
     public function getRouteParser(): RouteParserInterface
     {
@@ -48,7 +53,7 @@ abstract class Controller
     }
 
     /**
-     * @return \Psr\Http\Message\ServerRequestInterface
+     * @return ServerRequestInterface
      */
     public function getRequest(): ServerRequestInterface
     {
@@ -56,7 +61,7 @@ abstract class Controller
     }
 
     /**
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function getResponse(): ResponseInterface
     {
@@ -64,7 +69,7 @@ abstract class Controller
     }
 
     /**
-     * @return \Psr\Container\ContainerInterface
+     * @return ContainerInterface
      */
     public function getContainer(): ContainerInterface
     {
@@ -77,7 +82,7 @@ abstract class Controller
      *
      * @throws \Exception
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function withJson(
         array $data = [],
@@ -137,7 +142,7 @@ abstract class Controller
     /**
      * @param string $value
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function withString(string $value): ResponseInterface
     {
@@ -151,7 +156,7 @@ abstract class Controller
      * @param array<string, mixed> $data
      * @param array<string, mixed> $queryParams
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function withRedirectFor(
         string $routeName,
@@ -180,7 +185,7 @@ abstract class Controller
      * @param array<string, mixed> $queryParams
      * @param bool                 $permanent
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     public function withRedirect(
         string $destination,

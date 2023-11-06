@@ -59,8 +59,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "scheme": "bearer",
-        "description": "JWT ou Token de autorização."
-        "type": "http",
+        "description": "JWT ou Token de autorização.",
+        "type": "http"
       }
     },
     "schemas": {

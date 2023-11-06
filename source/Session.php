@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -91,7 +91,7 @@ class Session implements SessionInterface
             $params = session_get_cookie_params();
 
             setcookie(
-                $this->name(),
+                session_name(),
                 '',
                 time() - 42000,
                 $params['path'],

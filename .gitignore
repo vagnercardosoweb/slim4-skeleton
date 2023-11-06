@@ -10,12 +10,9 @@
 
 # Docker
 /**/docker/redis/*
-/**/docker/mysql/*
 /**/docker/postgres/*
 /**/docker/server/logs/*
 /**/docker/server/cache/*
-!/**/docker/mysql/config
-!/**/docker/mysql/database/.gitkeep
 !/**/docker/postgres/.gitkeep
 !/**/docker/server/logs/.gitkeep
 !/**/docker/server/cache/.gitkeep

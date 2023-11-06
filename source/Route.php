@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 namespace Core;
@@ -37,12 +37,12 @@ class Route
     protected static string $groupPattern = '';
 
     /**
-     * @var \Slim\Interfaces\RouteCollectorProxyInterface
+     * @var RouteCollectorProxyInterface
      */
     protected static RouteCollectorProxyInterface $routeCollectorProxy;
 
     /**
-     * @param \Slim\Interfaces\RouteCollectorProxyInterface $routeCollectorProxy
+     * @param RouteCollectorProxyInterface $routeCollectorProxy
      */
     public static function setRouteCollectorProxy(RouteCollectorProxyInterface $routeCollectorProxy): void
     {
@@ -55,7 +55,7 @@ class Route
      * @param string|null     $name
      * @param array           $middlewares
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function get(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
@@ -69,7 +69,7 @@ class Route
      * @param string|null     $name
      * @param array           $middlewares
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function route(
         array $methods,
@@ -85,7 +85,7 @@ class Route
         $route = self::$routeCollectorProxy->map($methods, $pattern, self::handleCallableRouter($callable));
 
         if (!empty($name)) {
-            $route->setName(strtolower($name));
+            $route->setName($name);
         }
 
         foreach ($middlewares as $middleware) {
@@ -111,9 +111,7 @@ class Route
 
         foreach ($routes as $route) {
             if ($route->getName() === $name) {
-                throw new \LogicException(
-                    "There are registered routes with the same name [{$name}]."
-                );
+                throw new \LogicException("The route name [{$name}] already exists.");
             }
         }
 
@@ -137,7 +135,7 @@ class Route
 
                 $method = mb_strtolower($request->getMethod()).ucfirst($originalMethod);
                 $namespace = sprintf('%s\%s', $namespace, $name);
-                $controller = new $namespace($this);
+                $controller = new $namespace($request, $response, $this);
 
                 if (!method_exists($controller, $method)) {
                     $method = $originalMethod ?: 'index';
@@ -172,7 +170,7 @@ class Route
      * @param string|null     $name
      * @param array           $middlewares
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function post(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
@@ -185,7 +183,7 @@ class Route
      * @param string|null     $name
      * @param array           $middlewares
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function put(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
@@ -198,7 +196,7 @@ class Route
      * @param string|null     $name
      * @param array           $middlewares
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function delete(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
@@ -211,7 +209,7 @@ class Route
      * @param string|null     $name
      * @param array           $middlewares
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function patch(string $pattern, \Closure|string $callable, string $name = null, array $middlewares = []): RouteInterface
     {
@@ -233,7 +231,7 @@ class Route
      * @param \Closure     $callable
      * @param array        $middlewares
      *
-     * @return \Slim\Interfaces\RouteGroupInterface
+     * @return RouteGroupInterface
      */
     public static function group(array|string $pattern, \Closure $callable, array $middlewares = []): RouteGroupInterface
     {
@@ -296,11 +294,11 @@ class Route
     }
 
     /**
-     * @param string                                $from
-     * @param \Psr\Http\Message\UriInterface|string $to
-     * @param int                                   $status
+     * @param string              $from
+     * @param UriInterface|string $to
+     * @param int                 $status
      *
-     * @return \Slim\Interfaces\RouteInterface
+     * @return RouteInterface
      */
     public static function redirect(string $from, string|UriInterface $to, int $status = 302): RouteInterface
     {

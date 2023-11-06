@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 use Core\Application;
@@ -64,6 +64,5 @@ require_once "{$autoloadPath}";
     pathRoutes: ROUTE_PATH,
     pathMiddleware: sprintf('%s/middleware.php', CONFIG_PATH),
     pathProviders: sprintf('%s/providers.php', CONFIG_PATH),
-    pathModules: sprintf('%s/modules.php', CONFIG_PATH),
     immutableEnv: true
 ))->run();

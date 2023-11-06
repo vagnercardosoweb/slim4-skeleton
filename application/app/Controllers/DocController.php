@@ -6,19 +6,20 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
-namespace App\Modules\Api\Controllers;
+namespace App\Controllers;
 
 use Core\Controller;
+use Core\Support\Common;
 use Core\Support\Path;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Class SwaggerController.
+ * Class DocController.
  */
-class SwaggerController extends Controller
+class DocController extends Controller
 {
     /**
      * @return ResponseInterface
@@ -26,7 +27,7 @@ class SwaggerController extends Controller
     public function index(): ResponseInterface
     {
         $docs = file_get_contents(Path::resources('/swagger/docs.json'));
-        $docs = json_decode($docs);
+        $docs = Common::parseJson($docs);
 
         return $this->withTwig(
             '@swagger',

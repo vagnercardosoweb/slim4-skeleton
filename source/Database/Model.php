@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 namespace Core\Database;
@@ -23,7 +23,7 @@ use Core\Support\Common;
 abstract class Model implements \ArrayAccess, \JsonSerializable
 {
     /**
-     * @var \Core\Database\Database|null
+     * @var Database|null
      */
     protected static null|Database $database = null;
 
@@ -80,7 +80,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @var int
      */
-    protected int $limit = 100;
+    protected int $limit = 50;
 
     /**
      * @var int
@@ -244,7 +244,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @throws \Exception
      *
-     * @return \Core\Database\Connection\Statement
+     * @return Statement
      */
     public function getStatement(): Statement
     {
@@ -418,7 +418,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     /**
      * @param string $table
      *
-     * @return \Core\Database\Model
+     * @return Model
      */
     public function table(string $table): static
     {
@@ -615,7 +615,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
         }
     }
 
-    private function clear()
+    private function clear(): void
     {
         $this->select = [];
         $this->join = [];
@@ -624,7 +624,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
         $this->having = [];
         $this->order = [];
 
-        $this->limit = 100;
+        $this->limit = 50;
         $this->offset = 0;
 
         $this->bindings = [];
@@ -813,7 +813,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @param \Core\Database\Database $database
+     * @param Database $database
      */
     public static function setDatabase(Database $database): void
     {
@@ -821,7 +821,7 @@ abstract class Model implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * @return \Core\Database\Database|null
+     * @return Database|null
      */
     public function getDatabase(): ?Database
     {

@@ -11,25 +11,20 @@
 
 namespace App\Middlewares;
 
-use Core\Twig\Twig;
-use Psr\Container\ContainerInterface;
+use Core\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-readonly class OldParsedBodyMiddleware implements MiddlewareInterface
+class RequestIdMiddleware implements MiddlewareInterface
 {
-    public function __construct(private ContainerInterface $container) {}
-
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if ($this->container->has(Twig::class) && 'GET' !== strtoupper($request->getMethod())) {
-            /** @var Twig $twig */
-            $twig = $this->container->get(Twig::class);
-            $twig->addGlobal('oldParsedBody', $request->getParsedBody());
-        }
+        $requestId = Str::uuid();
+        $request = $request->withAttribute('requestId', $requestId);
+        $response = $handler->handle($request);
 
-        return $handler->handle($request);
+        return $response->withHeader('X-Request-Id', $requestId);
     }
 }

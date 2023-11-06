@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 namespace App\Providers;
@@ -28,15 +28,14 @@ class PDOProvider implements ServiceProvider
     /**
      * @param Container $container
      *
-     * @throws NotFoundException
      * @throws DependencyException
+     * @throws NotFoundException
      *
      * @return \PDO
      */
     public function __invoke(Container $container): \PDO
     {
         Facade::setAliases(['PDO' => \PDO::class]);
-
         $database = $container->get(Database::class);
 
         return $database->getPdo();

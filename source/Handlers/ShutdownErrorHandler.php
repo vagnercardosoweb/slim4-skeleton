@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 06/11/2023 Vagner Cardoso
  */
 
 declare(strict_types = 1);
@@ -34,7 +34,7 @@ readonly class ShutdownErrorHandler
 
         $message = 'An error while processing your request. Please try again later.';
         $exception = new HttpInternalServerErrorException($this->request, $message);
-        $response = $this->errorHandler->__invoke($this->request, $exception, false, false, true);
+        $response = $this->errorHandler->__invoke($this->request, $exception, true, true, true);
 
         if (ob_get_length()) {
             ob_clean();
