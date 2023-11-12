@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core;
 
@@ -21,8 +21,6 @@ use Core\Support\Path;
 use Core\Support\Str;
 use DI\Container;
 use DI\ContainerBuilder;
-use DomainException;
-use ErrorException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -31,7 +29,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
-use RuntimeException;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
@@ -41,28 +38,26 @@ use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
 use Slim\Psr7\Factory\UploadedFileFactory;
 use Slim\Psr7\Factory\UriFactory;
-use Throwable;
 
 class Application
 {
     public const VERSION = '1.0.0';
-    protected static App|null $instance = null;
+    protected static null|App $instance = null;
 
     /**
      * @param string $pathRoutes
      * @param string $pathMiddleware
      * @param string $pathProviders
-     * @param bool $immutableEnv
+     * @param bool   $immutableEnv
      *
-     * @throws Throwable
+     * @throws \Throwable
      */
     public function __construct(
         protected string $pathRoutes,
         protected string $pathMiddleware,
         protected string $pathProviders,
-        protected bool   $immutableEnv = false
-    )
-    {
+        protected bool $immutableEnv = false
+    ) {
         $this->initializeEnvironment();
 
         $this->registerApp();
@@ -86,7 +81,9 @@ class Application
 
         foreach (['APP_KEY', 'API_SECRET_KEY', 'DEPLOY_SECRET_KEY'] as $key) {
             $value = Env::get($key);
-            if (!empty($value)) continue;
+            if (!empty($value)) {
+                continue;
+            }
 
             $quote = preg_quote("={$value}", '/');
             $random = Str::randomHexBytes();
@@ -104,9 +101,9 @@ class Application
     }
 
     /**
-     * @return void
-     * @throws Throwable
+     * @throws \Throwable
      *
+     * @return void
      */
     protected function registerApp(): void
     {
@@ -117,9 +114,9 @@ class Application
     }
 
     /**
-     * @return Container
-     * @throws Throwable
+     * @throws \Throwable
      *
+     * @return Container
      */
     protected function registerContainerBuilder(): Container
     {
@@ -140,10 +137,10 @@ class Application
                 return AppFactory::create();
             },
 
-            SessionInterface::class => fn() => new Session(),
-            StreamFactoryInterface::class => fn() => new StreamFactory(),
-            UploadedFileFactoryInterface::class => fn() => new UploadedFileFactory(),
-            UriFactoryInterface::class => fn() => new UriFactory(),
+            SessionInterface::class => fn () => new Session(),
+            StreamFactoryInterface::class => fn () => new StreamFactory(),
+            UploadedFileFactoryInterface::class => fn () => new UploadedFileFactory(),
+            UriFactoryInterface::class => fn () => new UriFactory(),
 
             ServerRequestFactoryInterface::class => function (ContainerInterface $container) {
                 return new ServerRequestFactory(
@@ -185,9 +182,9 @@ class Application
     }
 
     /**
-     * @return void
-     * @throws Throwable
+     * @throws \Throwable
      *
+     * @return void
      */
     protected function registerPhpSettings(): void
     {
@@ -206,7 +203,7 @@ class Application
 
         set_error_handler(function ($level, $message, $file = '', $line = 0) {
             if (error_reporting() & $level) {
-                throw new ErrorException($message, 0, $level, $file, $line);
+                throw new \ErrorException($message, 0, $level, $file, $line);
             }
         });
     }
@@ -236,7 +233,7 @@ class Application
         $path = $this->pathMiddleware;
 
         if (!is_callable($callable = require_once "{$path}")) {
-            throw new DomainException("The [{$path}] file must return a callable.");
+            throw new \DomainException("The [{$path}] file must return a callable.");
         }
 
         call_user_func($callable, self::$instance);
@@ -245,7 +242,7 @@ class Application
     public static function getInstance(): App
     {
         if (is_null(self::$instance)) {
-            throw new RuntimeException(sprintf(
+            throw new \RuntimeException(sprintf(
                 'Class %s has not been initialized.',
                 __CLASS__
             ));

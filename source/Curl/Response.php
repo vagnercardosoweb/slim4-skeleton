@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
 namespace Core\Curl;
@@ -17,11 +17,9 @@ readonly class Response
 {
     public function __construct(
         private string $body,
-        private array  $httpInfo,
+        private array $httpInfo,
         private string $error
-    )
-    {
-    }
+    ) {}
 
     public function getError(): string
     {

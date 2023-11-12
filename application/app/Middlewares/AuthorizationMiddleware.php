@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
 namespace App\Middlewares;
@@ -19,7 +19,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Exception\HttpUnauthorizedException;
-use Throwable;
 
 class AuthorizationMiddleware implements MiddlewareInterface
 {
@@ -39,7 +38,7 @@ class AuthorizationMiddleware implements MiddlewareInterface
         try {
             $parts = explode('.', $token);
             $decoded = 3 === count($parts) ? Jwt::decode($token) : Encryption::decrypt($token);
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             throw new HttpUnauthorizedException($request, 'Access denied, please login again.', $exception);
         }
 

@@ -6,13 +6,12 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
 namespace Core\Curl;
 
 use Core\Support\Common;
-use InvalidArgumentException;
 
 /**
  * Class Curl.
@@ -220,14 +219,14 @@ class Curl
     private function makeUrl(): string
     {
         if (empty($this->url)) {
-            throw new InvalidArgumentException('Url is empty');
+            throw new \InvalidArgumentException('Url is empty');
         }
         $queryParams = '';
         if (!empty($this->queryParams)) {
-            $queryParams = '?' . Common::httpBuildQuery($this->queryParams);
+            $queryParams = '?'.Common::httpBuildQuery($this->queryParams);
         }
 
-        return $this->url . $queryParams;
+        return $this->url.$queryParams;
     }
 
     /**
@@ -238,7 +237,7 @@ class Curl
         $headers = [];
 
         foreach ($this->headers as $key => $value) {
-            $headers[] = "$key: $value";
+            $headers[] = "{$key}: {$value}";
         }
 
         return $headers;
@@ -259,7 +258,7 @@ class Curl
     }
 
     /**
-     * @param int $option
+     * @param int   $option
      * @param mixed $value
      *
      * @return Curl

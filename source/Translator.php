@@ -6,15 +6,13 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
 namespace Core;
 
 use Core\Support\Arr;
 use Core\Support\Path;
-use Exception;
-use UnexpectedValueException;
 
 /**
  * Class Translator.
@@ -146,7 +144,7 @@ abstract class Translator
     public static function get(string $message): array|string
     {
         if (count(func_get_args()) > 2) {
-            throw new UnexpectedValueException('You can only pass two parameters.');
+            throw new \UnexpectedValueException('You can only pass two parameters.');
         }
 
         list($file, $message) = explode('.', $message, 2) + [null, null];
@@ -251,7 +249,7 @@ abstract class Translator
                 $args = $args[0]['arguments'] ?? $args[0];
 
                 return sprintf($message, ...$args);
-            } catch (Exception) {
+            } catch (\Exception) {
             }
         }
 

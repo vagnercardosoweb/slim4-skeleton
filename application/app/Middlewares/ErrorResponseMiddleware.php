@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 /*
  * Vagner Cardoso <https://github.com/vagnercardosoweb>
@@ -26,13 +26,11 @@ use Core\Facades\Container;
 use Core\Support\Env;
 use Core\Support\Str;
 use Core\Twig\Twig;
-use Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
 
 class ErrorResponseMiddleware implements MiddlewareInterface
 {
@@ -40,7 +38,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
     {
         try {
             return $handler->handle($request);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             if (
                 Env::get('APP_ONLY_API', false)
                 || str_starts_with($request->getUri()->getPath(), '/api/')
@@ -51,7 +49,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
             }
 
             $statusCode = StatusCodeInterface::STATUS_BAD_REQUEST;
-            $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
+            $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
 
             if (in_array($exception->getCode(), $validStatusCodes)) {
                 $statusCode = $exception->getCode();
@@ -68,7 +66,8 @@ class ErrorResponseMiddleware implements MiddlewareInterface
             $requestId = $request->getAttribute('requestId') ?? Str::uuid();
             $response = Container::get(ResponseInterface::class)
                 ->withStatus($statusCode)
-                ->withHeader('X-Request-Id', $requestId);
+                ->withHeader('X-Request-Id', $requestId)
+            ;
 
             return $twig
                 ->render(
@@ -76,7 +75,8 @@ class ErrorResponseMiddleware implements MiddlewareInterface
                     "@errors.{$template}",
                     ['exception' => $exception],
                     $statusCode
-                );
+                )
+            ;
         }
     }
 }

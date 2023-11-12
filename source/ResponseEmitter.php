@@ -6,10 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 05/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core;
 
@@ -26,7 +26,7 @@ class ResponseEmitter extends SlimResponseEmitter
         $methods = Env::get('CORS_METHODS', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         $headers = Env::get('CORS_HEADERS', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
 
-        if ($response->getHeaderLine('X-Request-Id') === "") {
+        if ('' === $response->getHeaderLine('X-Request-Id')) {
             $response = $response->withHeader('X-Request-Id', Str::uuid());
         }
 
@@ -34,7 +34,8 @@ class ResponseEmitter extends SlimResponseEmitter
             ->withHeader('Access-Control-Allow-Origin', $origin)
             ->withHeader('Access-Control-Allow-Headers', $headers)
             ->withHeader('Access-Control-Allow-Credentials', 'true')
-            ->withHeader('Access-Control-Allow-Methods', $methods);
+            ->withHeader('Access-Control-Allow-Methods', $methods)
+        ;
 
         if (ob_get_contents()) {
             ob_clean();

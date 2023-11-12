@@ -6,20 +6,18 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Core\Handlers;
 
 use Core\Exception\HttpUnavailableException;
 use Core\Exception\HttpUnprocessableEntityException;
 use Core\Support\Str;
-use ErrorException;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
-use ReflectionClass;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpForbiddenException;
 use Slim\Exception\HttpInternalServerErrorException;
@@ -47,12 +45,12 @@ class HttpErrorHandler extends ErrorHandler
     {
         $type = $this->types[$this->exception::class] ?? 'BAD_REQUEST';
         $statusCode = $this->exception->getCode() ?: StatusCodeInterface::STATUS_BAD_REQUEST;
-        $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
+        $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
 
         $errorId = Str::randomHexBytes(22);
         $message = $this->exception->getMessage();
 
-        if ($this->exception::class === ErrorException::class || !in_array($statusCode, $validStatusCodes)) {
+        if ($this->exception::class === \ErrorException::class || !in_array($statusCode, $validStatusCodes)) {
             $type = 'INTERNAL_SERVER_ERROR';
             $statusCode = StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR;
             $message = 'Internal server error, report the code [{{errorId}}] to support.';
@@ -92,7 +90,8 @@ class HttpErrorHandler extends ErrorHandler
         $response = $this->responseFactory
             ->createResponse($statusCode)
             ->withHeader('X-Request-ID', $requestId)
-            ->withHeader('Content-Type', 'application/json; charset=utf-8');
+            ->withHeader('Content-Type', 'application/json; charset=utf-8')
+        ;
 
         if ($this->exception instanceof HttpMethodNotAllowedException) {
             $allowedMethods = implode(', ', $this->exception->getAllowedMethods());
@@ -104,7 +103,5 @@ class HttpErrorHandler extends ErrorHandler
         return $response;
     }
 
-    protected function writeToErrorLog(): void
-    {
-    }
+    protected function writeToErrorLog(): void {}
 }

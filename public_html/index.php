@@ -6,7 +6,7 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
 use Core\Application;
@@ -39,7 +39,7 @@ if (
 define('BASE_URL', "{$schema}://{$host}");
 define('REQUEST_URI', $_SERVER['REQUEST_URI'] ?? '/');
 
-const FULL_URL = BASE_URL . REQUEST_URI;
+const FULL_URL = BASE_URL.REQUEST_URI;
 const DATE_TIME_BR = 'd/m/Y H:i:s';
 const E_USER_SUCCESS = 'success';
 const DATE_BR = 'd/m/Y';

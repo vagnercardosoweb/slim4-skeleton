@@ -6,14 +6,10 @@
  * @author Vagner Cardoso <vagnercardosoweb@gmail.com>
  * @link https://github.com/vagnercardosoweb
  * @license http://www.opensource.org/licenses/mit-license.html MIT License
- * @copyright 06/11/2023 Vagner Cardoso
+ * @copyright 12/11/2023 Vagner Cardoso
  */
 
 namespace Core\Support;
-
-use Exception;
-use JsonException;
-use SimpleXMLElement;
 
 /**
  * Class Helper.
@@ -135,7 +131,7 @@ class Common
     }
 
     /**
-     * @param array $array
+     * @param array       $array
      * @param string|null $prefix
      *
      * @return string
@@ -181,7 +177,7 @@ class Common
     }
 
     /**
-     * @param mixed $encoded
+     * @param mixed        $encoded
      * @param array|string $result
      */
     public static function parseStr(mixed $encoded, array|string &$result): void
@@ -218,11 +214,11 @@ class Common
         $bytes /= pow(1000, $base);
 
         return number_format(
-                round($bytes, $precision),
-                2,
-                ',',
-                ''
-            ) . ' ' . $units[$base];
+            round($bytes, $precision),
+            2,
+            ',',
+            ''
+        ).' '.$units[$base];
     }
 
     /**
@@ -319,20 +315,19 @@ class Common
     /**
      * @param string $xml
      * @param string $className
-     * @param int $option
+     * @param int    $option
      * @param string $ns
-     * @param bool $isPrefix
+     * @param bool   $isPrefix
      *
-     * @return SimpleXMLElement|null
+     * @return \SimpleXMLElement|null
      */
     public static function parseXml(
         string $xml,
         string $className = 'SimpleXMLElement',
-        int    $option = 0,
+        int $option = 0,
         string $ns = '',
-        bool   $isPrefix = false
-    ): ?SimpleXMLElement
-    {
+        bool $isPrefix = false
+    ): ?\SimpleXMLElement {
         if (empty($xml)) {
             return null;
         }
@@ -355,24 +350,24 @@ class Common
 
     /**
      * @param string $value
-     * @param bool $assoc
-     * @param int $depth
-     * @param int $options
+     * @param bool   $assoc
+     * @param int    $depth
+     * @param int    $options
+     *
+     * @throws \JsonException
      *
      * @return object|array
-     * @throws JsonException
      */
     public static function parseJson(
         string $value,
-        bool   $assoc = false,
-        int    $depth = 512,
-        int    $options = 0
-    ): array|object
-    {
+        bool $assoc = false,
+        int $depth = 512,
+        int $options = 0
+    ): array|object {
         $value = json_decode($value, $assoc, $depth, $options);
 
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new JsonException(sprintf('Invalid JSON decode: %s', json_last_error_msg()));
+            throw new \JsonException(sprintf('Invalid JSON decode: %s', json_last_error_msg()));
         }
 
         return $value;
@@ -413,7 +408,7 @@ class Common
 
         try {
             return unserialize($value);
-        } catch (Exception) {
+        } catch (\Exception) {
             return $value;
         }
     }
