@@ -16,10 +16,10 @@ namespace Core\Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use Slim\Exception\HttpSpecializedException;
 
-class HttpUnavailableException extends HttpSpecializedException
+class HttpUnprocessableEntityException extends HttpSpecializedException
 {
-    protected $code = StatusCodeInterface::STATUS_SERVICE_UNAVAILABLE;
-    protected string $title = '503 Service Unavailable';
-    protected string $description = 'We are currently undergoing maintenance. Come back later.';
-    protected $message = 'Service Unavailable.';
+    protected $code = StatusCodeInterface::STATUS_UNPROCESSABLE_ENTITY;
+    protected string $title = '422 Unprocessable Entity';
+    protected string $description = 'The request was well-formed but was unable to be followed due to semantic errors.';
+    protected $message = 'Unprocessable Entity';
 }

@@ -32,7 +32,7 @@ class Env
     protected static bool $immutable = false;
 
     /**
-     * @var \Dotenv\Repository\RepositoryInterface|null
+     * @var RepositoryInterface|null
      */
     protected static ?RepositoryInterface $repository = null;
 
@@ -73,7 +73,7 @@ class Env
     }
 
     /**
-     * @return \Dotenv\Repository\RepositoryInterface
+     * @return RepositoryInterface
      */
     protected static function repository(): RepositoryInterface
     {
@@ -108,7 +108,7 @@ class Env
     /**
      * @param bool $immutable
      *
-     * @return \Dotenv\Dotenv
+     * @return Dotenv
      */
     public static function load(bool $immutable = false): Dotenv
     {
@@ -125,7 +125,7 @@ class Env
 
         return $dotenv;
     }
-
+    
     /**
      * @return string
      */
@@ -144,7 +144,7 @@ class Env
     }
 
     /**
-     * @param string     $name
+     * @param string $name
      * @param mixed|null $default
      *
      * @return mixed

@@ -12,7 +12,7 @@
 use Core\Support\Env;
 use Core\Support\Path;
 
-$configRedis = require_once __DIR__.'/redis.php';
+$configRedis = require_once __DIR__ . '/redis.php';
 
 return [
     /*

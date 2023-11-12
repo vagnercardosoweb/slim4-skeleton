@@ -11,7 +11,6 @@
 
 namespace App\Middlewares;
 
-use Core\Support\Env;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,16 +21,7 @@ class CorsMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $origin = Env::get('CORS_ORIGIN', '*');
-        $methods = Env::get('CORS_METHODS', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        $headers = Env::get('CORS_HEADERS', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
-
-        $response = $handler->handle($request)
-            ->withHeader('Access-Control-Allow-Origin', $origin)
-            ->withHeader('Access-Control-Allow-Methods', $methods)
-            ->withHeader('Access-Control-Allow-Headers', $headers)
-            ->withHeader('Access-Control-Allow-Credentials', 'true')
-        ;
+        $response = $handler->handle($request);
 
         if ('options' === strtolower($request->getMethod())) {
             $response = $response->withStatus(StatusCodeInterface::STATUS_OK);

@@ -16,14 +16,8 @@ use Core\Support\Common;
 use Core\Support\Path;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * Class DocController.
- */
 class DocController extends Controller
 {
-    /**
-     * @return ResponseInterface
-     */
     public function index(): ResponseInterface
     {
         $docs = file_get_contents(Path::resources('/swagger/docs.json'));

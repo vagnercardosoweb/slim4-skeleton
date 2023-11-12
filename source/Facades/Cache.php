@@ -11,6 +11,17 @@
 
 namespace Core\Facades;
 
+use Closure;
+
+/**
+ * @method static bool has(string $key)
+ * @method static null|array get(string $key, null|array|Closure $default, int $seconds = 0)
+ * @method static bool set(string $key, null|array $value, int $seconds = 0)
+ * @method static bool delete(string $key)
+ * @method static void flush()
+ * @method static bool increment(string $key, int $value)
+ * @method static bool decrement(string $key, int $value)
+ */
 class Cache extends Facade
 {
     protected static function getAccessor(): string

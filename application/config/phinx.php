@@ -12,7 +12,7 @@
 use Core\Support\Env;
 use Core\Support\Path;
 
-require_once __DIR__.'/../../public_html/index.php';
+require_once __DIR__ . '/../../public_html/index.php';
 
 return [
     'version_order' => 'creation',

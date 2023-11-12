@@ -12,6 +12,7 @@
 namespace Core\Curl;
 
 use Core\Support\Common;
+use InvalidArgumentException;
 
 /**
  * Class Curl.
@@ -58,7 +59,7 @@ class Curl
     /**
      * @param string $url
      *
-     * @return \Core\Curl\Curl
+     * @return Curl
      */
     public static function get(string $url): Curl
     {
@@ -141,7 +142,7 @@ class Curl
      */
     public function addHeader(string $key, string $value): Curl
     {
-        $this->headers[trim($key)] = trim($value);
+        $this->headers[trim($key)] = filter_var(trim($value));
 
         return $this;
     }
@@ -161,7 +162,7 @@ class Curl
     }
 
     /**
-     * @return \Core\Curl\Response
+     * @return Response
      */
     public function send(): Response
     {
@@ -219,14 +220,14 @@ class Curl
     private function makeUrl(): string
     {
         if (empty($this->url)) {
-            throw new \InvalidArgumentException('Url is empty');
+            throw new InvalidArgumentException('Url is empty');
         }
         $queryParams = '';
         if (!empty($this->queryParams)) {
-            $queryParams = '?'.Common::httpBuildQuery($this->queryParams);
+            $queryParams = '?' . Common::httpBuildQuery($this->queryParams);
         }
 
-        return $this->url.$queryParams;
+        return $this->url . $queryParams;
     }
 
     /**
@@ -237,7 +238,7 @@ class Curl
         $headers = [];
 
         foreach ($this->headers as $key => $value) {
-            $headers[] = "{$key}: {$value}";
+            $headers[] = "$key: $value";
         }
 
         return $headers;
@@ -258,7 +259,7 @@ class Curl
     }
 
     /**
-     * @param int   $option
+     * @param int $option
      * @param mixed $value
      *
      * @return Curl

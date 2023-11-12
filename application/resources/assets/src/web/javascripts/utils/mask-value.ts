@@ -1,5 +1,4 @@
 export const unmask = (value: string): string => {
-  // eslint-disable-next-line no-useless-escape
   return value.replace(/[\-\|\(\)\/\.\: ]/gm, '');
 };
 

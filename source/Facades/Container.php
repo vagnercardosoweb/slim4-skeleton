@@ -13,6 +13,10 @@ namespace Core\Facades;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @method static bool has(string $id)
+ * @method static mixed get(string $id)
+ */
 class Container extends Facade
 {
     protected static function getAccessor(): string

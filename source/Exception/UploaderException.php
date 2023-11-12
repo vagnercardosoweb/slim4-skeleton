@@ -11,7 +11,9 @@
 
 namespace Core\Exception;
 
-class UploaderException extends \Exception
+use Exception;
+
+class UploaderException extends Exception
 {
     public function __construct(int $code)
     {

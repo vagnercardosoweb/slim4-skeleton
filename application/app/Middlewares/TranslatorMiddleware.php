@@ -26,7 +26,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class TranslatorMiddleware implements MiddlewareInterface
 {
     /**
-     * @param ServerRequestInterface  $request
+     * @param ServerRequestInterface $request
      * @param RequestHandlerInterface $handler
      *
      * @return ResponseInterface

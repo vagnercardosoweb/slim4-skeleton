@@ -9,23 +9,23 @@
  * @copyright 06/11/2023 Vagner Cardoso
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Core\Handlers;
 
-use Core\ResponseEmitter;
-use JetBrains\PhpStorm\NoReturn;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpInternalServerErrorException;
+use Slim\ResponseEmitter;
 
 readonly class ShutdownErrorHandler
 {
     public function __construct(
         private ServerRequestInterface $request,
-        private HttpErrorHandler $errorHandler,
-    ) {}
+        private HttpErrorHandler       $errorHandler,
+    )
+    {
+    }
 
-    #[NoReturn]
     public function __invoke(): void
     {
         if (!error_get_last()) {

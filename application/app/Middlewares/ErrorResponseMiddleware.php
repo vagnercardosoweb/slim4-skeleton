@@ -9,7 +9,7 @@
  * @copyright 06/11/2023 Vagner Cardoso
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 /*
  * Vagner Cardoso <https://github.com/vagnercardosoweb>
@@ -24,13 +24,15 @@ namespace App\Middlewares;
 
 use Core\Facades\Container;
 use Core\Support\Env;
+use Core\Support\Str;
 use Core\Twig\Twig;
+use Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Slim\Psr7\Response;
+use ReflectionClass;
 
 class ErrorResponseMiddleware implements MiddlewareInterface
 {
@@ -38,9 +40,10 @@ class ErrorResponseMiddleware implements MiddlewareInterface
     {
         try {
             return $handler->handle($request);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             if (
                 Env::get('APP_ONLY_API', false)
+                || str_starts_with($request->getUri()->getPath(), '/api/')
                 || 'XMLHttpRequest' === $request->getHeaderLine('X-Requested-With')
                 || !Container::has(Twig::class)
             ) {
@@ -48,7 +51,7 @@ class ErrorResponseMiddleware implements MiddlewareInterface
             }
 
             $statusCode = StatusCodeInterface::STATUS_BAD_REQUEST;
-            $validStatusCodes = (new \ReflectionClass(StatusCodeInterface::class))->getConstants();
+            $validStatusCodes = (new ReflectionClass(StatusCodeInterface::class))->getConstants();
 
             if (in_array($exception->getCode(), $validStatusCodes)) {
                 $statusCode = $exception->getCode();
@@ -62,14 +65,18 @@ class ErrorResponseMiddleware implements MiddlewareInterface
                 $template = "{$statusCode}.twig";
             }
 
+            $requestId = $request->getAttribute('requestId') ?? Str::uuid();
+            $response = Container::get(ResponseInterface::class)
+                ->withStatus($statusCode)
+                ->withHeader('X-Request-Id', $requestId);
+
             return $twig
                 ->render(
-                    new Response(),
+                    $response,
                     "@errors.{$template}",
                     ['exception' => $exception],
                     $statusCode
-                )
-            ;
+                );
         }
     }
 }

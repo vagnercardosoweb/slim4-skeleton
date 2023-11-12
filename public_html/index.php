@@ -38,14 +38,11 @@ if (
 
 define('BASE_URL', "{$schema}://{$host}");
 define('REQUEST_URI', $_SERVER['REQUEST_URI'] ?? '/');
-define('FULL_URL', BASE_URL.REQUEST_URI);
 
-// Date formats
-define('DATE_BR', 'd/m/Y');
-define('DATE_TIME_BR', 'd/m/Y H:i:s');
-
-// Error success using in throw
-define('E_USER_SUCCESS', 'success');
+const FULL_URL = BASE_URL . REQUEST_URI;
+const DATE_TIME_BR = 'd/m/Y H:i:s';
+const E_USER_SUCCESS = 'success';
+const DATE_BR = 'd/m/Y';
 
 // Autoload.
 $autoloadPath = sprintf('%s/vendor/autoload.php', APP_PATH);
@@ -60,9 +57,16 @@ if (!file_exists($autoloadPath)) {
 require_once "{$autoloadPath}";
 
 // Start application
-(new Application(
-    pathRoutes: ROUTE_PATH,
-    pathMiddleware: sprintf('%s/middleware.php', CONFIG_PATH),
-    pathProviders: sprintf('%s/providers.php', CONFIG_PATH),
-    immutableEnv: true
-))->run();
+try {
+    (new Application(
+        pathRoutes: ROUTE_PATH,
+        pathMiddleware: sprintf('%s/middleware.php', CONFIG_PATH),
+        pathProviders: sprintf('%s/providers.php', CONFIG_PATH),
+        immutableEnv: true
+    ))->run();
+} catch (Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => true, 'message' => $e->getMessage()]);
+    exit;
+}

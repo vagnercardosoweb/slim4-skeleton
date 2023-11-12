@@ -1,21 +1,21 @@
-import * as $ from 'jquery';
+import $ from 'jquery';
 import 'jquery-mask-plugin';
 
 declare global {
   export interface Window {
-    $: typeof $;
     jQuery: typeof $;
+    $: typeof $;
   }
 
   namespace NodeJS {
-    export interface Global {
-      $: typeof $;
+    export interface Global extends Window {
       jQuery: typeof $;
+      $: typeof $;
     }
   }
 }
 
 if (typeof window !== 'undefined') {
-  window.$ = global.$ = $;
   window.jQuery = global.jQuery = $;
+  window.$ = global.$ = $;
 }

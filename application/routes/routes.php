@@ -9,7 +9,6 @@
  * @copyright 06/11/2023 Vagner Cardoso
  */
 
-use App\Middlewares\RequestIdMiddleware;
 use Core\Route;
 
 Route::group(['namespace' => 'App/Controllers'], function () {
@@ -17,11 +16,7 @@ Route::group(['namespace' => 'App/Controllers'], function () {
     Route::get('/offline', 'OfflineController');
 });
 
-Route::group([
-    'pattern' => '/api',
-    'namespace' => 'App/Controllers',
-    'middlewares' => [RequestIdMiddleware::class],
-], function () {
+Route::group(['pattern' => '/api', 'namespace' => 'App/Controllers'], function () {
     Route::get('/docs', 'DocController');
     Route::get('/zipcode/{p}', 'ZipCodeController');
 });

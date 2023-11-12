@@ -25,10 +25,8 @@ function countdown(timestamp: number) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const el = document.querySelector<HTMLDivElement>('.page-plans--countdown');
-  if (!el?.dataset.timestamp) {
-    return;
-  }
+  const el = document.querySelector<HTMLDivElement>('[data-countrow-timestamp]');
+  if (!el?.dataset.timestamp) return;
   setInterval(() => {
     countdown(Number(el.dataset.timestamp));
   }, 1000);

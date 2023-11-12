@@ -1,5 +1,3 @@
-let openned = false;
-
 window.addEventListener('DOMContentLoaded', () => {
   const dataToggleEls = document.querySelectorAll<HTMLElement>('[data-toggle]');
 

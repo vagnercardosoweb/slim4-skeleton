@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Exception\HttpUnauthorizedException;
+use Throwable;
 
 class AuthorizationMiddleware implements MiddlewareInterface
 {
@@ -38,8 +39,8 @@ class AuthorizationMiddleware implements MiddlewareInterface
         try {
             $parts = explode('.', $token);
             $decoded = 3 === count($parts) ? Jwt::decode($token) : Encryption::decrypt($token);
-        } catch (\Exception) {
-            throw new HttpUnauthorizedException($request, 'Access denied, please login again.');
+        } catch (Throwable $exception) {
+            throw new HttpUnauthorizedException($request, 'Access denied, please login again.', $exception);
         }
 
         if ($decoded['exp'] && $decoded['exp'] < time()) {

@@ -13,6 +13,8 @@ namespace Core;
 
 use Core\Support\Arr;
 use Core\Support\Path;
+use Exception;
+use UnexpectedValueException;
 
 /**
  * Class Translator.
@@ -35,14 +37,6 @@ abstract class Translator
     protected static string $fallback = 'en';
 
     /**
-     * @param string $fallback
-     */
-    public static function setFallback(string $fallback): void
-    {
-        self::$fallback = self::resolveLanguageName($fallback);
-    }
-
-    /**
      * @return string
      */
     public static function getFallback(): string
@@ -51,11 +45,21 @@ abstract class Translator
     }
 
     /**
-     * @param string $language
+     * @param string $fallback
      */
-    public static function setLanguage(string $language): void
+    public static function setFallback(string $fallback): void
     {
-        self::$language = self::parseLanguageName($language);
+        self::$fallback = self::resolveLanguageName($fallback);
+    }
+
+    /**
+     * @param string $language
+     *
+     * @return string
+     */
+    protected static function resolveLanguageName(string $language): string
+    {
+        return str_replace('_', '-', strtolower($language));
     }
 
     /**
@@ -71,88 +75,11 @@ abstract class Translator
     }
 
     /**
-     * @param string $message
-     *
-     * @return string|array
-     */
-    public static function get(string $message): array|string
-    {
-        if (count(func_get_args()) > 2) {
-            throw new \UnexpectedValueException('You can only pass two parameters.');
-        }
-
-        list($file, $message) = explode('.', $message, 2) + [null, null];
-        self::loadData($file);
-
-        $args = func_get_args();
-        array_shift($args);
-
-        $message = Arr::get(self::$data[$file], $message, $message);
-        $message = self::replacementsMessage($message, $args);
-
-        return self::sprintfMessage($message, $args);
-    }
-
-    /**
-     * @param string $file
-     * @param string $message
-     *
-     * @return array|string
-     */
-    public static function byFile(string $file, string $message): array|string
-    {
-        return self::get("{$file}.{$message}", ...array_slice(func_get_args(), 2));
-    }
-
-    /**
-     * @param string $file
-     */
-    protected static function loadData(string $file): void
-    {
-        if (!empty(self::$data[$file])) {
-            return;
-        }
-
-        self::$data[$file] = [];
-
-        if (!$path = self::existsFile(self::$language, $file) ?? self::existsFile(self::$fallback, $file)) {
-            return;
-        }
-
-        self::$data[$file] = require "{$path}";
-    }
-
-    /**
      * @param string $language
-     *
-     * @return string|null
      */
-    protected static function existsFolder(string $language): ?string
+    public static function setLanguage(string $language): void
     {
-        $path = sprintf(Path::resources('/languages/%s'), $language);
-
-        if (!is_dir($path)) {
-            return null;
-        }
-
-        return $path;
-    }
-
-    /**
-     * @param string $language
-     * @param string $file
-     *
-     * @return string|null
-     */
-    protected static function existsFile(string $language, string $file): ?string
-    {
-        $path = sprintf(Path::resources('/languages/%s/%s.php'), $language, $file);
-
-        if (!file_exists($path)) {
-            return null;
-        }
-
-        return $path;
+        self::$language = self::parseLanguageName($language);
     }
 
     /**
@@ -187,11 +114,86 @@ abstract class Translator
     /**
      * @param string $language
      *
-     * @return string
+     * @return string|null
      */
-    protected static function resolveLanguageName(string $language): string
+    protected static function existsFolder(string $language): ?string
     {
-        return str_replace('_', '-', strtolower($language));
+        $path = sprintf(Path::resources('/languages/%s'), $language);
+
+        if (!is_dir($path)) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    /**
+     * @param string $file
+     * @param string $message
+     *
+     * @return array|string
+     */
+    public static function byFile(string $file, string $message): array|string
+    {
+        return self::get("{$file}.{$message}", ...array_slice(func_get_args(), 2));
+    }
+
+    /**
+     * @param string $message
+     *
+     * @return string|array
+     */
+    public static function get(string $message): array|string
+    {
+        if (count(func_get_args()) > 2) {
+            throw new UnexpectedValueException('You can only pass two parameters.');
+        }
+
+        list($file, $message) = explode('.', $message, 2) + [null, null];
+        self::loadData($file);
+
+        $args = func_get_args();
+        array_shift($args);
+
+        $message = Arr::get(self::$data[$file], $message, $message);
+        $message = self::replacementsMessage($message, $args);
+
+        return self::sprintfMessage($message, $args);
+    }
+
+    /**
+     * @param string $file
+     */
+    protected static function loadData(string $file): void
+    {
+        if (!empty(self::$data[$file])) {
+            return;
+        }
+
+        self::$data[$file] = [];
+
+        if (!$path = self::existsFile(self::$language, $file) ?? self::existsFile(self::$fallback, $file)) {
+            return;
+        }
+
+        self::$data[$file] = require "{$path}";
+    }
+
+    /**
+     * @param string $language
+     * @param string $file
+     *
+     * @return string|null
+     */
+    protected static function existsFile(string $language, string $file): ?string
+    {
+        $path = sprintf(Path::resources('/languages/%s/%s.php'), $language, $file);
+
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        return $path;
     }
 
     /**
@@ -249,7 +251,7 @@ abstract class Translator
                 $args = $args[0]['arguments'] ?? $args[0];
 
                 return sprintf($message, ...$args);
-            } catch (\Exception) {
+            } catch (Exception) {
             }
         }
 

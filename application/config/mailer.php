@@ -11,7 +11,7 @@
 
 use Core\Support\Env;
 
-$configClient = require __DIR__.'/client.php';
+$configClient = require __DIR__ . '/client.php';
 $mailFromMail = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 if ('localhost' === $mailFromMail) {

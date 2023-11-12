@@ -29,7 +29,9 @@
     margin: auto;
     word-break: break-all;
     border-radius: 4px;
-    box-shadow: 0 10px 20px darken(#ffffff, 5), 0 -5px 20px darken(#ffffff, 5);
+    box-shadow:
+      0 10px 20px darken(#ffffff, 5),
+      0 -5px 20px darken(#ffffff, 5);
 
     .header {
       padding: 15px;

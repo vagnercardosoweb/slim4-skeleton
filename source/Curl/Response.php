@@ -17,9 +17,11 @@ readonly class Response
 {
     public function __construct(
         private string $body,
-        private array $httpInfo,
+        private array  $httpInfo,
         private string $error
-    ) {}
+    )
+    {
+    }
 
     public function getError(): string
     {

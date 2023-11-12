@@ -14,10 +14,7 @@ const PUBLIC_FOLDER = path.resolve(__dirname, '..', '..', '..', 'public_html');
 const REACT_COMPONENTS = require('./src/react/index');
 
 const outputFilename = ({ chunk: { name } }) => {
-  if (name in REACT_COMPONENTS) {
-    return `assets/react/${name}.js`;
-  }
-
+  if (name in REACT_COMPONENTS) return `assets/react/${name}.js`;
   return 'assets/[name]/bundle.js';
 };
 
@@ -27,7 +24,6 @@ const plugins = [
     filename: 'assets/[name]/bundle.css',
     chunkFilename: 'assets/[name]/bundle.css',
   }),
-  new CleanWebpackPlugin({ cleanOnceBeforeBuildPatterns: ['static/*'] }),
   new webpack.ProvidePlugin({
     $: 'jquery',
     jQuery: 'jquery',
@@ -37,6 +33,14 @@ const plugins = [
     'window.jQuery': 'jquery',
   }),
 ];
+
+if (NODE_ENV === 'production') {
+  plugins.push(
+    new CleanWebpackPlugin({
+      cleanOnceBeforeBuildPatterns: ['assets/static/*'],
+    }),
+  );
+}
 
 module.exports = {
   mode: NODE_ENV,
@@ -76,7 +80,7 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            name: 'static/images/[contenthash].[ext]',
+            name: 'assets/static/[contenthash].[ext]',
           },
         },
       },
@@ -84,7 +88,7 @@ module.exports = {
         test: /\.(ttf|eot|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: 'file-loader',
         options: {
-          name: 'static/fonts/[contenthash].[ext]',
+          name: 'assets/static/[contenthash].[ext]',
         },
       },
       {

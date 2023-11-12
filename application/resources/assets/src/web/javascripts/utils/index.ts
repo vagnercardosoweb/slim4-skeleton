@@ -13,3 +13,7 @@ export { createQueryParams } from './create-query-params';
 export { uniqIdentifier } from './uniq-identifier';
 export { parseDatasetToObject } from './parse-dataset-to-obj';
 export { fetchAsync } from './fetch-async';
+
+export const onlyNumber = (value: string) => {
+  return value.replace(/[^\d]/g, '');
+};

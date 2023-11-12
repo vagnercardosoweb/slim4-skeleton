@@ -9,16 +9,20 @@
  * @copyright 06/11/2023 Vagner Cardoso
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Core;
 
 use Core\Facades\Facade;
+use Core\Facades\ServerRequest;
 use Core\Interfaces\SessionInterface;
 use Core\Support\Env;
 use Core\Support\Path;
+use Core\Support\Str;
 use DI\Container;
 use DI\ContainerBuilder;
+use DomainException;
+use ErrorException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -27,6 +31,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use RuntimeException;
 use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
@@ -36,28 +41,29 @@ use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
 use Slim\Psr7\Factory\UploadedFileFactory;
 use Slim\Psr7\Factory\UriFactory;
+use Throwable;
 
 class Application
 {
     public const VERSION = '1.0.0';
-
-    private static ?App $app = null;
+    protected static App|null $instance = null;
 
     /**
-     * @param string|null $pathRoutes
-     * @param string|null $pathMiddleware
-     * @param string|null $pathProviders
-     * @param bool|null   $immutableEnv
+     * @param string $pathRoutes
+     * @param string $pathMiddleware
+     * @param string $pathProviders
+     * @param bool $immutableEnv
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function __construct(
-        protected ?string $pathRoutes = null,
-        protected ?string $pathMiddleware = null,
-        protected ?string $pathProviders = null,
-        protected ?bool $immutableEnv = false
-    ) {
-        Env::load($this->immutableEnv);
+        protected string $pathRoutes,
+        protected string $pathMiddleware,
+        protected string $pathProviders,
+        protected bool   $immutableEnv = false
+    )
+    {
+        $this->initializeEnvironment();
 
         $this->registerApp();
         $this->registerFacade();
@@ -66,7 +72,7 @@ class Application
         if ($this->runningWebserverOrTest()) {
             $this->registerMiddleware();
 
-            Route::setRouteCollectorProxy(self::$app);
+            Route::setRouteCollectorProxy(self::$instance);
 
             if ($this->pathRoutes) {
                 Route::registerPath($this->pathRoutes);
@@ -74,28 +80,50 @@ class Application
         }
     }
 
-    /**
-     * @throws \Throwable
-     *
-     * @return void
-     */
-    private function registerApp(): void
+    protected function initializeEnvironment(): void
     {
-        if (is_null(self::$app)) {
-            $container = $this->registerContainerBuilder();
-            self::$app = $container->get(App::class);
+        Env::load($this->immutableEnv);
+
+        foreach (['APP_KEY', 'API_SECRET_KEY', 'DEPLOY_SECRET_KEY'] as $key) {
+            $value = Env::get($key);
+            if (!empty($value)) continue;
+
+            $quote = preg_quote("={$value}", '/');
+            $random = Str::randomHexBytes();
+            $pathEnv = Env::path();
+
+            file_put_contents(
+                $pathEnv,
+                preg_replace(
+                    "/^{$key}{$quote}.*/m",
+                    "{$key}=vcw:{$random}",
+                    file_get_contents($pathEnv)
+                )
+            );
         }
     }
 
     /**
-     * @throws \Throwable
+     * @return void
+     * @throws Throwable
      *
-     * @return Container
      */
-    private function registerContainerBuilder(): Container
+    protected function registerApp(): void
     {
-        $definitions = [];
-        $providersPath = (string)$this->pathProviders;
+        if (is_null(self::$instance)) {
+            $container = $this->registerContainerBuilder();
+            self::$instance = $container->get(App::class);
+        }
+    }
+
+    /**
+     * @return Container
+     * @throws Throwable
+     *
+     */
+    protected function registerContainerBuilder(): Container
+    {
+        $definitions = file_exists((string)$this->pathProviders) ? require_once "{$this->pathProviders}" : [];
         $container = new ContainerBuilder();
 
         if (Env::get('CONTAINER_CACHE', false)) {
@@ -103,16 +131,6 @@ class Application
         }
 
         $container->useAutowiring(Env::get('CONTAINER_AUTO_WIRING', true));
-
-        if (file_exists($providersPath)) {
-            $definitions = require_once "{$providersPath}";
-
-            if (!is_array($definitions)) {
-                throw new \DomainException(
-                    "The [{$providersPath}] file must return an array."
-                );
-            }
-        }
 
         $container->addDefinitions(array_merge([
             App::class => function (ContainerInterface $container) {
@@ -122,10 +140,10 @@ class Application
                 return AppFactory::create();
             },
 
-            SessionInterface::class => fn () => new Session(),
-            StreamFactoryInterface::class => fn () => new StreamFactory(),
-            UploadedFileFactoryInterface::class => fn () => new UploadedFileFactory(),
-            UriFactoryInterface::class => fn () => new UriFactory(),
+            SessionInterface::class => fn() => new Session(),
+            StreamFactoryInterface::class => fn() => new StreamFactory(),
+            UploadedFileFactoryInterface::class => fn() => new UploadedFileFactory(),
+            UriFactoryInterface::class => fn() => new UriFactory(),
 
             ServerRequestFactoryInterface::class => function (ContainerInterface $container) {
                 return new ServerRequestFactory(
@@ -160,18 +178,18 @@ class Application
         return $container->build();
     }
 
-    private function registerFacade(): void
+    protected function registerFacade(): void
     {
-        Facade::setApp(self::$app);
+        Facade::setApp(self::$instance);
         Facade::registerAliases();
     }
 
     /**
-     * @throws \Throwable
-     *
      * @return void
+     * @throws Throwable
+     *
      */
-    private function registerPhpSettings(): void
+    protected function registerPhpSettings(): void
     {
         error_reporting(-1);
 
@@ -188,7 +206,7 @@ class Application
 
         set_error_handler(function ($level, $message, $file = '', $line = 0) {
             if (error_reporting() & $level) {
-                throw new \ErrorException($message, 0, $level, $file, $line);
+                throw new ErrorException($message, 0, $level, $file, $line);
             }
         });
     }
@@ -213,35 +231,27 @@ class Application
         return Env::has('PHPUNIT_TEST_SUITE');
     }
 
-    private function registerMiddleware(): void
+    protected function registerMiddleware(): void
     {
         $path = $this->pathMiddleware;
 
-        if (is_null($path)) {
-            return;
-        }
-
-        if (!file_exists($path)) {
-            throw new \DomainException("The [{$path}] file does not exist.");
-        }
-
         if (!is_callable($callable = require_once "{$path}")) {
-            throw new \DomainException("The [{$path}] file must return a callable.");
+            throw new DomainException("The [{$path}] file must return a callable.");
         }
 
-        call_user_func($callable, self::$app);
+        call_user_func($callable, self::$instance);
     }
 
-    public static function getApp(): App
+    public static function getInstance(): App
     {
-        if (is_null(self::$app)) {
-            throw new \RuntimeException(sprintf(
+        if (is_null(self::$instance)) {
+            throw new RuntimeException(sprintf(
                 'Class %s has not been initialized.',
                 __CLASS__
             ));
         }
 
-        return self::$app;
+        return self::$instance;
     }
 
     public function run(): void
@@ -250,7 +260,8 @@ class Application
             return;
         }
 
-        self::$app->run();
+        $response = self::$instance->handle(ServerRequest::getResolvedInstance());
+        (new ResponseEmitter())->emit($response);
         exit;
     }
 }

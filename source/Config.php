@@ -14,6 +14,11 @@ namespace Core;
 use Core\Support\Arr;
 use Core\Support\Common;
 use Core\Support\Path;
+use DirectoryIterator;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use UnexpectedValueException;
 
 /**
  * Class Config.
@@ -29,7 +34,7 @@ class Config
 
     /**
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -43,7 +48,7 @@ class Config
 
     /**
      * @param array|string $key
-     * @param mixed        $default
+     * @param mixed $default
      *
      * @return mixed
      */
@@ -72,8 +77,8 @@ class Config
             $path = Path::config();
         }
 
-        /** @var \DirectoryIterator $iterator */
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS));
+        /** @var DirectoryIterator $iterator */
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
         $iterator->rewind();
 
         $config = [];
@@ -135,7 +140,7 @@ class Config
 
         foreach ($keys as $key => $default) {
             if (is_numeric($key)) {
-                throw new \UnexpectedValueException('the key must be a string');
+                throw new UnexpectedValueException('the key must be a string');
             }
 
             $config[$key] = Arr::get(self::$items, $key, $default);
@@ -146,7 +151,7 @@ class Config
 
     /**
      * @param array|string $key
-     * @param mixed|null   $value
+     * @param mixed|null $value
      *
      * @return void
      */
@@ -161,7 +166,7 @@ class Config
 
     /**
      * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return void
      */
@@ -174,8 +179,8 @@ class Config
     }
 
     /**
-     * @param string     $key
-     * @param mixed      $value
+     * @param string $key
+     * @param mixed $value
      * @param mixed|null $newKey
      *
      * @return void
